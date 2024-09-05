@@ -1,7 +1,11 @@
+import { auth } from "@/auth";
+import SignIn from "@/components/sign-in";
+import { SignOut } from "@/components/signout-button";
 import { db } from "@/db/client";
 import { countries } from "@/db/schema";
 
 export default async function Home() {
+  const session = await auth();
   const countryList = await db.select().from(countries);
 
   return (
@@ -15,6 +19,10 @@ export default async function Home() {
           ))}
         </ul>
       )}
+
+      {!!session?.user && <SignOut />}
+
+      {!session?.user && <SignIn />}
     </main>
   );
 }
