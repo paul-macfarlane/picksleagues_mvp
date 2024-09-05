@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate": "npx drizzle-kit generate",
+    "generate": "drizzle-kit generate",
     "migrate": "npx tsx ./src/db/migrate.ts -y"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "drizzle-kit": "^0.24.2",
     "eslint": "^8",
     "eslint-config-next": "14.2.7",
     "typescript": "^5"
