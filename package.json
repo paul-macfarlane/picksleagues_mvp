@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "generate": "drizzle-kit generate",
-    "migrate": "npx tsx ./src/db/migrate.ts -y"
+    "migrate": "npx tsx ./src/db/migrate.ts -y",
+    "studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@auth/drizzle-adapter": "^1.4.2",
     "@emotion/cache": "^11.13.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
