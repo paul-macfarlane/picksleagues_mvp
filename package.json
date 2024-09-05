@@ -6,16 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate": "drizzle-kit generate",
+    "migrate": "npx tsx ./src/db/migrate.ts -y"
   },
   "dependencies": {
     "@emotion/cache": "^11.13.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fontsource/roboto": "^5.0.14",
+    "@libsql/client": "^0.10.0",
     "@mui/icons-material": "^6.0.1",
     "@mui/material": "^6.0.1",
     "@mui/material-nextjs": "^6.0.1",
+    "@next/env": "^14.2.7",
+    "drizzle-orm": "^0.33.0",
     "next": "14.2.7",
     "react": "^18",
     "react-dom": "^18"
@@ -24,6 +29,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "drizzle-kit": "^0.24.2",
     "eslint": "^8",
     "eslint-config-next": "14.2.7",
     "typescript": "^5"
