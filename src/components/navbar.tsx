@@ -6,17 +6,28 @@ import Typography from "@mui/material/Typography";
 import { auth, signIn } from "@/auth";
 import Button from "@mui/material/Button";
 import ProfileMenu from "./profile-menu";
+import { Link } from "@mui/material";
+import NextLink from "next/link";
 
 export default async function Navbar() {
   const session = await auth();
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+    <Box>
+      <AppBar position="sticky">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Pix
-          </Typography>
+          <Link
+            color="inherit"
+            underline={"none"}
+            href={"/"}
+            component={NextLink}
+          >
+            <Typography variant="h6" component="div">
+              Pix
+            </Typography>
+          </Link>
+
+          <div style={{ flexGrow: 1 }}></div>
 
           {!!session?.user ? (
             <ProfileMenu user={session.user} />
@@ -24,7 +35,7 @@ export default async function Navbar() {
             <form
               action={async () => {
                 "use server";
-                await signIn();
+                await signIn(undefined, { redirectTo: "/api/post-signin" });
               }}
             >
               <Button type="submit" variant="text">
