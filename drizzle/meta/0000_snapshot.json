@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ea6b46a6-b848-4ed8-b7c8-9fdf245392e2",
+  "id": "354066b4-daff-438f-800a-5488db38f873",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -28,8 +28,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "provider_accountId": {
-          "name": "provider_accountId",
+        "provider_account_id": {
+          "name": "provider_account_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -102,12 +102,12 @@
         }
       },
       "compositePrimaryKeys": {
-        "account_provider_provider_accountId_pk": {
+        "account_provider_provider_account_id_pk": {
           "columns": [
             "provider",
-            "provider_accountId"
+            "provider_account_id"
           ],
-          "name": "account_provider_provider_accountId_pk"
+          "name": "account_provider_provider_account_id_pk"
         }
       },
       "uniqueConstraints": {}
@@ -193,6 +193,13 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "username": {
+          "name": "username",
+          "type": "text(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -200,6 +207,13 @@
           "name": "user_email_unique",
           "columns": [
             "email"
+          ],
+          "isUnique": true
+        },
+        "user_username_unique": {
+          "name": "user_username_unique",
+          "columns": [
+            "username"
           ],
           "isUnique": true
         }

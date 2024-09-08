@@ -1,7 +1,11 @@
+import { Typography } from "@mui/material";
+
 export default function Home() {
   return (
     <main>
-      <h1>Hello Pix</h1>
+      <Typography padding={2} variant="h3">
+        Hello Pix
+      </Typography>
     </main>
   );
 }
