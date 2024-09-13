@@ -7,12 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate": "npm drizzle-kit generate",
-    "migrate": "npx tsx ./src/db/migrate.ts -y",
-    "studio": "npm drizzle-kit studio"
+    "db:generate": "npm drizzle-kit generate",
+    "db:migrate": "npm tsx ./src/db/migrate.ts -y",
+    "db:studio": "npm drizzle-kit studio",
+    "db:local": "turso dev --db-file local.db"
   },
   "dependencies": {
-    "@clerk/nextjs": "^5.4.1",
     "@emotion/cache": "^11.13.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
@@ -25,8 +25,7 @@
     "drizzle-orm": "^0.33.0",
     "next": "14.2.7",
     "react": "^18",
-    "react-dom": "^18",
-    "zod": "^3.23.8"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@types/node": "^20",

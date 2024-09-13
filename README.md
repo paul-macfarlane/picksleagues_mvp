@@ -22,7 +22,7 @@ In an ideal world, the application can be hosted for free. This is not a money m
 This app is built using Next.js, and Turso. To run lcoally
 
 1. [Install Turso CLI](https://docs.turso.tech/cli/introduction)
-2. Create a local db file using `turso dev --db-file local.db` (keep the process running)
+2. Create a local db file using npm run db:local (keep the process running)
 3. Install dependencies by running `npm install`
 4. TODO add steps for running migration and seting up auth
 5. Run `npm run dev` to run locally
