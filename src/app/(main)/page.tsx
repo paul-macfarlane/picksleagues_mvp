@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main>
       <Typography padding={2} variant="h3">
-        Hello Pix
+        Coming Soon
       </Typography>
     </main>
   );
