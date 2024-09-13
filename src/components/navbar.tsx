@@ -1,17 +1,13 @@
-import * as React from "react";
+import { auth } from "@clerk/nextjs/server";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { auth, signIn } from "@/auth";
-import Button from "@mui/material/Button";
-import ProfileMenu from "./profile-menu";
-import { Link } from "@mui/material";
+import Link from "@mui/material/Link";
 import NextLink from "next/link";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export default async function Navbar() {
-  const session = await auth();
-
   return (
     <Box>
       <AppBar position="sticky">
@@ -23,26 +19,18 @@ export default async function Navbar() {
             component={NextLink}
           >
             <Typography variant="h6" component="div">
-              Pix
+              PicksLeagues
             </Typography>
           </Link>
 
           <div style={{ flexGrow: 1 }}></div>
 
-          {!!session?.user ? (
-            <ProfileMenu user={session.user} />
-          ) : (
-            <form
-              action={async () => {
-                "use server";
-                await signIn(undefined, { redirectTo: "/api/post-signin" });
-              }}
-            >
-              <Button type="submit" variant="text">
-                Sign in
-              </Button>
-            </form>
-          )}
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+          <SignedOut>
+            <Link href={"/sign-in"}>Sign in</Link>
+          </SignedOut>
         </Toolbar>
       </AppBar>
     </Box>

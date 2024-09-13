@@ -1,6 +1,6 @@
-# Pix
+# Picks Leagues
 
-Pix is an application where friends can compete to see who is the best sports prognosticator by joining leagues where they make picks for sporting events for winners, against the spread, and/or over/under. The league member with the best record wins. To start off, Pix will be limited to NFL games, but may expand to College Football in the future.
+Picks Leagues is an application where friends can compete to see who is the best sports prognosticator by joining leagues where they make picks for sporting events for winners, against the spread, and/or over/under. The league member with the best record wins. To start off, Picksleagues will be limited to NFL games, but may expand to College Football in the future.
 
 ## Architecture
 
