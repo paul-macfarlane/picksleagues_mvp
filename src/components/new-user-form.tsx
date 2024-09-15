@@ -1,6 +1,7 @@
 "use client";
 
 import { newUserAction, NewUserFormState } from "@/app/actions/users";
+import { MAX_USERNAME_LENGTH } from "@/constants/users";
 import { Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
@@ -27,7 +28,7 @@ function NewUserInnerForm({ formState }: { formState: NewUserFormState }) {
         sx={{ width: 300 }}
         slotProps={{
           htmlInput: {
-            maxLength: 20,
+            maxLength: MAX_USERNAME_LENGTH,
           },
         }}
       ></TextField>

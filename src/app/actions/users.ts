@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { MAX_USERNAME_LENGTH, MIN_USERNAME_LENGTH } from "@/constants/users";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -41,8 +42,14 @@ export async function newUserAction(
   const NewUserFormSchema = z.object({
     username: z
       .string()
-      .min(8, `Must be at least ${8} characters`)
-      .max(20, `Cannot be more than ${20} characters`),
+      .min(
+        MIN_USERNAME_LENGTH,
+        `Must be at least ${MIN_USERNAME_LENGTH} characters`
+      )
+      .max(
+        MAX_USERNAME_LENGTH,
+        `Cannot be more than ${MAX_USERNAME_LENGTH} characters`
+      ),
   });
 
   const parseRes = NewUserFormSchema.safeParse({

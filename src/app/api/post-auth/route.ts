@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { MAX_USERNAME_LENGTH } from "@/constants/users";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
 import { redirect } from "next/navigation";
 import { generateUsername } from "unique-username-generator";
@@ -23,7 +24,7 @@ export async function GET() {
     let username = "";
     while (!username && attempts < 5) {
       attempts++;
-      const usernameCandidate = generateUsername("", 3, 20);
+      const usernameCandidate = generateUsername("", 3, MAX_USERNAME_LENGTH);
       if (await dbUsernameAvailable(usernameCandidate)) {
         username = usernameCandidate;
       }

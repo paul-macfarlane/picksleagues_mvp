@@ -1,3 +1,4 @@
+import { MAX_USERNAME_LENGTH } from "@/constants/users";
 import { sql } from "drizzle-orm/sql";
 import {
   integer,
@@ -15,7 +16,7 @@ export const users = sqliteTable("users", {
   email: text("email").unique(),
   emailVerified: integer("email_verified", { mode: "timestamp_ms" }),
   image: text("image"),
-  username: text("username", { length: 20 }).unique(),
+  username: text("username", { length: MAX_USERNAME_LENGTH }).unique(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
