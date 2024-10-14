@@ -1,49 +1,53 @@
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
-import NextLink from "next/link";
-import { auth, signIn, signOut } from "@/auth";
-import Button from "@mui/material/Button";
+import { Button } from "./ui/button";
+import { ModeToggle } from "./mode-toggle";
+import { Trophy } from "lucide-react";
+import Link from "next/link";
+import { auth } from "@/auth";
+import { DBUser, getDBUserById } from "@/db/users";
 import ProfileMenu from "./profile-menu";
 
 export default async function Navbar() {
   const session = await auth();
 
+  let dbUser: DBUser | null = null;
+  if (session?.user?.id) {
+    dbUser = await getDBUserById(session.user.id);
+    if (!dbUser) {
+      console.error(
+        `Unable to find user in DB in navbar with id ${session?.user?.id}`,
+      );
+    }
+  }
+
   return (
-    <Box>
-      <AppBar position="sticky">
-        <Toolbar>
-          <Link
-            color="inherit"
-            underline={"none"}
-            href={"/"}
-            component={NextLink}
-          >
-            <Typography variant="h6" component="div">
-              PicksLeagues
-            </Typography>
+    <header className="container mx-auto p-4">
+      <nav className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Link href={session?.user ? "/dashboard" : "/"}>
+            <Trophy className="h-6 w-6 text-primary" />
           </Link>
-
-          <div style={{ flexGrow: 1 }}></div>
-
+          <span className="text-2xl font-bold">Picks Leagues</span>
+        </div>
+        <div className="flex items-center gap-2">
           {session?.user ? (
-            <ProfileMenu user={session.user} />
-          ) : (
-            <form
-              action={async () => {
-                "use server";
-                await signIn(undefined, {
-                  redirectTo: "/api/post-auth",
-                });
+            <ProfileMenu
+              user={{
+                username: dbUser?.username ?? "",
+                image: dbUser?.image ?? undefined,
+                firstName: dbUser?.firstName ?? undefined,
+                lastName: dbUser?.lastName ?? undefined,
               }}
-            >
-              <Button type="submit">Sign in</Button>
-            </form>
+            />
+          ) : (
+            <>
+              <Button asChild>
+                <Link href={"/auth"}>Sign In</Link>
+              </Button>
+              <ModeToggle />
+            </>
           )}
-        </Toolbar>
-      </AppBar>
-    </Box>
+        </div>
+      </nav>
+    </header>
   );
 }

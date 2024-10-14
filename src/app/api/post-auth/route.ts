@@ -7,16 +7,16 @@ import { generateUsername } from "unique-username-generator";
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/");
+    redirect("/");
   }
 
   const dbUser = await getDBUserById(session.user.id);
   if (!dbUser) {
     console.error(
-      `user with id ${session.user.id} from session not found in db`
+      `User with id ${session.user.id} from session not found in db.`,
     );
 
-    return redirect("/");
+    redirect("/");
   }
 
   if (!dbUser.username) {
@@ -37,12 +37,12 @@ export async function GET() {
     } else {
       //this is extremely unlikely to happen, but if it does its fine the user will still be able to set their own username anyways
       console.error(
-        `unable to generate unique username for user with id ${dbUser.id}`
+        `Unable to generate unique username for user with id ${dbUser.id}`,
       );
     }
 
-    return redirect("/new-user");
+    redirect("/profile-setup");
   }
 
-  return redirect("/");
+  redirect("/");
 }

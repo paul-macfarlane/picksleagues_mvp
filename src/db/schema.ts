@@ -1,4 +1,8 @@
-import { MAX_USERNAME_LENGTH } from "@/constants/users";
+import {
+  MAX_FIRST_NAME_LENGTH,
+  MAX_LAST_NAME_LENGTH,
+  MAX_USERNAME_LENGTH,
+} from "@/constants/users";
 import { sql } from "drizzle-orm/sql";
 import {
   integer,
@@ -12,7 +16,12 @@ export const users = sqliteTable("users", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
+  /**
+   * needs to be here for auth.js compatability, but will be unused by the application
+   */
   name: text("name"),
+  firstName: text("first_name", { length: MAX_FIRST_NAME_LENGTH }),
+  lastName: text("last_name", { length: MAX_LAST_NAME_LENGTH }),
   email: text("email").unique(),
   emailVerified: integer("email_verified", { mode: "timestamp_ms" }),
   image: text("image"),
@@ -54,7 +63,7 @@ export const accounts = sqliteTable(
     compoundKey: primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-  })
+  }),
 );
 
 export const sessions = sqliteTable("sessions", {
@@ -90,7 +99,7 @@ export const verificationTokens = sqliteTable(
     compositePk: primaryKey({
       columns: [verificationToken.identifier, verificationToken.token],
     }),
-  })
+  }),
 );
 
 export const authenticators = sqliteTable(
@@ -120,5 +129,5 @@ export const authenticators = sqliteTable(
     compositePK: primaryKey({
       columns: [authenticator.userId, authenticator.credentialID],
     }),
-  })
+  }),
 );

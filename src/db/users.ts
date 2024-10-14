@@ -2,9 +2,10 @@ import { eq } from "drizzle-orm";
 import { db } from "./client";
 import { users } from "./schema";
 
-interface DBUser {
+export interface DBUser {
   id: string;
-  name: string | null;
+  firstName: string | null;
+  lastName: string | null;
   email: string | null;
   emailVerified: Date | null;
   image: string | null;
@@ -20,7 +21,8 @@ export async function getDBUserById(id: string): Promise<DBUser | null> {
 }
 
 interface UpdateDBUser {
-  name?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   email?: string | null;
   emailVerified?: Date | null;
   image?: string | null;
@@ -29,7 +31,7 @@ interface UpdateDBUser {
 
 export async function updateDBUser(
   id: string,
-  params: UpdateDBUser
+  params: UpdateDBUser,
 ): Promise<DBUser | null> {
   const queryRes = await db
     .update(users)
