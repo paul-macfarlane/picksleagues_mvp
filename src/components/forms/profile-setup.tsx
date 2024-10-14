@@ -15,10 +15,10 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { ProfileSetupFormSchema } from "@/constants/users";
 import { useFormState, useFormStatus } from "react-dom";
-import { profileSetupAction } from "@/app/actions/profile-setup";
+import { profileSetupAction } from "@/actions/profile-setup";
 import { useRef } from "react";
+import { ProfileSetupFormSchema } from "@/models/profile-setup";
 
 type FormSchema = z.infer<typeof ProfileSetupFormSchema>;
 

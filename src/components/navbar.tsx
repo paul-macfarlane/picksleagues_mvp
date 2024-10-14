@@ -23,8 +23,8 @@ export default async function Navbar() {
     <header className="container mx-auto p-4">
       <nav className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Link href={session?.user ? "/dashboard" : "/"}>
-            <Trophy className="h-6 w-6 text-primary" />
+          <Link className="group" href={session?.user ? "/dashboard" : "/"}>
+            <Trophy className="h-6 w-6 text-primary group-focus:border group-focus:border-primary" />
           </Link>
           <span className="text-2xl font-bold">Picks Leagues</span>
         </div>

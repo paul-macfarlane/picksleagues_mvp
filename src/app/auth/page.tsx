@@ -22,13 +22,11 @@ export default async function AuthPage({
 }) {
   const session = await auth();
   if (session?.user) {
-    redirect("/");
+    redirect("/dashboard");
   }
 
-  let defaultTab = "signin";
-  if (searchParams["defaultTab"] === "signup") {
-    defaultTab = "signup";
-  }
+  const defaultTab =
+    searchParams["defaultTab"] === "signup" ? "signup" : "signin";
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center p-4">

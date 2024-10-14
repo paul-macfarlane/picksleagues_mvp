@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import { ProfileSetupFormSchema } from "@/constants/users";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
+import { ProfileSetupFormSchema } from "@/models/profile-setup";
 import { redirect } from "next/navigation";
 
 export interface ProfileSetupFormState {
