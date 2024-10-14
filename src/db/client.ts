@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/libsql";
 // see https://github.com/tursodatabase/libsql-client-ts/issues/225
 function noCacheFetch(
   input: string | URL | globalThis.Request,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<Response> {
   return fetch(input, { ...init, cache: "no-store" });
 }

@@ -43,6 +43,8 @@ CREATE TABLE `sessions` (
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text,
+	`first_name` text(64),
+	`last_name` text(64),
 	`email` text,
 	`email_verified` integer,
 	`image` text,
