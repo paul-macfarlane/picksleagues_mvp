@@ -2,27 +2,27 @@
 
 import { auth } from "@/auth";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
-import { ProfileSetupFormSchema } from "@/models/profile-setup";
+import { UpdateProfileFormSchema } from "@/models/profile";
 import { redirect } from "next/navigation";
 
-export interface ProfileSetupFormState {
+export interface UpdateProfileFormState {
   fields?: Record<string, string>;
   errors?: {
-    submit?: string;
+    form?: string;
     username?: string;
     firstName?: string;
     lastName?: string;
+    imageUrl?: string;
   };
 }
 
-export async function profileSetupAction(
-  _prevState: ProfileSetupFormState,
+export async function updateProfileAction(
+  _prevState: UpdateProfileFormState,
   formData: FormData,
-): Promise<ProfileSetupFormState> {
+): Promise<UpdateProfileFormState> {
   const session = await auth();
   if (!session?.user?.id) {
-    // unauthed users should be redirected to sign up
-    redirect("/auth?defaultTab=signup");
+    redirect("/auth");
   }
 
   const fields: Record<string, string> = {};
@@ -33,34 +33,38 @@ export async function profileSetupAction(
   const dbUser = await getDBUserById(session.user.id);
   if (!dbUser) {
     console.error(
-      `User with id ${session.user.id} from session not found in db`,
+      `User with id ${session.user.id} from session not found in db while updating profile`,
     );
 
     return {
       fields,
       errors: {
-        submit: "An unexpected error occurred. Please try again later.",
+        form: "An unexpected error occurred. Please try again later.",
       },
     };
   }
 
-  const parseRes = ProfileSetupFormSchema.safeParse(
+  const parsed = UpdateProfileFormSchema.safeParse(
     Object.fromEntries(formData),
   );
-  if (!parseRes.success) {
+  if (!parsed.success) {
     return {
       fields,
       errors: {
-        username: parseRes.error.issues
+        username: parsed.error.issues
           .filter((error) => error.path.join(".") === "username")
           .map((error) => error.message)
           .join(", "),
-        firstName: parseRes.error.issues
+        firstName: parsed.error.issues
           .filter((error) => error.path.join(".") === "firstName")
           .map((error) => error.message)
           .join(", "),
-        lastName: parseRes.error.issues
+        lastName: parsed.error.issues
           .filter((error) => error.path.join(".") === "lastName")
+          .map((error) => error.message)
+          .join(", "),
+        imageUrl: parsed.error.issues
+          .filter((error) => error.path.join(".") === "imageUrl")
           .map((error) => error.message)
           .join(", "),
       },
@@ -68,22 +72,25 @@ export async function profileSetupAction(
   }
 
   if (
-    dbUser.username !== parseRes.data.username &&
-    !(await dbUsernameAvailable(parseRes.data.username))
+    dbUser.username !== parsed.data.username &&
+    !(await dbUsernameAvailable(parsed.data.username))
   ) {
     return {
       fields,
       errors: {
-        username: `Username "${parseRes.data.username}" already taken.`,
+        username: `Username "${parsed.data.username}" already taken.`,
       },
     };
   }
 
   await updateDBUser(dbUser.id, {
-    username: parseRes.data.username,
-    firstName: parseRes.data.firstName,
-    lastName: parseRes.data.lastName,
+    username: parsed.data.username,
+    firstName: parsed.data.firstName,
+    lastName: parsed.data.lastName,
+    image: parsed.data.imageUrl,
   });
 
-  redirect("/");
+  return {
+    fields,
+  };
 }
