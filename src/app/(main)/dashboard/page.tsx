@@ -9,7 +9,7 @@ export default async function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background">
+    <div className="min-h-[90vh]">
       <main className="container mx-auto px-4 py-16 text-center">
         <TypographyH3>Dashboard Coming Soon</TypographyH3>
       </main>

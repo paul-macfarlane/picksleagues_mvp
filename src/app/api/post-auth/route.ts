@@ -30,18 +30,39 @@ export async function GET() {
       }
     }
 
+    const nameSplit = session.user.name?.split(" ");
+    let firstName = "First Name";
+    let lastName = "Last Name";
+    if (nameSplit && nameSplit.length > 1) {
+      switch (nameSplit.length) {
+        case 1:
+          firstName = nameSplit[0];
+          break;
+        case 2:
+          firstName = nameSplit[0];
+          lastName = nameSplit[1];
+          break;
+        case 3:
+          firstName = nameSplit[0];
+          lastName = nameSplit[2];
+          break;
+      }
+    }
+
     if (username) {
       await updateDBUser(session.user.id, {
         username,
+        firstName,
+        lastName,
       });
     } else {
-      //this is extremely unlikely to happen, but if it does its fine the user will still be able to set their own username anyways
+      // this is extremely unlikely to happen, but if it does its fine the user will still be able to set their own username anyways
       console.error(
         `Unable to generate unique username for user with id ${dbUser.id}`,
       );
     }
 
-    redirect("/profile-setup");
+    redirect("/profile");
   }
 
   redirect("/");
