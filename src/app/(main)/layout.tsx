@@ -1,5 +1,4 @@
 import Navbar from "@/components/navbar";
-import { Toaster } from "@/components/ui/toaster";
 import { ReactNode } from "react";
 
 export default function MainLayout({
@@ -8,10 +7,12 @@ export default function MainLayout({
   children: ReactNode;
 }>) {
   return (
-    <>
+    <div className="flex h-full flex-col">
       <Navbar />
-      {children}
-      <Toaster />
-    </>
+
+      <div className="h-full bg-gradient-to-b from-primary/20 to-background">
+        {children}
+      </div>
+    </div>
   );
 }

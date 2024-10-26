@@ -22,7 +22,7 @@ export default async function Dashboard() {
   const dbLeaguesForUser = await getDBLeagueDetailsForUser(session.user.id);
 
   return (
-    <div className="container mx-auto h-full space-y-6 p-4">
+    <div className="container mx-auto space-y-6 p-4">
       <Card className="max-w-sm sm:max-w-2xl">
         <CardHeader>
           <CardTitle>Your Leagues</CardTitle>

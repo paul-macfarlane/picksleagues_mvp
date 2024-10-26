@@ -65,4 +65,9 @@
 
 body {
   @apply bg-background text-foreground;
+  height: 100%;
+}
+
+html {
+  height: 100%;
 }
