@@ -8,12 +8,21 @@ import { auth } from "@/auth";
 import UpdateProfileForm from "@/components/forms/update-profile";
 import { redirect } from "next/navigation";
 import { getDBUserById } from "@/db/users";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 
-export default async function Profile() {
+export default async function Profile({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/auth");
   }
+
+  const updateMode = searchParams["mode"] === "signup" ? "signup" : "update";
 
   const dbUser = await getDBUserById(session.user.id);
   if (!dbUser) {
@@ -25,12 +34,15 @@ export default async function Profile() {
   }
 
   return (
-    <div className="container mx-auto flex min-h-[90vh] max-w-2xl items-center justify-center p-4">
+    <div className="container mx-auto flex min-h-[90vh] max-w-2xl flex-col items-center justify-center gap-4 p-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Update Profile</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            {updateMode === "signup" ? "Create" : "Update"} Profile
+          </CardTitle>
           <CardDescription>
-            Update your personal information and profile picture
+            {updateMode === "signup" ? "Set " : "Update "}
+            your personal information and profile picture
           </CardDescription>
         </CardHeader>
 
@@ -41,8 +53,20 @@ export default async function Profile() {
             lastName: dbUser.lastName!,
             imageUrl: dbUser.image ?? undefined,
           }}
+          postSubmitUrl={updateMode === "signup" ? "/dashboard" : undefined}
         />
       </Card>
+
+      {updateMode === "update" ? (
+        <Button asChild variant={"secondary"}>
+          <Link href={"/dashboard"}>
+            <ChevronLeft />
+            Back to Dashboard
+          </Link>
+        </Button>
+      ) : (
+        <></>
+      )}
     </div>
   );
 }

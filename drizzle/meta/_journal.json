@@ -8,6 +8,13 @@
       "when": 1728876898919,
       "tag": "0000_burly_tag",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1729822874306,
+      "tag": "0001_talented_firelord",
+      "breakpoints": true
     }
   ]
 }

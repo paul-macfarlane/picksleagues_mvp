@@ -20,7 +20,7 @@ export default async function Navbar() {
   }
 
   return (
-    <header className="container mx-auto p-4">
+    <header className="mx-auto w-full border-b border-primary p-4">
       <nav className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Link className="group" href={session?.user ? "/dashboard" : "/"}>

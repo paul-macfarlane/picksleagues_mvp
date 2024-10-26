@@ -2,11 +2,10 @@
 
 import { auth } from "@/auth";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
-import { UpdateProfileFormSchema } from "@/models/profile";
+import { UpdateProfileFormSchema } from "@/models/users";
 import { redirect } from "next/navigation";
 
 export interface UpdateProfileFormState {
-  fields?: Record<string, string>;
   errors?: {
     form?: string;
     username?: string;
@@ -25,8 +24,10 @@ export async function updateProfileAction(
     redirect("/auth");
   }
 
+  const formDataObject = Object.fromEntries(formData);
+
   const fields: Record<string, string> = {};
-  for (const key of Object.keys(formData)) {
+  for (const key of Object.keys(formDataObject)) {
     fields[key] = formData.get(key)?.toString() ?? "";
   }
 
@@ -37,19 +38,15 @@ export async function updateProfileAction(
     );
 
     return {
-      fields,
       errors: {
         form: "An unexpected error occurred. Please try again later.",
       },
     };
   }
 
-  const parsed = UpdateProfileFormSchema.safeParse(
-    Object.fromEntries(formData),
-  );
+  const parsed = UpdateProfileFormSchema.safeParse(formDataObject);
   if (!parsed.success) {
     return {
-      fields,
       errors: {
         username: parsed.error.issues
           .filter((error) => error.path.join(".") === "username")
@@ -76,7 +73,6 @@ export async function updateProfileAction(
     !(await dbUsernameAvailable(parsed.data.username))
   ) {
     return {
-      fields,
       errors: {
         username: `Username "${parsed.data.username}" already taken.`,
       },
@@ -90,7 +86,5 @@ export async function updateProfileAction(
     image: parsed.data.imageUrl,
   });
 
-  return {
-    fields,
-  };
+  return {};
 }

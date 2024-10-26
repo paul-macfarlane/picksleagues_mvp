@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Mail } from "lucide-react";
+import { Trophy, Mail, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -29,7 +29,7 @@ export default async function AuthPage({
     searchParams["defaultTab"] === "signup" ? "signup" : "signin";
 
   return (
-    <div className="container mx-auto flex min-h-screen items-center justify-center p-4">
+    <div className="container mx-auto flex min-h-screen flex-col items-center justify-center gap-4 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
@@ -128,12 +128,15 @@ export default async function AuthPage({
             *Sign Up with Email is not currently supported, but may be available
             in the future.
           </p>
-
-          <Link className="text-primary underline hover:opacity-80" href={"/"}>
-            Back to home
-          </Link>
         </CardFooter>
       </Card>
+
+      <Button asChild variant={"secondary"}>
+        <Link href={"/"}>
+          <ChevronLeft />
+          Back to Home
+        </Link>
+      </Button>
     </div>
   );
 }

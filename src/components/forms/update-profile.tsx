@@ -4,10 +4,10 @@ import { CardContent, CardFooter } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { UpdateProfileFormSchema } from "@/models/profile";
+import { UpdateProfileFormSchema } from "@/models/users";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useFormState, useFormStatus } from "react-dom";
-import { updateProfileAction } from "@/actions/profile";
+import { updateProfileAction } from "@/actions/users";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -21,8 +21,8 @@ import {
 } from "../ui/form";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { isUrl } from "@/lib/utils";
 
 type FormSchema = z.infer<typeof UpdateProfileFormSchema>;
 
@@ -33,8 +33,10 @@ function FormContent({
   form: UseFormReturn<FormSchema>;
   errorMessage?: string;
 }) {
-  // inner form is needed because the only way to detect the status of the form is in a child of the form
   const { pending } = useFormStatus();
+
+  const imageUrl = form.watch("imageUrl");
+  const username = form.watch("username");
 
   return (
     <>
@@ -42,11 +44,11 @@ function FormContent({
         <div className="flex items-center space-x-4">
           <Avatar className="h-20 w-20">
             <AvatarImage
-              src={form.getValues("imageUrl")}
+              src={isUrl(imageUrl) ? imageUrl : ""}
               alt={"Your Profile Avatar"}
             />
             <AvatarFallback>
-              {form.getValues("username")?.charAt(0).toUpperCase() ?? "P"}
+              {username.charAt(0).toUpperCase() ?? "A"}
             </AvatarFallback>
           </Avatar>
 
@@ -122,10 +124,6 @@ function FormContent({
         </div>
 
         <p className="text-sm font-medium text-destructive">{errorMessage}</p>
-
-        <Link className="text-primary underline hover:opacity-80" href={"/"}>
-          Go to Dashboard
-        </Link>
       </CardFooter>
     </>
   );
@@ -138,10 +136,12 @@ interface UpdateProfileFormProps {
     lastName: string;
     imageUrl?: string;
   };
+  postSubmitUrl?: string;
 }
 
 export default function UpdateProfileForm({
   defaultValues,
+  postSubmitUrl,
 }: UpdateProfileFormProps) {
   const router = useRouter();
 
@@ -153,7 +153,6 @@ export default function UpdateProfileForm({
       firstName: defaultValues.firstName,
       lastName: defaultValues.lastName,
       imageUrl: defaultValues.imageUrl,
-      ...(formState?.fields ?? {}),
     },
   });
   const formRef = useRef<HTMLFormElement>(null);
@@ -217,6 +216,10 @@ export default function UpdateProfileForm({
               title: "Profile updated",
               description: "Your profile has been successfully updated.",
             });
+
+            if (postSubmitUrl) {
+              router.push(postSubmitUrl);
+            }
 
             // this is a quick hack to get the profile menu to refetched it's data
             // if this ends up causing jank behavior some work can be done to implement a cache and revalidation strategy for the profile menu

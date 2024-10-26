@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { MAX_USERNAME_LENGTH } from "@/constants/users";
+import { MAX_USERNAME_LENGTH } from "@/models/users";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
 import { redirect } from "next/navigation";
 import { generateUsername } from "unique-username-generator";
@@ -62,7 +62,7 @@ export async function GET() {
       );
     }
 
-    redirect("/profile");
+    redirect("/profile?mode=signup");
   }
 
   redirect("/");
