@@ -28,7 +28,7 @@ export default async function CreateLeague() {
             Create a New League
           </CardTitle>
           <CardDescription>
-            Set up your league's details and rules
+            Set up your league&apos;s details and rules
           </CardDescription>
         </CardHeader>
 

@@ -44,7 +44,7 @@ function FormContent({
         <div className="flex items-center space-x-4">
           <Avatar className="h-20 w-20">
             <AvatarImage
-              src={isUrl(imageUrl) ? imageUrl : ""}
+              src={imageUrl && isUrl(imageUrl) ? imageUrl : ""}
               alt={"Your Profile Avatar"}
             />
             <AvatarFallback>

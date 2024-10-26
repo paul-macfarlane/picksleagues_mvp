@@ -204,12 +204,12 @@ function FormContent({
                     <HoverCardContent className="w-80">
                       <ul className="flex list-disc flex-col gap-2 p-2">
                         <li>
-                          Select "Private" to only allow invited users to join
-                          your league.
+                          Select &quot;Private&quot; to only allow invited users
+                          to join your league.
                         </li>
                         <li>
-                          Select "Public" to allow anyone (up to 100 users) to
-                          join your league.
+                          Select &quot;Public&quot; to allow anyone (up to 100
+                          users) to join your league.
                         </li>
                       </ul>
                     </HoverCardContent>
