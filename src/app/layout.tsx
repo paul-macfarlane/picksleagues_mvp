@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import Navbar from "@/components/navbar";
 
 export const metadata: Metadata = {
   title: "Picks Leagues",
@@ -24,7 +25,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <div className="flex h-full flex-col">
+            <Navbar />
+
+            <div className="h-full bg-gradient-to-b from-primary/20 to-background p-4">
+              {children}
+            </div>
+          </div>
           <Toaster />
         </ThemeProvider>
       </body>

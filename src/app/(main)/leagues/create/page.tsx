@@ -21,7 +21,7 @@ export default async function CreateLeague() {
   const dbSportDetails = await getAllDBSportsWithActiveSeason();
 
   return (
-    <div className="container mx-auto flex flex-col items-center justify-center gap-4 px-4 py-8">
+    <div className="container mx-auto flex flex-col items-center justify-center gap-4">
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">

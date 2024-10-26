@@ -34,7 +34,7 @@ export default async function Profile({
   }
 
   return (
-    <div className="container mx-auto flex min-h-[90vh] max-w-2xl flex-col items-center justify-center gap-4 p-4">
+    <div className="container mx-auto flex max-w-2xl flex-col items-center justify-center gap-4">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold">

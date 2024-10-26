@@ -29,7 +29,7 @@ export default async function AuthPage({
     searchParams["defaultTab"] === "signup" ? "signup" : "signin";
 
   return (
-    <div className="container mx-auto flex min-h-screen flex-col items-center justify-center gap-4 p-4">
+    <div className="container mx-auto flex flex-col items-center justify-center gap-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">

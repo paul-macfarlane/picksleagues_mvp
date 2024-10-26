@@ -18,8 +18,8 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background">
-      <main className="container mx-auto px-4 py-16 text-center">
+    <div>
+      <main className="container mx-auto px-2 py-8 text-center sm:px-4 sm:py-16">
         <h1 className="mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
           Compete with Friends in Sports Predictions
         </h1>
