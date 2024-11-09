@@ -1,9 +1,6 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -17,18 +14,19 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import FilterLeaguesForm from "@/components/forms/filter-leagues";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getAllDBSportsWithActiveSeason } from "@/db/sports";
 import { filterDBLeagues } from "@/db/leagues";
-import { isUrl } from "@/lib/utils";
 import { z } from "zod";
 import {
+  MAX_LEAGUE_SIZE,
   MAX_PICKS_PER_WEEK,
+  MIN_LEAGUE_SIZE,
   MIN_PICKS_PER_WEEK,
   PickTypes,
 } from "@/models/leagues";
+import { JoinLeagueForm } from "@/components/forms/join-league";
 
 const maxVisiblePages = 5;
 const pageSize = 6;
@@ -149,13 +147,25 @@ export default async function JoinLeagues({
 
   let picksPerWeek: number | undefined;
   if (searchParams["picksPerWeek"]) {
-    const parseMinPicks = z.coerce
+    const parsePicks = z.coerce
       .number()
       .min(MIN_PICKS_PER_WEEK)
       .max(MAX_PICKS_PER_WEEK)
       .safeParse(searchParams["picksPerWeek"]);
-    if (parseMinPicks.success) {
-      picksPerWeek = parseMinPicks.data;
+    if (parsePicks.success) {
+      picksPerWeek = parsePicks.data;
+    }
+  }
+
+  let size: number | undefined;
+  if (searchParams["size"]) {
+    const parseSize = z.coerce
+      .number()
+      .min(MIN_LEAGUE_SIZE)
+      .max(MAX_LEAGUE_SIZE)
+      .safeParse(searchParams["size"]);
+    if (parseSize.success) {
+      size = parseSize.data;
     }
   }
 
@@ -166,6 +176,7 @@ export default async function JoinLeagues({
       picksPerWeek,
       startWeekId,
       endWeekId,
+      size,
     },
     session.user.id,
     pageSize,
@@ -192,36 +203,7 @@ export default async function JoinLeagues({
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {leagues.map((league) => (
-          <Card key={league.id}>
-            <CardHeader>
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage
-                    src={
-                      league.logoUrl && isUrl(league.logoUrl)
-                        ? league.logoUrl
-                        : ""
-                    }
-                    alt={league.name}
-                  />
-                  <AvatarFallback>{league.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle>{league.name}</CardTitle>
-                  <CardDescription>{league.sportName}</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Pick type: {league.pickType}</p>
-              <p>Start week: {league.startWeekName}</p>
-              <p>End week: {league.endWeekName}</p>
-              <p>Picks per week: {league.picksPerWeek}</p>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full">Join League</Button>
-            </CardFooter>
-          </Card>
+          <JoinLeagueForm key={league.id} league={league} />
         ))}
       </div>
 

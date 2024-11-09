@@ -13,11 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DBSportWeek, DBSportWithActiveSeasonDetail } from "@/db/sports";
-import {
-  MAX_PICKS_PER_WEEK,
-  MIN_PICKS_PER_WEEK,
-  PICK_TYPE_VALUES,
-} from "@/models/leagues";
+import { PICK_TYPE_VALUES } from "@/models/leagues";
 import {
   Form,
   FormControl,
@@ -34,6 +30,7 @@ interface FilterFormData {
   picksPerWeek?: number;
   startWeekId: string;
   endWeekId: string;
+  size?: number;
 }
 
 export default function FilterLeaguesForm({
@@ -59,6 +56,7 @@ export default function FilterLeaguesForm({
 
   // need to track this state outside of react hook form so that values can be set and reset
   const [picksPerWeek, setPicksPerWeek] = useState<number | undefined>();
+  const [size, setSize] = useState<number | undefined>();
   const [sportWeeks, setSportWeeks] = useState<DBSportWeek[]>([]);
   const [startWeekId, setStartWeekId] = useState<string | undefined>();
   const [endWeekId, setEndWeekId] = useState<string | undefined>();
@@ -206,29 +204,51 @@ export default function FilterLeaguesForm({
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="picksPerWeek"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Picks Per Week</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    value={picksPerWeek ?? ""}
-                    onChange={(value) => {
-                      field.onChange(value.target.valueAsNumber);
-                      setPicksPerWeek(value.target.valueAsNumber);
-                    }}
-                    min={MIN_PICKS_PER_WEEK}
-                    max={MAX_PICKS_PER_WEEK}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="picksPerWeek"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Picks Per Week</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      value={picksPerWeek ?? ""}
+                      onChange={(value) => {
+                        field.onChange(value.target.valueAsNumber);
+                        setPicksPerWeek(value.target.valueAsNumber);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="size"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Size</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      value={size ?? ""}
+                      onChange={(value) => {
+                        field.onChange(value.target.valueAsNumber);
+                        setSize(value.target.valueAsNumber);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-8">
@@ -251,6 +271,9 @@ export default function FilterLeaguesForm({
 
               form.setValue("picksPerWeek", undefined);
               setPicksPerWeek(undefined);
+
+              form.setValue("size", undefined);
+              setSize(undefined);
 
               router.push("/leagues/join");
             }}

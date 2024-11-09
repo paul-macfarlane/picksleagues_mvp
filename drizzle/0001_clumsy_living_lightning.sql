@@ -31,6 +31,7 @@ CREATE TABLE `leagues` (
 	`picks_per_week` integer NOT NULL,
 	`pick_type` text(64) NOT NULL,
 	`league_visibility` text NOT NULL,
+	`size` integer NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`sport_id`) REFERENCES `sports`(`id`) ON UPDATE no action ON DELETE cascade

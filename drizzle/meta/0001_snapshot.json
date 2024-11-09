@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "8d9f6407-9779-43f9-a732-62d923a5db9f",
+  "id": "74448793-7b1e-49c1-92fc-666269ab6554",
   "prevId": "0fda648c-5aba-4769-ad59-163d0cc1575a",
   "tables": {
     "accounts": {
@@ -107,15 +107,22 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "accounts_provider_provider_account_id_pk": {
-          "columns": ["provider", "provider_account_id"],
+          "columns": [
+            "provider",
+            "provider_account_id"
+          ],
           "name": "accounts_provider_provider_account_id_pk"
         }
       },
@@ -200,7 +207,9 @@
       "indexes": {
         "authenticators_credential_id_unique": {
           "name": "authenticators_credential_id_unique",
-          "columns": ["credential_id"],
+          "columns": [
+            "credential_id"
+          ],
           "isUnique": true
         }
       },
@@ -209,15 +218,22 @@
           "name": "authenticators_user_id_users_id_fk",
           "tableFrom": "authenticators",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "authenticators_user_id_credential_id_pk": {
-          "columns": ["user_id", "credential_id"],
+          "columns": [
+            "user_id",
+            "credential_id"
+          ],
           "name": "authenticators_user_id_credential_id_pk"
         }
       },
@@ -270,8 +286,12 @@
           "name": "league_members_user_id_users_id_fk",
           "tableFrom": "league_members",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -279,8 +299,12 @@
           "name": "league_members_league_id_leagues_id_fk",
           "tableFrom": "league_members",
           "tableTo": "leagues",
-          "columnsFrom": ["league_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "league_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -356,8 +380,12 @@
           "name": "league_seasons_league_id_leagues_id_fk",
           "tableFrom": "league_seasons",
           "tableTo": "leagues",
-          "columnsFrom": ["league_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "league_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -365,8 +393,12 @@
           "name": "league_seasons_sport_season_id_sport_seasons_id_fk",
           "tableFrom": "league_seasons",
           "tableTo": "sport_seasons",
-          "columnsFrom": ["sport_season_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "sport_season_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -374,8 +406,12 @@
           "name": "league_seasons_start_sport_week_id_sport_weeks_id_fk",
           "tableFrom": "league_seasons",
           "tableTo": "sport_weeks",
-          "columnsFrom": ["start_sport_week_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "start_sport_week_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -383,8 +419,12 @@
           "name": "league_seasons_end_sport_week_id_sport_weeks_id_fk",
           "tableFrom": "league_seasons",
           "tableTo": "sport_weeks",
-          "columnsFrom": ["end_sport_week_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "end_sport_week_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -444,6 +484,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "size": {
+          "name": "size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -467,8 +514,12 @@
           "name": "leagues_sport_id_sports_id_fk",
           "tableFrom": "leagues",
           "tableTo": "sports",
-          "columnsFrom": ["sport_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "sport_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -523,8 +574,12 @@
           "name": "sessions_userId_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -600,8 +655,12 @@
           "name": "sport_seasons_sport_id_sports_id_fk",
           "tableFrom": "sport_seasons",
           "tableTo": "sports",
-          "columnsFrom": ["sport_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "sport_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -686,8 +745,12 @@
           "name": "sport_weeks_season_id_sport_seasons_id_fk",
           "tableFrom": "sport_weeks",
           "tableTo": "sport_seasons",
-          "columnsFrom": ["season_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "season_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -820,12 +883,16 @@
       "indexes": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "columns": ["email"],
+          "columns": [
+            "email"
+          ],
           "isUnique": true
         },
         "users_username_unique": {
           "name": "users_username_unique",
-          "columns": ["username"],
+          "columns": [
+            "username"
+          ],
           "isUnique": true
         }
       },
@@ -878,7 +945,10 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "verification_tokens_identifier_token_pk": {
-          "columns": ["identifier", "token"],
+          "columns": [
+            "identifier",
+            "token"
+          ],
           "name": "verification_tokens_identifier_token_pk"
         }
       },

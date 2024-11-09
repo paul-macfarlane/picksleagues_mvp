@@ -204,6 +204,7 @@ export const leagues = sqliteTable("leagues", {
   picksPerWeek: integer("picks_per_week").notNull(),
   pickType: text("pick_type", { length: 64 }).notNull(),
   leagueVisibility: text("league_visibility").notNull(),
+  size: integer("size").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

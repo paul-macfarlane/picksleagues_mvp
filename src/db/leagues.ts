@@ -6,12 +6,19 @@ import {
   leagueSeasons,
   sports,
   sportWeeks,
-  users,
 } from "./schema";
 import { Transaction as DBTransaction } from "./util";
-import { aliasedTable, and, eq, gte, isNull, lte, sql } from "drizzle-orm";
+import {
+  aliasedTable,
+  and,
+  eq,
+  getTableColumns,
+  gte,
+  isNull,
+  sql,
+} from "drizzle-orm";
 
-interface DBLeague {
+export interface DBLeague {
   id: string;
   name: string;
   logoUrl: string | null;
@@ -21,6 +28,7 @@ interface DBLeague {
   picksPerWeek: number;
   pickType: string;
   leagueVisibility: string;
+  size: number;
 }
 
 interface CreateDBLeague {
@@ -30,6 +38,7 @@ interface CreateDBLeague {
   picksPerWeek: number;
   pickType: PickTypes;
   leagueVisibility: LeagueVisibilities;
+  size: number;
 }
 
 export async function createDBLeague(
@@ -133,11 +142,13 @@ interface filterDBLeaguesParams {
   picksPerWeek?: number;
   startWeekId?: string;
   endWeekId?: string;
+  size?: number;
 }
 
-interface DBLeagueDetailsWithWeek extends DBLeagueDetails {
+export interface DBLeagueDetailsWithWeek extends DBLeagueDetails {
   startWeekName: string;
   endWeekName: string;
+  memberCount: number;
 }
 
 export async function filterDBLeagues(
@@ -183,11 +194,23 @@ export async function filterDBLeagues(
   if (params.picksPerWeek) {
     whereClauses.push(eq(leagues.picksPerWeek, params.picksPerWeek));
   }
+  if (params.size) {
+    whereClauses.push(eq(leagues.size, params.size));
+  }
+
+  const otherMembersAlias = aliasedTable(leagueMembers, "otherMembers");
 
   const whereClause = and(...whereClauses);
 
   const queryRows = await db
-    .select()
+    .select({
+      leagues: getTableColumns(leagues),
+      sports: getTableColumns(sports),
+      startWeeks: getTableColumns(startWeeksAlias),
+      endWeeks: getTableColumns(endWeeksAlias),
+      otherMembers: getTableColumns(otherMembersAlias),
+      memberCount: sql<number>`cast(count(${otherMembersAlias.userId}) as int)`,
+    })
     .from(leagues)
     .innerJoin(sports, sportsJoin)
     .innerJoin(
@@ -199,6 +222,7 @@ export async function filterDBLeagues(
     )
     .innerJoin(startWeeksAlias, startWeekJoinClause)
     .innerJoin(endWeeksAlias, endWeekJoinClause)
+    .leftJoin(otherMembersAlias, eq(otherMembersAlias.leagueId, leagues.id))
     .leftJoin(
       leagueMembers,
       and(
@@ -207,14 +231,17 @@ export async function filterDBLeagues(
       ),
     )
     .where(whereClause)
+    .groupBy(leagues.id)
+    .having(sql`count(${otherMembersAlias.userId}) < ${leagues.size}`)
     .limit(limit)
     .offset(offset);
 
-  const leagueDetails = queryRows.map((row: any) => ({
+  const leagueDetails = queryRows.map((row) => ({
     ...row.leagues,
     sportName: row.sports.name,
-    startWeekName: row.startWeeks.name as string,
-    endWeekName: row.endWeeks.name as string,
+    startWeekName: row.startWeeks.name,
+    endWeekName: row.endWeeks.name,
+    memberCount: row.memberCount,
   }));
 
   const countQueryRes = await db
@@ -230,6 +257,7 @@ export async function filterDBLeagues(
     )
     .innerJoin(startWeeksAlias, startWeekJoinClause)
     .innerJoin(endWeeksAlias, endWeekJoinClause)
+    .leftJoin(otherMembersAlias, eq(otherMembersAlias.leagueId, leagues.id))
     .leftJoin(
       leagueMembers,
       and(
@@ -237,11 +265,22 @@ export async function filterDBLeagues(
         eq(leagueMembers.leagueId, leagues.id),
       ),
     )
-    .where(whereClause);
-  const count = countQueryRes[0].count;
+    .where(whereClause)
+    .groupBy(leagues.id)
+    .having(sql`count(${otherMembersAlias.userId}) < ${leagues.size}`);
+  const count = countQueryRes.length > 0 ? countQueryRes[0].count : 0;
 
   return {
     leagues: leagueDetails,
     total: count,
   };
+}
+
+export async function getDBLeagueById(id: string): Promise<DBLeague | null> {
+  const queryRows = await db.select().from(leagues).where(eq(leagues.id, id));
+  if (!queryRows.length) {
+    return null;
+  }
+
+  return queryRows[0];
 }
