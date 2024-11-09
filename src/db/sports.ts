@@ -55,7 +55,7 @@ export async function getAllDBSportsWithActiveSeason(): Promise<
       sportWeeks,
       and(
         eq(sportSeasons.id, sportWeeks.seasonId),
-        gte(sportWeeks.endTime, new Date()),
+        gte(sportWeeks.startTime, new Date()),
       ),
     );
   if (!queryRows.length) {

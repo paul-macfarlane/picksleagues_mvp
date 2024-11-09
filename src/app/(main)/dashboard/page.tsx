@@ -71,9 +71,11 @@ export default async function Dashboard() {
             </Link>
           </Button>
 
-          <Button>
-            <CircleArrowRight className="mr-2 h-4 w-4" />
-            Join League
+          <Button asChild>
+            <Link href={"/leagues/join"}>
+              <CircleArrowRight className="mr-2 h-4 w-4" />
+              Join League
+            </Link>
           </Button>
         </CardFooter>
       </Card>

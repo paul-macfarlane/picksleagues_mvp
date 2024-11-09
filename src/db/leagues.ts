@@ -1,8 +1,15 @@
 import { LeagueVisibilities, PickTypes } from "@/models/leagues";
 import { db } from "./client";
-import { leagueMembers, leagues, leagueSeasons, sports } from "./schema";
+import {
+  leagueMembers,
+  leagues,
+  leagueSeasons,
+  sports,
+  sportWeeks,
+  users,
+} from "./schema";
 import { Transaction as DBTransaction } from "./util";
-import { eq } from "drizzle-orm";
+import { aliasedTable, and, eq, gte, isNull, lte, sql } from "drizzle-orm";
 
 interface DBLeague {
   id: string;
@@ -118,4 +125,123 @@ export async function getDBLeagueDetailsForUser(
     ...row.leagues,
     sportName: row.sports.name,
   }));
+}
+
+interface filterDBLeaguesParams {
+  sportId?: string;
+  pickType?: string;
+  picksPerWeek?: number;
+  startWeekId?: string;
+  endWeekId?: string;
+}
+
+interface DBLeagueDetailsWithWeek extends DBLeagueDetails {
+  startWeekName: string;
+  endWeekName: string;
+}
+
+export async function filterDBLeagues(
+  params: filterDBLeaguesParams,
+  userId: string,
+  limit: number,
+  offset: number,
+): Promise<{
+  leagues: DBLeagueDetailsWithWeek[];
+  total: number;
+}> {
+  const sportsJoin = params.sportId
+    ? and(eq(leagues.sportId, sports.id), eq(sports.id, params.sportId))
+    : eq(leagues.sportId, sports.id);
+
+  const startWeeksAlias = aliasedTable(sportWeeks, "startWeeks");
+  let startWeekJoinClauses = [
+    eq(startWeeksAlias.id, leagueSeasons.startSportWeekId),
+    gte(startWeeksAlias.startTime, new Date()),
+  ];
+  if (params.startWeekId) {
+    startWeekJoinClauses.push(eq(startWeeksAlias.id, params.startWeekId));
+  }
+  const startWeekJoinClause = and(...startWeekJoinClauses);
+
+  const endWeeksAlias = aliasedTable(sportWeeks, "endWeeks");
+  let endWeekJoinClauses = [
+    eq(endWeeksAlias.id, leagueSeasons.endSportWeekId),
+    gte(endWeeksAlias.startTime, new Date()),
+  ];
+  if (params.endWeekId) {
+    endWeekJoinClauses.push(eq(endWeeksAlias.id, params.endWeekId));
+  }
+  const endWeekJoinClause = and(...endWeekJoinClauses);
+
+  const whereClauses = [
+    eq(leagues.leagueVisibility, LeagueVisibilities.LEAGUE_VISIBILITY_PUBLIC),
+    isNull(leagueMembers.leagueId),
+  ];
+  if (params.pickType) {
+    whereClauses.push(eq(leagues.pickType, params.pickType));
+  }
+  if (params.picksPerWeek) {
+    whereClauses.push(eq(leagues.picksPerWeek, params.picksPerWeek));
+  }
+
+  const whereClause = and(...whereClauses);
+
+  const queryRows = await db
+    .select()
+    .from(leagues)
+    .innerJoin(sports, sportsJoin)
+    .innerJoin(
+      leagueSeasons,
+      and(
+        eq(leagues.id, leagueSeasons.leagueId),
+        eq(leagueSeasons.active, true),
+      ),
+    )
+    .innerJoin(startWeeksAlias, startWeekJoinClause)
+    .innerJoin(endWeeksAlias, endWeekJoinClause)
+    .leftJoin(
+      leagueMembers,
+      and(
+        eq(leagueMembers.userId, userId),
+        eq(leagueMembers.leagueId, leagues.id),
+      ),
+    )
+    .where(whereClause)
+    .limit(limit)
+    .offset(offset);
+
+  const leagueDetails = queryRows.map((row: any) => ({
+    ...row.leagues,
+    sportName: row.sports.name,
+    startWeekName: row.startWeeks.name as string,
+    endWeekName: row.endWeeks.name as string,
+  }));
+
+  const countQueryRes = await db
+    .select({ count: sql`count(*)`.mapWith(Number) })
+    .from(leagues)
+    .innerJoin(sports, sportsJoin)
+    .innerJoin(
+      leagueSeasons,
+      and(
+        eq(leagues.id, leagueSeasons.leagueId),
+        eq(leagueSeasons.active, true),
+      ),
+    )
+    .innerJoin(startWeeksAlias, startWeekJoinClause)
+    .innerJoin(endWeeksAlias, endWeekJoinClause)
+    .leftJoin(
+      leagueMembers,
+      and(
+        eq(leagueMembers.userId, userId),
+        eq(leagueMembers.leagueId, leagues.id),
+      ),
+    )
+    .where(whereClause);
+  const count = countQueryRes[0].count;
+
+  return {
+    leagues: leagueDetails,
+    total: count,
+  };
 }
