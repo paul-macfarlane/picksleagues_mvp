@@ -5,6 +5,7 @@ import {
   createDBLeague,
   createDBLeagueMember,
   createDBLeagueSeason,
+  getDBLeagueByIdWithMemberCount,
 } from "@/db/leagues";
 import {
   getActiveSeasonForSport,
@@ -13,7 +14,12 @@ import {
 } from "@/db/sports";
 import { getDBUserById } from "@/db/users";
 import { withTransaction } from "@/db/util";
-import { CreateLeagueSchema, LeagueMemberRoles } from "@/models/leagues";
+import {
+  CreateLeagueSchema,
+  JoinLeagueSchema,
+  LeagueMemberRoles,
+  LeagueVisibilities,
+} from "@/models/leagues";
 import { redirect } from "next/navigation";
 
 export interface CreateLeagueFormState {
@@ -27,6 +33,7 @@ export interface CreateLeagueFormState {
     startWeekId?: string;
     endWeekId?: string;
     leagueVisibility?: string;
+    size?: string;
   };
 }
 
@@ -42,7 +49,7 @@ export async function createLeagueAction(
   const dbUser = await getDBUserById(session.user.id);
   if (!dbUser) {
     console.error(
-      `User with id ${session.user.id} from session not found in db while updating profile`,
+      `User with id ${session.user.id} from session not found in db while creating league`,
     );
 
     return {
@@ -86,6 +93,10 @@ export async function createLeagueAction(
           .join(", "),
         endWeekId: parsed.error.issues
           .filter((error) => error.path.join(".") === "endWeekId")
+          .map((error) => error.message)
+          .join(", "),
+        size: parsed.error.issues
+          .filter((error) => error.path.join(".") === "size")
           .map((error) => error.message)
           .join(", "),
       },
@@ -151,6 +162,7 @@ export async function createLeagueAction(
         picksPerWeek: parsed.data.picksPerWeek,
         pickType: parsed.data.pickType,
         leagueVisibility: parsed.data.leagueVisibility,
+        size: parsed.data.size,
       };
       const dbLeague = await createDBLeague(createDBLeagueData, tx);
       if (!dbLeague) {
@@ -182,7 +194,7 @@ export async function createLeagueAction(
       const createDBLeagueMemberData = {
         userId: dbUser.id,
         leagueId: dbLeague.id,
-        role: LeagueMemberRoles.MEMBER,
+        role: LeagueMemberRoles.COMMISSIONER,
       };
       const dbLeagueMember = await createDBLeagueMember(
         createDBLeagueMemberData,
@@ -194,7 +206,7 @@ export async function createLeagueAction(
           createDBLeagueMemberData,
         );
 
-        throw new Error("Unable to create league season");
+        throw new Error("Unable to create league member");
       }
     });
   } catch (e: unknown) {
@@ -205,6 +217,99 @@ export async function createLeagueAction(
     return {
       errors: {
         form: "Unable to create league at this time. Please try again later.",
+      },
+    };
+  }
+
+  return {};
+}
+
+interface JoinLeagueActionFormState {
+  errors?: {
+    leagueId?: string;
+    form?: string;
+  };
+}
+
+export async function joinLeagueAction(
+  _prevState: JoinLeagueActionFormState,
+  formData: FormData,
+): Promise<JoinLeagueActionFormState> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth");
+  }
+
+  const dbUser = await getDBUserById(session.user.id);
+  if (!dbUser) {
+    console.error(
+      `User with id ${session.user.id} from session not found in db while joining league`,
+    );
+
+    return {
+      errors: {
+        form: "An unexpected error occurred. Please try again later.",
+      },
+    };
+  }
+
+  const parsed = JoinLeagueSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return {
+      errors: {
+        leagueId: parsed.error.issues
+          .filter((error) => error.path.join(".") === "leagueId")
+          .map((error) => error.message)
+          .join(", "),
+      },
+    };
+  }
+
+  const dbLeague = await getDBLeagueByIdWithMemberCount(parsed.data.leagueId);
+  if (!dbLeague) {
+    return {
+      errors: {
+        leagueId: "League not found",
+      },
+    };
+  }
+
+  if (
+    dbLeague.leagueVisibility !== LeagueVisibilities.LEAGUE_VISIBILITY_PUBLIC
+  ) {
+    return {
+      errors: {
+        leagueId: "League cannot be joined without invite",
+      },
+    };
+  }
+
+  if (dbLeague.memberCount >= dbLeague.size) {
+    return {
+      errors: {
+        leagueId: "League cannot be joined because it is full",
+      },
+    };
+  }
+
+  const createDBLeagueMemberData = {
+    userId: dbUser.id,
+    leagueId: parsed.data.leagueId,
+    role: LeagueMemberRoles.MEMBER,
+  };
+  const dbLeagueMember = await createDBLeagueMember(
+    createDBLeagueMemberData,
+    undefined,
+  );
+  if (!dbLeagueMember) {
+    console.error(
+      "Unable to create league member with ",
+      createDBLeagueMemberData,
+    );
+
+    return {
+      errors: {
+        form: "An unexpected error occured. Please try again later.",
       },
     };
   }

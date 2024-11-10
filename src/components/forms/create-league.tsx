@@ -15,11 +15,10 @@ import { DBSportWeek, DBSportWithActiveSeasonDetail } from "@/db/sports";
 import { useFormState, useFormStatus } from "react-dom";
 import {
   CreateLeagueSchema,
+  DEFAULT_LEAGUE_SIZE,
   DEFAULT_PICKS_PER_WEEK,
   LEAGUE_VISIBILITY_VALUES,
   LeagueVisibilities,
-  MAX_PICKS_PER_WEEK,
-  MIN_PICKS_PER_WEEK,
   PICK_TYPE_VALUES,
   PickTypes,
 } from "@/models/leagues";
@@ -76,12 +75,14 @@ function FormContent({
   defaultSportWeeks,
   defaultStartWeekId,
   defaultEndWeekId,
+  errorMessage,
 }: {
   form: UseFormReturn<FormSchema>;
   sports: DBSportWithActiveSeasonDetail[];
   defaultSportWeeks: DBSportWeek[];
   defaultStartWeekId: string;
   defaultEndWeekId: string;
+  errorMessage: string;
 }) {
   const { pending } = useFormStatus();
 
@@ -280,8 +281,6 @@ function FormContent({
                     onChange={(value) => {
                       field.onChange(value.target.valueAsNumber);
                     }}
-                    min={MIN_PICKS_PER_WEEK}
-                    max={MAX_PICKS_PER_WEEK}
                   />
                 </FormControl>
                 <FormMessage />
@@ -357,12 +356,38 @@ function FormContent({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="size"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormLabel>Size</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  {...field}
+                  onChange={(value) => {
+                    field.onChange(value.target.valueAsNumber);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </CardContent>
 
-      <CardFooter>
-        <Button disabled={pending} type="submit">
+      <CardFooter className="flex flex-col gap-4">
+        <Button className="w-full" disabled={pending} type="submit">
           Create League
         </Button>
+
+        {errorMessage ? (
+          <p className="text-sm font-medium text-destructive">{errorMessage}</p>
+        ) : (
+          <></>
+        )}
       </CardFooter>
     </>
   );
@@ -394,6 +419,7 @@ export function CreateLeagueForm({
       picksPerWeek: DEFAULT_PICKS_PER_WEEK,
       startWeekId: defaultStartWeekId,
       endWeekId: defaultEndWeekId,
+      size: DEFAULT_LEAGUE_SIZE,
     },
   });
   const formRef = useRef<HTMLFormElement>(null);
@@ -470,6 +496,13 @@ export function CreateLeagueForm({
                 });
               }
 
+              if (actionResponse?.errors?.size) {
+                form.setError("size", {
+                  type: "custom",
+                  message: actionResponse.errors.size,
+                });
+              }
+
               return;
             }
 
@@ -489,6 +522,7 @@ export function CreateLeagueForm({
           defaultSportWeeks={sports.length > 0 ? sports[0].season.weeks : []}
           defaultStartWeekId={defaultStartWeekId}
           defaultEndWeekId={defaultEndWeekId}
+          errorMessage={formState.errors?.form ?? ""}
         />
       </form>
     </Form>

@@ -8,6 +8,14 @@ const PICKS_PER_WEEK_NUMBER_ERROR = `Must be a number greater than or equal to $
 const MIN_PICKS_PER_WEEK_ERROR = `Must be a number greater than or equal to ${MIN_PICKS_PER_WEEK}`;
 const MAX_PICKS_PER_WEEK_ERROR = `Must be a number less than or equal to ${MAX_PICKS_PER_WEEK}`;
 
+export const MIN_LEAGUE_SIZE = 6;
+export const MAX_LEAGUE_SIZE = 20;
+export const DEFAULT_LEAGUE_SIZE = 10;
+
+const LEAGUE_SIZE_NUMBER_ERROR = `Must be a number greater than or equal to ${MIN_LEAGUE_SIZE} and must be a number less than or equal to ${MAX_LEAGUE_SIZE}`;
+const MIN_LEAGUE_SIZE_ERROR = `Must be a number greater than or equal to ${MIN_LEAGUE_SIZE}`;
+const MAX_LEAGUE_SIZE_ERROR = `Must be a number less than or equal to ${MAX_LEAGUE_SIZE}`;
+
 export enum PickTypes {
   PICK_TYPE_AGAINST_THE_SPREAD = "Against the Spread",
   PICK_TYPE_STRAIGHT_UP = "Straight Up",
@@ -65,6 +73,20 @@ export const CreateLeagueSchema = z.object({
   ]),
   startWeekId: z.string().trim().uuid(),
   endWeekId: z.string().trim().uuid(),
+  size: z.union([
+    z
+      .number({
+        message: LEAGUE_SIZE_NUMBER_ERROR,
+      })
+      .min(MIN_LEAGUE_SIZE, MIN_LEAGUE_SIZE_ERROR)
+      .max(MAX_LEAGUE_SIZE, MAX_LEAGUE_SIZE_ERROR),
+    z.coerce
+      .number({
+        message: LEAGUE_SIZE_NUMBER_ERROR,
+      })
+      .min(MIN_LEAGUE_SIZE, MIN_LEAGUE_SIZE_ERROR)
+      .max(MAX_LEAGUE_SIZE, MAX_LEAGUE_SIZE_ERROR),
+  ]),
 });
 
 export enum LeagueMemberRoles {
@@ -73,3 +95,7 @@ export enum LeagueMemberRoles {
 }
 
 export const LEAGUE_MEMBER_ROLE_VALUES = Object.values(LeagueMemberRoles);
+
+export const JoinLeagueSchema = z.object({
+  leagueId: z.string().trim().uuid(),
+});
