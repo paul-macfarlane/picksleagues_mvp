@@ -5,7 +5,7 @@ import {
   createDBLeague,
   createDBLeagueMember,
   createDBLeagueSeason,
-  getDBLeagueById,
+  getDBLeagueByIdWithMemberCount,
 } from "@/db/leagues";
 import {
   getActiveSeasonForSport,
@@ -265,7 +265,7 @@ export async function joinLeagueAction(
     };
   }
 
-  const dbLeague = await getDBLeagueById(parsed.data.leagueId);
+  const dbLeague = await getDBLeagueByIdWithMemberCount(parsed.data.leagueId);
   if (!dbLeague) {
     return {
       errors: {
@@ -280,6 +280,14 @@ export async function joinLeagueAction(
     return {
       errors: {
         leagueId: "League cannot be joined without invite",
+      },
+    };
+  }
+
+  if (dbLeague.memberCount >= dbLeague.size) {
+    return {
+      errors: {
+        leagueId: "League cannot be joined because it is full",
       },
     };
   }

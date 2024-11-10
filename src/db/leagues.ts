@@ -276,11 +276,28 @@ export async function filterDBLeagues(
   };
 }
 
-export async function getDBLeagueById(id: string): Promise<DBLeague | null> {
-  const queryRows = await db.select().from(leagues).where(eq(leagues.id, id));
+interface DBLeagueWithMemberCount extends DBLeague {
+  memberCount: number;
+}
+
+export async function getDBLeagueByIdWithMemberCount(
+  id: string,
+): Promise<DBLeagueWithMemberCount | null> {
+  const queryRows = await db
+    .select({
+      leagues: getTableColumns(leagues),
+      memberCount: sql<number>`cast(count(${leagueMembers.userId}) as int)`,
+    })
+    .from(leagues)
+    .leftJoin(leagueMembers, eq(leagueMembers.leagueId, leagues.id))
+    .where(eq(leagues.id, id))
+    .groupBy(leagues.id);
   if (!queryRows.length) {
     return null;
   }
 
-  return queryRows[0];
+  return {
+    ...queryRows[0].leagues,
+    memberCount: queryRows[0].memberCount,
+  };
 }
