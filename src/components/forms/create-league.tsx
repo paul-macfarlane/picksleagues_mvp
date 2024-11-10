@@ -209,8 +209,8 @@ function FormContent({
                           to join your league.
                         </li>
                         <li>
-                          Select &quot;Public&quot; to allow anyone (up to 100
-                          users) to join your league.
+                          Select &quot;Public&quot; to allow anyone with a Picks
+                          Leagues account to join your league.
                         </li>
                       </ul>
                     </HoverCardContent>
