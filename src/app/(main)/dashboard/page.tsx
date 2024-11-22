@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getDBLeagueDetailsForUser } from "@/db/leagues";
+import { getLeagueHomeUrl } from "@/models/leagues";
 import { ChevronRight, CircleArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -23,7 +24,7 @@ export default async function Dashboard() {
 
   return (
     <div className="container mx-auto space-y-6">
-      <Card className="max-w-sm sm:max-w-2xl">
+      <Card>
         <CardHeader>
           <CardTitle>Your Leagues</CardTitle>
         </CardHeader>
@@ -33,26 +34,31 @@ export default async function Dashboard() {
               dbLeaguesForUser.map((leagueDetail) => (
                 <li key={leagueDetail.id}>
                   <Button
+                    asChild
                     variant="ghost"
-                    className="flex w-full items-center justify-between p-2 pl-0"
+                    className="flex w-full items-center justify-between px-0 py-2"
                   >
-                    <div className="flex items-center space-x-3">
-                      <Avatar>
-                        <AvatarImage
-                          src={leagueDetail.logoUrl ?? ""}
-                          alt={leagueDetail.name}
-                        />
-                        <AvatarFallback>{leagueDetail.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col items-start">
-                        <p className="font-medium">{leagueDetail.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {leagueDetail.sportName} • {leagueDetail.pickType}
-                        </p>
+                    <Link href={getLeagueHomeUrl(leagueDetail.id)}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="hidden md:block">
+                          <AvatarImage
+                            src={leagueDetail.logoUrl ?? ""}
+                            alt={leagueDetail.name}
+                          />
+                          <AvatarFallback>
+                            {leagueDetail.name[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col items-start">
+                          <p className="font-medium">{leagueDetail.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {leagueDetail.sportName} • {leagueDetail.pickType}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
                   </Button>
                 </li>
               ))
@@ -64,16 +70,16 @@ export default async function Dashboard() {
           </ul>
         </CardContent>
 
-        <CardFooter className="flex gap-4">
-          <Button asChild>
+        <CardFooter className="flex w-full gap-2 md:gap-4">
+          <Button className="flex w-full gap-1 md:gap-2" asChild>
             <Link href={"/leagues/create"}>
-              <Plus className="mr-2 h-4 w-4" /> Create League
+              <Plus className="h-4 w-4" /> Create League
             </Link>
           </Button>
 
-          <Button asChild>
+          <Button className="flex w-full gap-1 md:gap-2" asChild>
             <Link href={"/leagues/join"}>
-              <CircleArrowRight className="mr-2 h-4 w-4" />
+              <CircleArrowRight className="h-4 w-4" />
               Join League
             </Link>
           </Button>

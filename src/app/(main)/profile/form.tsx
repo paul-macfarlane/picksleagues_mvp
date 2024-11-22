@@ -1,13 +1,13 @@
 "use client";
 
-import { CardContent, CardFooter } from "../ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { CardContent, CardFooter } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { UpdateProfileFormSchema } from "@/models/users";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useFormState, useFormStatus } from "react-dom";
-import { updateProfileAction } from "@/actions/users";
+import { updateProfileAction } from "./action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -18,7 +18,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
+} from "@/components/ui/form";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";

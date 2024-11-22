@@ -1,0 +1,5 @@
+export const SPORT_NAME_MAX_LENGTH = 32;
+export const SPORT_SEASON_MAX_LENGTH = 32;
+export const SPORT_WEEK_MAX_LENGTH = 32;
+export const PICK_TYPE_MAX_LENGTH = 32;
+export const LEAGUE_VISIBILITY_MAX_LENGTH = 32;

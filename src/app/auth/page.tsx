@@ -11,14 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Mail, ChevronLeft } from "lucide-react";
-import Link from "next/link";
+import { Trophy, Mail } from "lucide-react";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 export default async function AuthPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: { [key: string]: string | undefined };
 }) {
   const session = await auth();
   if (session?.user) {
@@ -27,6 +27,12 @@ export default async function AuthPage({
 
   const defaultTab =
     searchParams["defaultTab"] === "signup" ? "signup" : "signin";
+  const parseInviteId = z.string().uuid().safeParse(searchParams["inviteId"]);
+  let redirectAfterSignInUrl = "/api/post-auth";
+  if (parseInviteId.success) {
+    redirectAfterSignInUrl =
+      redirectAfterSignInUrl += `?inviteId=${parseInviteId.data}`;
+  }
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center gap-4">
@@ -53,7 +59,7 @@ export default async function AuthPage({
                   action={async () => {
                     "use server";
                     await signIn("google", {
-                      redirectTo: "/api/post-auth",
+                      redirectTo: redirectAfterSignInUrl,
                     });
                   }}
                 >
@@ -67,7 +73,7 @@ export default async function AuthPage({
                   action={async () => {
                     "use server";
                     await signIn("discord", {
-                      redirectTo: "/api/post-auth",
+                      redirectTo: redirectAfterSignInUrl,
                     });
                   }}
                 >
@@ -90,7 +96,7 @@ export default async function AuthPage({
                   action={async () => {
                     "use server";
                     await signIn("google", {
-                      redirectTo: "/api/post-auth",
+                      redirectTo: redirectAfterSignInUrl,
                     });
                   }}
                 >
@@ -104,7 +110,7 @@ export default async function AuthPage({
                   action={async () => {
                     "use server";
                     await signIn("discord", {
-                      redirectTo: "/api/post-auth",
+                      redirectTo: redirectAfterSignInUrl,
                     });
                   }}
                 >
@@ -130,13 +136,6 @@ export default async function AuthPage({
           </p>
         </CardFooter>
       </Card>
-
-      <Button asChild variant={"secondary"}>
-        <Link href={"/"}>
-          <ChevronLeft />
-          Back to Home
-        </Link>
-      </Button>
     </div>
   );
 }

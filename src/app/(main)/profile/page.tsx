@@ -5,17 +5,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { auth } from "@/auth";
-import UpdateProfileForm from "@/components/forms/update-profile";
+import UpdateProfileForm from "@/app/(main)/profile/form";
 import { redirect } from "next/navigation";
 import { getDBUserById } from "@/db/users";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { z } from "zod";
 
 export default async function Profile({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: { [key: string]: string | undefined };
 }) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -23,6 +21,11 @@ export default async function Profile({
   }
 
   const updateMode = searchParams["mode"] === "signup" ? "signup" : "update";
+  const parseInviteId = z.string().uuid().safeParse(searchParams["inviteId"]);
+  let postSubmitUrl = "/dashboard";
+  if (parseInviteId.success) {
+    postSubmitUrl = `/invites/${parseInviteId.data}`;
+  }
 
   const dbUser = await getDBUserById(session.user.id);
   if (!dbUser) {
@@ -30,7 +33,7 @@ export default async function Profile({
       `Unable to find user in db for session on edit profile with id ${session.user.id}`,
     );
 
-    redirect("/dashboard");
+    redirect(postSubmitUrl);
   }
 
   return (
@@ -53,20 +56,9 @@ export default async function Profile({
             lastName: dbUser.lastName!,
             imageUrl: dbUser.image ?? undefined,
           }}
-          postSubmitUrl={updateMode === "signup" ? "/dashboard" : undefined}
+          postSubmitUrl={updateMode === "signup" ? postSubmitUrl : undefined}
         />
       </Card>
-
-      {updateMode === "update" ? (
-        <Button asChild variant={"secondary"}>
-          <Link href={"/dashboard"}>
-            <ChevronLeft />
-            Back to Dashboard
-          </Link>
-        </Button>
-      ) : (
-        <></>
-      )}
     </div>
   );
 }

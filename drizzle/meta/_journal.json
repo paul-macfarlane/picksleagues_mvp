@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1728876898919,
-      "tag": "0000_burly_tag",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1731179261765,
-      "tag": "0001_clumsy_living_lightning",
+      "when": 1732244528212,
+      "tag": "0000_simple_firebrand",
       "breakpoints": true
     }
   ]

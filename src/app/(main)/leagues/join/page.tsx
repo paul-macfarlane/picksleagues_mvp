@@ -13,7 +13,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import FilterLeaguesForm from "@/components/forms/filter-leagues";
+import FilterLeaguesForm from "@/app/(main)/leagues/join/filter-leagues-form";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getAllDBSportsWithActiveSeason } from "@/db/sports";
@@ -26,14 +26,14 @@ import {
   MIN_PICKS_PER_WEEK,
   PickTypes,
 } from "@/models/leagues";
-import { JoinLeagueForm } from "@/components/forms/join-league";
+import { JoinLeagueForm } from "@/app/(main)/leagues/join/join-league-form";
 
-const maxVisiblePages = 5;
-const pageSize = 6;
+const MAX_VISIBLE_PAGES = 5;
+const PAGE_SIZE = 6;
 
 function getPages(currentPage: number, totalPages: number): (number | "...")[] {
   const pages: (number | "...")[] = [];
-  if (totalPages <= maxVisiblePages) {
+  if (totalPages <= MAX_VISIBLE_PAGES) {
     for (let i = 1; i <= totalPages; i++) {
       pages.push(i);
     }
@@ -179,11 +179,11 @@ export default async function JoinLeagues({
       size,
     },
     session.user.id,
-    pageSize,
-    (currentPage - 1) * pageSize,
+    PAGE_SIZE,
+    (currentPage - 1) * PAGE_SIZE,
   );
 
-  const totalPages = Math.ceil(total / pageSize);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
   const pages = getPages(currentPage, totalPages);
 
   const dbSports = await getAllDBSportsWithActiveSeason();
