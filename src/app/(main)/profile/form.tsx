@@ -219,6 +219,7 @@ export default function UpdateProfileForm({
 
             if (postSubmitUrl) {
               router.push(postSubmitUrl);
+              return;
             }
 
             // this is a quick hack to get the profile menu to refetched it's data

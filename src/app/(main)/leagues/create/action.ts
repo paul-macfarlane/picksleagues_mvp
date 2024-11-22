@@ -5,6 +5,7 @@ import {
   createDBLeague,
   createDBLeagueSeason,
   createDBLeagueMember,
+  DBLeague,
 } from "@/db/leagues";
 import {
   getDBSportById,
@@ -29,6 +30,7 @@ export interface CreateLeagueFormState {
     leagueVisibility?: string;
     size?: string;
   };
+  leagueId?: string;
 }
 
 export async function createLeagueAction(
@@ -147,8 +149,9 @@ export async function createLeagueAction(
     };
   }
 
+  let dbLeague: DBLeague | undefined = undefined;
   try {
-    await withTransaction(async (tx) => {
+    dbLeague = await withTransaction(async (tx) => {
       const createDBLeagueData = {
         name: parsed.data.name,
         logoUrl: parsed.data.logoUrl,
@@ -202,6 +205,8 @@ export async function createLeagueAction(
 
         throw new Error("Unable to create league member");
       }
+
+      return dbLeague;
     });
   } catch (e: unknown) {
     if (e instanceof Error) {
@@ -215,5 +220,7 @@ export async function createLeagueAction(
     };
   }
 
-  return {};
+  return {
+    leagueId: dbLeague?.id,
+  };
 }
