@@ -3,10 +3,10 @@ import { MAX_USERNAME_LENGTH } from "@/models/users";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
 import { redirect } from "next/navigation";
 import { generateUsername } from "unique-username-generator";
-import { NextApiRequest } from "next";
 import { z } from "zod";
+import { NextRequest } from "next/server";
 
-export async function GET(request: NextApiRequest) {
+export async function GET(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/");

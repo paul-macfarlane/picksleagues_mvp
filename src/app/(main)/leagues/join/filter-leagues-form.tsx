@@ -21,7 +21,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../../../../components/ui/form";
+} from "@/components/ui/form";
 import { useRouter } from "next/navigation";
 
 interface FilterFormData {

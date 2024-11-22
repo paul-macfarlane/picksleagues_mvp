@@ -12,22 +12,24 @@ import {
 } from "@/models/leagues";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { ReactNode } from "react";
 import { z } from "zod";
 
 export default async function League({
   params,
-  children,
 }: {
-  params: { leagueIdSubPaths: string[] };
-  children: ReactNode;
+  params: { leagueIdSubPaths: string[] | undefined };
 }) {
   const session = await auth();
   if (!session?.user?.id) {
     return redirect("/auth");
   }
 
-  const parseLeagueId = z.string().uuid().safeParse(params.leagueIdSubPaths[0]);
+  const parseLeagueId = z
+    .string()
+    .uuid()
+    .safeParse(
+      params.leagueIdSubPaths ? params.leagueIdSubPaths[0] : undefined,
+    );
   if (!parseLeagueId.success) {
     return (
       <div className="container mx-auto">
@@ -87,8 +89,8 @@ export default async function League({
         return (
           <div className="container mx-auto">
             <p>
-              You don't have permissions to view this page. Please return to
-              your dashboard.
+              You don&apos;t have permissions to view this page. Please return
+              to your dashboard.
             </p>
           </div>
         );
@@ -127,8 +129,6 @@ export default async function League({
         tabs={tabs}
         selectedTab={selectedTab}
       />
-
-      {children}
     </div>
   );
 }
