@@ -24,7 +24,7 @@ export default function ErrorPage({
   };
 }) {
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex h-full items-center justify-center bg-gradient-to-b from-primary/20 to-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
