@@ -106,7 +106,7 @@ export default async function InvitesPage({
 
   if (
     new Date() > dbLeague.invite.expiresAt ||
-    dbLeague.invite.acceptedByUserId
+    dbLeague.invite.acceptedByUserId !== session.user.id
   ) {
     return (
       <ErrorPage
