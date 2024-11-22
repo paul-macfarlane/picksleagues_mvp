@@ -17,6 +17,7 @@ import {
   CreateLeagueSchema,
   DEFAULT_LEAGUE_SIZE,
   DEFAULT_PICKS_PER_WEEK,
+  getLeagueHomeUrl,
   LEAGUE_VISIBILITY_VALUES,
   LeagueVisibilities,
   PICK_TYPE_VALUES,
@@ -511,8 +512,7 @@ export function CreateLeagueForm({
               description: "Your league has been successfully created.",
             });
 
-            router.push("/dashboard");
-            router.refresh();
+            router.push(getLeagueHomeUrl(actionResponse.leagueId!));
           })(e);
         }}
       >
