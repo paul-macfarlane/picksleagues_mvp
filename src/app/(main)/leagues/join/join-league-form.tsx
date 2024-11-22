@@ -1,16 +1,16 @@
 "use client";
 
-import { joinLeagueAction } from "@/actions/leagues";
+import { joinLeagueAction } from "./join-league-action";
 import { JoinLeagueSchema } from "@/models/leagues";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useFormState, useFormStatus } from "react-dom";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-import { Form } from "../ui/form";
+import { Form } from "@/components/ui/form";
 import { useRef } from "react";
-import { DBLeague, DBLeagueDetailsWithWeek } from "@/db/leagues";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { DBLeagueDetailsWithWeek } from "@/db/leagues";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { isUrl } from "@/lib/utils";
 import {
   Card,
@@ -19,8 +19,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 type FormSchema = z.infer<typeof JoinLeagueSchema>;
@@ -110,7 +110,6 @@ export function JoinLeagueForm({
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit(async () => {
-            console.log(Object.fromEntries(new FormData(formRef.current!)));
             const actionResponse = await joinLeagueAction(
               formState,
               new FormData(formRef.current!),

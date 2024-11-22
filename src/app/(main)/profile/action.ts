@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
+import { getDBUserById, dbUsernameAvailable, updateDBUser } from "@/db/users";
 import { UpdateProfileFormSchema } from "@/models/users";
 import { redirect } from "next/navigation";
 

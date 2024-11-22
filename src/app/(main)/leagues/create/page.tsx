@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
-import { CreateLeagueForm } from "@/components/forms/create-league";
-import { Button } from "@/components/ui/button";
+import { CreateLeagueForm } from "@/app/(main)/leagues/create/form";
 import {
   Card,
   CardDescription,
@@ -8,8 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getAllDBSportsWithActiveSeason } from "@/db/sports";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function CreateLeague() {
@@ -34,13 +31,6 @@ export default async function CreateLeague() {
 
         <CreateLeagueForm sports={dbSportDetails} />
       </Card>
-
-      <Button asChild variant={"secondary"}>
-        <Link href={"/dashboard"}>
-          <ChevronLeft />
-          Back to Dashboard
-        </Link>
-      </Button>
     </div>
   );
 }

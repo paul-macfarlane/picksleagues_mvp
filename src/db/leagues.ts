@@ -1,11 +1,17 @@
-import { LeagueVisibilities, PickTypes } from "@/models/leagues";
+import {
+  LeagueMemberRoles,
+  LeagueVisibilities,
+  PickTypes,
+} from "@/models/leagues";
 import { db } from "./client";
 import {
+  leagueInvites,
   leagueMembers,
   leagues,
   leagueSeasons,
   sports,
   sportWeeks,
+  users,
 } from "./schema";
 import { Transaction as DBTransaction } from "./util";
 import {
@@ -17,6 +23,7 @@ import {
   isNull,
   sql,
 } from "drizzle-orm";
+import { DBUser } from "./users";
 
 export interface DBLeague {
   id: string;
@@ -116,19 +123,21 @@ export async function createDBLeagueMember(
   return queryRows[0];
 }
 
-interface DBLeagueDetails extends DBLeague {
+export interface DBLeagueDetails extends DBLeague {
   sportName: string;
 }
 
 export async function getDBLeagueDetailsForUser(
   userId: string,
+  limit?: number,
 ): Promise<DBLeagueDetails[]> {
   const queryRows = await db
     .select()
     .from(leagueMembers)
     .where(eq(leagueMembers.userId, userId))
     .innerJoin(leagues, eq(leagueMembers.leagueId, leagues.id))
-    .innerJoin(sports, eq(leagues.sportId, sports.id));
+    .innerJoin(sports, eq(leagues.sportId, sports.id))
+    .limit(limit ?? 100); // todo maybe should enforce that a user can only be in so many leagues
 
   return queryRows.map((row) => ({
     ...row.leagues,
@@ -300,4 +309,147 @@ export async function getDBLeagueByIdWithMemberCount(
     ...queryRows[0].leagues,
     memberCount: queryRows[0].memberCount,
   };
+}
+
+interface LeagueDetailsForInvite extends DBLeague {
+  memberCount: number;
+  invite: DBLeagueInvite;
+}
+
+export async function getLeagueDetailsForInvite(
+  inviteId: string,
+): Promise<LeagueDetailsForInvite | null> {
+  const queryRows = await db
+    .select({
+      invites: getTableColumns(leagueInvites),
+      leagues: getTableColumns(leagues),
+      memberCount: sql<number>`cast(count(${leagueMembers.userId}) as int)`,
+    })
+    .from(leagues)
+    .innerJoin(leagueInvites, eq(leagueInvites.id, inviteId))
+    .leftJoin(leagueMembers, eq(leagueMembers.leagueId, leagues.id))
+    .groupBy(leagues.id);
+  if (!queryRows.length) {
+    return null;
+  }
+
+  return {
+    ...queryRows[0].leagues,
+    memberCount: queryRows[0].memberCount,
+    invite: queryRows[0].invites,
+  };
+}
+
+interface DBLeagueWithUserRole extends DBLeagueDetails {
+  role: LeagueMemberRoles;
+}
+
+export async function getDBLeagueByIdWithUserRole(
+  leagueId: string,
+  userId: string,
+): Promise<DBLeagueWithUserRole | null> {
+  const queryRows = await db
+    .select({
+      league: getTableColumns(leagues),
+      role: leagueMembers.role,
+      sportName: sports.name,
+    })
+    .from(leagues)
+    .leftJoin(leagueMembers, eq(leagueMembers.userId, userId))
+    .innerJoin(sports, eq(leagues.sportId, sports.id))
+    .where(eq(leagues.id, leagueId));
+  if (!queryRows.length) {
+    return null;
+  }
+
+  return {
+    ...queryRows[0].league,
+    sportName: queryRows[0].sportName,
+    role: (queryRows[0].role as LeagueMemberRoles) ?? LeagueMemberRoles.NONE,
+  };
+}
+
+interface LeagueMemberDetails extends DBUser {
+  role: LeagueMemberRoles;
+}
+
+export async function getLeagueMemberDetails(
+  leagueId: string,
+): Promise<LeagueMemberDetails[]> {
+  const queryRows = await db
+    .select()
+    .from(leagueMembers)
+    .innerJoin(users, eq(users.id, leagueMembers.userId))
+    .where(eq(leagueMembers.leagueId, leagueId));
+
+  return queryRows.map((row) => ({
+    ...row.users,
+    role: row.league_members.role as LeagueMemberRoles,
+  }));
+}
+
+interface CreateDBLeagueInvite {
+  leagueId: string;
+  expiresAt: Date;
+}
+
+interface DBLeagueInvite {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  leagueId: string;
+  acceptedByUserId: string | null;
+  expiresAt: Date;
+}
+
+export async function createDBLeagueInvite(
+  data: CreateDBLeagueInvite,
+): Promise<DBLeagueInvite | null> {
+  const queryRes = await db
+    .insert(leagueInvites)
+    .values({ ...data })
+    .returning();
+  if (!queryRes.length) {
+    return null;
+  }
+
+  return queryRes[0];
+}
+
+export async function getDBLeagueMember(
+  leagueId: string,
+  userId: string,
+): Promise<DBLeagueMember | null> {
+  const queryRows = await db
+    .select()
+    .from(leagueMembers)
+    .where(
+      and(
+        eq(leagueMembers.userId, userId),
+        eq(leagueMembers.leagueId, leagueId),
+      ),
+    );
+  if (!queryRows.length) {
+    return null;
+  }
+
+  return queryRows[0];
+}
+
+export async function accceptDBLeagueInvite(
+  userId: string,
+  leagueInviteId: string,
+  tx?: DBTransaction,
+): Promise<void> {
+  if (tx) {
+    await tx
+      .update(leagueInvites)
+      .set({ acceptedByUserId: userId })
+      .where(eq(leagueInvites.id, leagueInviteId));
+  } else {
+    await db
+      .update(leagueInvites)
+      .set({ acceptedByUserId: userId })
+      .where(eq(leagueInvites.id, leagueInviteId));
+  }
 }

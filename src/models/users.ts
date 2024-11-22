@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { IMG_URL_MAX_LENGTH } from "./db";
 
 export const MIN_USERNAME_LENGTH = 8;
 export const MAX_USERNAME_LENGTH = 20;
@@ -32,5 +33,10 @@ export const UpdateProfileFormSchema = z.object({
       MAX_LAST_NAME_LENGTH,
       `Cannot be more than ${MAX_LAST_NAME_LENGTH} characters.`,
     ),
-  imageUrl: z.string().trim().url("Must be a valid url.").optional(),
+  imageUrl: z
+    .string()
+    .trim()
+    .url("Must be a valid url.")
+    .max(IMG_URL_MAX_LENGTH)
+    .optional(),
 });

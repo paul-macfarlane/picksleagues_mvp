@@ -3,8 +3,10 @@ import { MAX_USERNAME_LENGTH } from "@/models/users";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
 import { redirect } from "next/navigation";
 import { generateUsername } from "unique-username-generator";
+import { NextApiRequest } from "next";
+import { z } from "zod";
 
-export async function GET() {
+export async function GET(request: NextApiRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/");
@@ -18,6 +20,12 @@ export async function GET() {
 
     redirect("/");
   }
+
+  const { searchParams } = new URL(request.url!);
+  const parseInviteId = z
+    .string()
+    .uuid()
+    .safeParse(searchParams.get("inviteId"));
 
   if (!dbUser.username) {
     let attempts = 0;
@@ -62,7 +70,16 @@ export async function GET() {
       );
     }
 
-    redirect("/profile?mode=signup");
+    let profilePageUrl = "/profile?mode=signup";
+    if (parseInviteId.success) {
+      profilePageUrl += `&inviteId=${parseInviteId.data}`;
+    }
+
+    redirect(profilePageUrl);
+  }
+
+  if (parseInviteId.success) {
+    redirect(`/invites/${parseInviteId.data}`);
   }
 
   redirect("/");

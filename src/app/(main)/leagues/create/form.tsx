@@ -25,7 +25,7 @@ import {
 import { z } from "zod";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createLeagueAction } from "@/actions/leagues";
+import { createLeagueAction } from "./action";
 import {
   Form,
   FormControl,
@@ -33,7 +33,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
+} from "@/components/ui/form";
 import { useRef, useState } from "react";
 import { isUrl } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -43,7 +43,7 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "../ui/hover-card";
+} from "@/components/ui/hover-card";
 
 type FormSchema = z.infer<typeof CreateLeagueSchema>;
 
