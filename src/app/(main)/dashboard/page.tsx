@@ -17,7 +17,7 @@ import { redirect } from "next/navigation";
 export default async function Dashboard() {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/auth");
+    return redirect("/auth");
   }
 
   const dbLeaguesForUser = await getDBLeagueDetailsForUser(session.user.id);

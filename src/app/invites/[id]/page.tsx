@@ -165,5 +165,5 @@ export default async function InvitesPage({
     }
   }
 
-  redirect(getLeagueHomeUrl(dbLeague.id));
+  return redirect(getLeagueHomeUrl(dbLeague.id));
 }

@@ -17,7 +17,7 @@ export default async function Profile({
 }) {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/auth");
+    return redirect("/auth");
   }
 
   const updateMode = searchParams["mode"] === "signup" ? "signup" : "update";
@@ -33,7 +33,7 @@ export default async function Profile({
       `Unable to find user in db for session on edit profile with id ${session.user.id}`,
     );
 
-    redirect(postSubmitUrl);
+    return redirect(postSubmitUrl);
   }
 
   return (

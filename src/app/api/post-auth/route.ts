@@ -9,7 +9,7 @@ import { NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/");
+    return redirect("/");
   }
 
   const dbUser = await getDBUserById(session.user.id);
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       `User with id ${session.user.id} from session not found in db.`,
     );
 
-    redirect("/");
+    return redirect("/");
   }
 
   const { searchParams } = new URL(request.url!);
@@ -75,12 +75,12 @@ export async function GET(request: NextRequest) {
       profilePageUrl += `&inviteId=${parseInviteId.data}`;
     }
 
-    redirect(profilePageUrl);
+    return redirect(profilePageUrl);
   }
 
   if (parseInviteId.success) {
-    redirect(`/invites/${parseInviteId.data}`);
+    return redirect(`/invites/${parseInviteId.data}`);
   }
 
-  redirect("/");
+  return redirect("/");
 }
