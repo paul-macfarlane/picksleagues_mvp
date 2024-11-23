@@ -25,7 +25,7 @@ export async function leagueInviteFormAction(
 ): Promise<LeagueInviteActionState> {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/auth");
+    return redirect("/auth");
   }
 
   const parsed = LeagueInviteFormSchema.safeParse(Object.fromEntries(formData));

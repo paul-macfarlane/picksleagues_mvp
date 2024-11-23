@@ -23,7 +23,7 @@ export default async function AuthPage({
 }) {
   const session = await auth();
   if (session?.user) {
-    redirect("/dashboard");
+    return redirect("/dashboard");
   }
 
   const defaultTab =

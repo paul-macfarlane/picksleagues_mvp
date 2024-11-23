@@ -26,7 +26,7 @@ export async function joinLeagueAction(
 ): Promise<JoinLeagueActionFormState> {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/auth");
+    return redirect("/auth");
   }
 
   const dbUser = await getDBUserById(session.user.id);

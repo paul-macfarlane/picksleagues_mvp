@@ -85,7 +85,7 @@ export default async function JoinLeagues({
 }) {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/auth");
+    return redirect("/auth");
   }
 
   if (!searchParams["page"]) {

@@ -21,7 +21,7 @@ export async function updateProfileAction(
 ): Promise<UpdateProfileFormState> {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/auth");
+    return redirect("/auth");
   }
 
   const formDataObject = Object.fromEntries(formData);

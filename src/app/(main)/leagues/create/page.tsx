@@ -12,7 +12,7 @@ import { redirect } from "next/navigation";
 export default async function CreateLeague() {
   const session = await auth();
   if (!session?.user) {
-    redirect("/auth");
+    return redirect("/auth");
   }
 
   const dbSportDetails = await getAllDBSportsWithActiveSeason();
