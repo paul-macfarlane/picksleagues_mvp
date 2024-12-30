@@ -11,7 +11,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx ./src/db/migrate.ts -y",
     "db:studio": "drizzle-kit studio",
-    "db:local": "turso dev --db-file local.db"
+    "db:local": "turso dev --db-file local.db",
+    "db:push": "drizzle-kit push",
+    "seed:sport-teams": "npx tsx src/db/seeds/sportTeams.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.4.2",
@@ -33,6 +35,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
+    "axios": "^1.7.9",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.33.0",
