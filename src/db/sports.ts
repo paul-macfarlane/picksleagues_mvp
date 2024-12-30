@@ -2,7 +2,7 @@ import { and, eq, gte } from "drizzle-orm";
 import { db } from "./client";
 import { sports, sportSeasons, sportWeeks } from "./schema";
 
-interface DBSport {
+export interface DBSport {
   id: string;
   name: string;
   order: number;

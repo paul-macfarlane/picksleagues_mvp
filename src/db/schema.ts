@@ -21,6 +21,7 @@ import {
   sqliteTable,
   text,
   primaryKey,
+  unique,
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
@@ -219,6 +220,33 @@ export const sportWeeks = sqliteTable("sport_weeks", {
     .default(sql`(unixepoch())`)
     .$onUpdate(() => new Date()),
 });
+
+export const sportTeams = sqliteTable(
+  "sport_teams",
+  {
+    id: text("id", { length: UUID_LENGTH })
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    sportId: text("sport_id", { length: UUID_LENGTH })
+      .notNull()
+      .references(() => sports.id, { onDelete: "cascade" }),
+    name: text("name", { length: 256 }).notNull(),
+    espnId: text("espn_id", { length: 8 }).unique(),
+    location: text("location", { length: 256 }).notNull(),
+    abbreviation: text("abbreviation", { length: 8 }).notNull(),
+    logoUrl: text("logo_url", { length: IMG_URL_MAX_LENGTH }),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    sportIdName: unique("sport_id__name").on(t.sportId, t.name),
+  }),
+);
 
 export const leagues = sqliteTable("leagues", {
   id: text("id", { length: UUID_LENGTH })
