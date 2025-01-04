@@ -71,14 +71,14 @@ CREATE TABLE `leagues` (
 	`id` text(36) PRIMARY KEY NOT NULL,
 	`name` text(32) NOT NULL,
 	`logo_url` text(65535),
-	`sport_id` text(36) NOT NULL,
+	`sport_league_id` text(36) NOT NULL,
 	`picks_per_week` integer NOT NULL,
 	`pick_type` text(32) NOT NULL,
 	`league_visibility` text(32) NOT NULL,
 	`size` integer NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
-	FOREIGN KEY (`sport_id`) REFERENCES `sports`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`sport_league_id`) REFERENCES `sports_leagues`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `sessions` (
@@ -90,29 +90,41 @@ CREATE TABLE `sessions` (
 	FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE TABLE `sports_leagues` (
+	`id` text(36) PRIMARY KEY NOT NULL,
+	`name` text(32) NOT NULL,
+	`abbreviation` text(8) NOT NULL,
+	`logo_url` text(65535),
+	`espn_id` text(8),
+	`espn_slug` text(32),
+	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`updated_at` integer DEFAULT (unixepoch()) NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `sport_seasons` (
 	`id` text(36) PRIMARY KEY NOT NULL,
-	`sport_id` text(36) NOT NULL,
+	`sport_league_id` text(36) NOT NULL,
 	`name` text(32) NOT NULL,
 	`start_time` integer NOT NULL,
 	`end_time` integer NOT NULL,
 	`active` integer NOT NULL,
+	`espn_display_name` text(32),
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
-	FOREIGN KEY (`sport_id`) REFERENCES `sports`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`sport_league_id`) REFERENCES `sports_leagues`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `sport_teams` (
 	`id` text(36) PRIMARY KEY NOT NULL,
-	`sport_id` text(36) NOT NULL,
+	`sport_league_id` text(36) NOT NULL,
 	`name` text(256) NOT NULL,
-	`espn_id` text(8),
 	`location` text(256) NOT NULL,
 	`abbreviation` text(8) NOT NULL,
 	`logo_url` text(65535),
+	`espn_id` text(8),
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
-	FOREIGN KEY (`sport_id`) REFERENCES `sports`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`sport_league_id`) REFERENCES `sports_leagues`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `sport_weeks` (
@@ -121,19 +133,10 @@ CREATE TABLE `sport_weeks` (
 	`name` text(32) NOT NULL,
 	`start_time` integer NOT NULL,
 	`end_time` integer NOT NULL,
-	`default_start` integer DEFAULT false NOT NULL,
-	`default_end` integer DEFAULT false NOT NULL,
+	`espn_number` integer,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`season_id`) REFERENCES `sport_seasons`(`id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
-CREATE TABLE `sports` (
-	`id` text(36) PRIMARY KEY NOT NULL,
-	`name` text(32) NOT NULL,
-	`order` integer NOT NULL,
-	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
-	`updated_at` integer DEFAULT (unixepoch()) NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `users` (
@@ -159,7 +162,10 @@ CREATE TABLE `verification_tokens` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `authenticators_credential_id_unique` ON `authenticators` (`credential_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `sport_teams_espn_id_unique` ON `sport_teams` (`espn_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `sport_id__name` ON `sport_teams` (`sport_id`,`name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `sports_leagues_name_unique` ON `sports_leagues` (`name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `sports_leagues_abbreviation_unique` ON `sports_leagues` (`abbreviation`);--> statement-breakpoint
+CREATE UNIQUE INDEX `sport_league_id_espn_display_name_unique` ON `sport_seasons` (`sport_league_id`,`espn_display_name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `sport_league_id_espn_id_unique` ON `sport_teams` (`sport_league_id`,`espn_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `season_id_espn_number_unique` ON `sport_weeks` (`season_id`,`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
 CREATE UNIQUE INDEX `users_username_unique` ON `users` (`username`);

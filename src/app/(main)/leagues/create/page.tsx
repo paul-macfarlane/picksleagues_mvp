@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAllDBSportsWithActiveSeason } from "@/db/sports";
+import { getAllDBSportLeaguesWithActiveSeason } from "@/db/sportLeagues";
 import { redirect } from "next/navigation";
 
 export default async function CreateLeague() {
@@ -15,7 +15,7 @@ export default async function CreateLeague() {
     return redirect("/auth");
   }
 
-  const dbSportDetails = await getAllDBSportsWithActiveSeason();
+  const dbSportLeagueDetails = await getAllDBSportLeaguesWithActiveSeason();
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center gap-4">
@@ -29,7 +29,7 @@ export default async function CreateLeague() {
           </CardDescription>
         </CardHeader>
 
-        <CreateLeagueForm sports={dbSportDetails} />
+        <CreateLeagueForm sportLeagues={dbSportLeagueDetails} />
       </Card>
     </div>
   );

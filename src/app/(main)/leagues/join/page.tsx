@@ -16,7 +16,7 @@ import {
 import FilterLeaguesForm from "@/app/(main)/leagues/join/filter-leagues-form";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getAllDBSportsWithActiveSeason } from "@/db/sports";
+import { getAllDBSportLeaguesWithActiveSeason } from "@/db/sportLeagues";
 import { filterDBLeagues } from "@/db/leagues";
 import { z } from "zod";
 import {
@@ -101,11 +101,14 @@ export default async function JoinLeagues({
     currentPage = parsePageNumber.data;
   }
 
-  let sportId: string | undefined;
-  if (searchParams["sportId"]) {
-    const parseSportId = z.string().uuid().safeParse(searchParams["sportId"]);
-    if (parseSportId.success) {
-      sportId = parseSportId.data;
+  let sportLeagueId: string | undefined;
+  if (searchParams["sportLeagueId"]) {
+    const parseSportLeagueId = z
+      .string()
+      .uuid()
+      .safeParse(searchParams["sportLeagueId"]);
+    if (parseSportLeagueId.success) {
+      sportLeagueId = parseSportLeagueId.data;
     }
   }
 
@@ -171,7 +174,7 @@ export default async function JoinLeagues({
 
   const { leagues, total } = await filterDBLeagues(
     {
-      sportId,
+      sportLeagueId,
       pickType,
       picksPerWeek,
       startWeekId,
@@ -186,7 +189,7 @@ export default async function JoinLeagues({
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const pages = getPages(currentPage, totalPages);
 
-  const dbSports = await getAllDBSportsWithActiveSeason();
+  const dbSportLeagues = await getAllDBSportLeaguesWithActiveSeason();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -198,7 +201,7 @@ export default async function JoinLeagues({
             Filter leagues to join by attributes
           </CardDescription>
         </CardHeader>
-        <FilterLeaguesForm sports={dbSports} />
+        <FilterLeaguesForm sportLeagues={dbSportLeagues} />
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

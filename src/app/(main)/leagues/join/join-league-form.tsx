@@ -57,7 +57,7 @@ function FormContent({
           </Avatar>
           <div>
             <CardTitle>{league.name}</CardTitle>
-            <CardDescription>{league.sportName}</CardDescription>
+            <CardDescription>{league.sportLeagueAbbreviation}</CardDescription>
           </div>
         </div>
       </CardHeader>

@@ -8,10 +8,10 @@ import {
   DBLeague,
 } from "@/db/leagues";
 import {
-  getDBSportById,
-  getActiveSeasonForSport,
+  getDBSportLeagueById,
+  getActiveSeasonForDBSportLeague,
   getDBSportWeekById,
-} from "@/db/sports";
+} from "@/db/sportLeagues";
 import { getDBUserById } from "@/db/users";
 import { withTransaction } from "@/db/util";
 import { CreateLeagueSchema, LeagueMemberRoles } from "@/models/leagues";
@@ -22,7 +22,7 @@ export interface CreateLeagueFormState {
     form?: string;
     name?: string;
     logoUrl?: string;
-    sportId?: string;
+    sportLeagueId?: string;
     picksPerWeek?: string;
     pickType?: string;
     startWeekId?: string;
@@ -67,8 +67,8 @@ export async function createLeagueAction(
           .filter((error) => error.path.join(".") === "logoUrl")
           .map((error) => error.message)
           .join(", "),
-        sportId: parsed.error.issues
-          .filter((error) => error.path.join(".") === "sportId")
+        sportLeagueId: parsed.error.issues
+          .filter((error) => error.path.join(".") === "sportLeagueId")
           .map((error) => error.message)
           .join(", "),
         leagueVisibility: parsed.error.issues
@@ -99,31 +99,33 @@ export async function createLeagueAction(
     };
   }
 
-  const dbSport = await getDBSportById(parsed.data.sportId);
-  if (!dbSport) {
-    console.error(`Sport with id ${parsed.data.sportId} not found.`);
+  const dbSportLeague = await getDBSportLeagueById(parsed.data.sportLeagueId);
+  if (!dbSportLeague) {
+    console.error(`Sport with id ${parsed.data.sportLeagueId} not found.`);
     return {
       errors: {
-        sportId: "Invalid Sport",
+        sportLeagueId: "Invalid Sport League",
       },
     };
   }
 
-  const dbActiveSeason = await getActiveSeasonForSport(parsed.data.sportId);
+  const dbActiveSeason = await getActiveSeasonForDBSportLeague(
+    parsed.data.sportLeagueId,
+  );
   if (!dbActiveSeason) {
     console.error(
-      `Sport with id ${dbSport.id} (${dbSport.name}) does not have an active season.`,
+      `Sport League with id ${dbSportLeague.id} (${dbSportLeague.name}) does not have an active season.`,
     );
     return {
       errors: {
-        sportId: "Selected Sport does not have an active season.",
+        sportLeagueId: "Selected Sport League does not have an active season.",
       },
     };
   }
 
   const dbStartWeek = await getDBSportWeekById(parsed.data.startWeekId);
   if (!dbStartWeek) {
-    console.error(`Sports week with id ${parsed.data.startWeekId} not found.`);
+    console.error(`Sport week with id ${parsed.data.startWeekId} not found.`);
     return {
       errors: {
         startWeekId: "Invalid Start Week",
@@ -155,7 +157,7 @@ export async function createLeagueAction(
       const createDBLeagueData = {
         name: parsed.data.name,
         logoUrl: parsed.data.logoUrl,
-        sportId: parsed.data.sportId,
+        sportLeagueId: parsed.data.sportLeagueId,
         picksPerWeek: parsed.data.picksPerWeek,
         pickType: parsed.data.pickType,
         leagueVisibility: parsed.data.leagueVisibility,

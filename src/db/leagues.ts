@@ -9,7 +9,7 @@ import {
   leagueMembers,
   leagues,
   leagueSeasons,
-  sports,
+  sportLeagues,
   sportWeeks,
   users,
 } from "./schema";
@@ -29,19 +29,19 @@ export interface DBLeague {
   id: string;
   name: string;
   logoUrl: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  sportId: string;
+  sportLeagueId: string;
   picksPerWeek: number;
   pickType: string;
   leagueVisibility: string;
   size: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface CreateDBLeague {
   name: string;
   logoUrl?: string;
-  sportId: string;
+  sportLeagueId: string;
   picksPerWeek: number;
   pickType: PickTypes;
   leagueVisibility: LeagueVisibilities;
@@ -124,7 +124,7 @@ export async function createDBLeagueMember(
 }
 
 export interface DBLeagueDetails extends DBLeague {
-  sportName: string;
+  sportLeagueAbbreviation: string;
 }
 
 export async function getDBLeagueDetailsForUser(
@@ -136,17 +136,17 @@ export async function getDBLeagueDetailsForUser(
     .from(leagueMembers)
     .where(eq(leagueMembers.userId, userId))
     .innerJoin(leagues, eq(leagueMembers.leagueId, leagues.id))
-    .innerJoin(sports, eq(leagues.sportId, sports.id))
+    .innerJoin(sportLeagues, eq(leagues.sportLeagueId, sportLeagues.id))
     .limit(limit ?? 100); // todo maybe should enforce that a user can only be in so many leagues
 
   return queryRows.map((row) => ({
     ...row.leagues,
-    sportName: row.sports.name,
+    sportLeagueAbbreviation: row.sports_leagues.abbreviation,
   }));
 }
 
 interface filterDBLeaguesParams {
-  sportId?: string;
+  sportLeagueId?: string;
   pickType?: string;
   picksPerWeek?: number;
   startWeekId?: string;
@@ -169,9 +169,12 @@ export async function filterDBLeagues(
   leagues: DBLeagueDetailsWithWeek[];
   total: number;
 }> {
-  const sportsJoin = params.sportId
-    ? and(eq(leagues.sportId, sports.id), eq(sports.id, params.sportId))
-    : eq(leagues.sportId, sports.id);
+  const sportLeaguesJoin = params.sportLeagueId
+    ? and(
+        eq(leagues.sportLeagueId, sportLeagues.id),
+        eq(sportLeagues.id, params.sportLeagueId),
+      )
+    : eq(leagues.sportLeagueId, sportLeagues.id);
 
   const startWeeksAlias = aliasedTable(sportWeeks, "startWeeks");
   let startWeekJoinClauses = [
@@ -214,14 +217,15 @@ export async function filterDBLeagues(
   const queryRows = await db
     .select({
       leagues: getTableColumns(leagues),
-      sports: getTableColumns(sports),
+      sportLeagues: getTableColumns(sportLeagues),
       startWeeks: getTableColumns(startWeeksAlias),
       endWeeks: getTableColumns(endWeeksAlias),
       otherMembers: getTableColumns(otherMembersAlias),
-      memberCount: sql<number>`cast(count(${otherMembersAlias.userId}) as int)`,
+      memberCount: sql<number>`cast
+          (count(${otherMembersAlias.userId}) as int)`,
     })
     .from(leagues)
-    .innerJoin(sports, sportsJoin)
+    .innerJoin(sportLeagues, sportLeaguesJoin)
     .innerJoin(
       leagueSeasons,
       and(
@@ -241,22 +245,30 @@ export async function filterDBLeagues(
     )
     .where(whereClause)
     .groupBy(leagues.id)
-    .having(sql`count(${otherMembersAlias.userId}) < ${leagues.size}`)
+    .having(
+      sql`count
+          (${otherMembersAlias.userId})
+          <
+          ${leagues.size}`,
+    )
     .limit(limit)
     .offset(offset);
 
   const leagueDetails = queryRows.map((row) => ({
     ...row.leagues,
-    sportName: row.sports.name,
+    sportLeagueAbbreviation: row.sportLeagues.abbreviation,
     startWeekName: row.startWeeks.name,
     endWeekName: row.endWeeks.name,
     memberCount: row.memberCount,
   }));
 
   const countQueryRes = await db
-    .select({ count: sql`count(*)`.mapWith(Number) })
+    .select({
+      count: sql`count
+          (*)`.mapWith(Number),
+    })
     .from(leagues)
-    .innerJoin(sports, sportsJoin)
+    .innerJoin(sportLeagues, sportLeaguesJoin)
     .innerJoin(
       leagueSeasons,
       and(
@@ -275,8 +287,10 @@ export async function filterDBLeagues(
       ),
     )
     .where(whereClause)
-    .groupBy(leagues.id)
-    .having(sql`count(${otherMembersAlias.userId}) < ${leagues.size}`);
+    .groupBy(leagues.id).having(sql`count
+              (${otherMembersAlias.userId})
+              <
+              ${leagues.size}`);
   const count = countQueryRes.length > 0 ? countQueryRes[0].count : 0;
 
   return {
@@ -295,7 +309,8 @@ export async function getDBLeagueByIdWithMemberCount(
   const queryRows = await db
     .select({
       leagues: getTableColumns(leagues),
-      memberCount: sql<number>`cast(count(${leagueMembers.userId}) as int)`,
+      memberCount: sql<number>`cast
+          (count(${leagueMembers.userId}) as int)`,
     })
     .from(leagues)
     .leftJoin(leagueMembers, eq(leagueMembers.leagueId, leagues.id))
@@ -323,7 +338,8 @@ export async function getLeagueDetailsForInvite(
     .select({
       invites: getTableColumns(leagueInvites),
       leagues: getTableColumns(leagues),
-      memberCount: sql<number>`cast(count(${leagueMembers.userId}) as int)`,
+      memberCount: sql<number>`cast
+          (count(${leagueMembers.userId}) as int)`,
     })
     .from(leagues)
     .innerJoin(leagueInvites, eq(leagueInvites.id, inviteId))
@@ -352,11 +368,11 @@ export async function getDBLeagueByIdWithUserRole(
     .select({
       league: getTableColumns(leagues),
       role: leagueMembers.role,
-      sportName: sports.name,
+      sportLeagueAbbreviation: sportLeagues.abbreviation,
     })
     .from(leagues)
     .leftJoin(leagueMembers, eq(leagueMembers.userId, userId))
-    .innerJoin(sports, eq(leagues.sportId, sports.id))
+    .innerJoin(sportLeagues, eq(leagues.sportLeagueId, sportLeagues.id))
     .where(eq(leagues.id, leagueId));
   if (!queryRows.length) {
     return null;
@@ -364,7 +380,7 @@ export async function getDBLeagueByIdWithUserRole(
 
   return {
     ...queryRows[0].league,
-    sportName: queryRows[0].sportName,
+    sportLeagueAbbreviation: queryRows[0].sportLeagueAbbreviation,
     role: (queryRows[0].role as LeagueMemberRoles) ?? LeagueMemberRoles.NONE,
   };
 }

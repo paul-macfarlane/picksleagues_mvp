@@ -118,7 +118,8 @@ export default async function League({
         <div>
           <h1 className="text-3xl font-bold">{dbLeagueWithRole.name}</h1>
           <p className="text-muted-foreground">
-            {dbLeagueWithRole.sportName} • {dbLeagueWithRole.pickType}
+            {dbLeagueWithRole.sportLeagueAbbreviation} •{" "}
+            {dbLeagueWithRole.pickType}
           </p>
         </div>
       </header>

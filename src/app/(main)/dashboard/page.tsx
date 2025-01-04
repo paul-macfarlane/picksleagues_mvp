@@ -52,7 +52,8 @@ export default async function Dashboard() {
                         <div className="flex flex-col items-start">
                           <p className="font-medium">{leagueDetail.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {leagueDetail.sportName} • {leagueDetail.pickType}
+                            {leagueDetail.sportLeagueAbbreviation} •{" "}
+                            {leagueDetail.pickType}
                           </p>
                         </div>
                       </div>

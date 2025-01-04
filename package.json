@@ -12,8 +12,7 @@
     "db:migrate": "npx tsx ./src/db/migrate.ts -y",
     "db:studio": "drizzle-kit studio",
     "db:local": "turso dev --db-file local.db",
-    "db:push": "drizzle-kit push",
-    "seed:sport-teams": "npx tsx src/db/seeds/sportTeams.ts"
+    "seed:sport-leagues": "npx tsx src/db/seeds/sportLeagues.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.4.2",

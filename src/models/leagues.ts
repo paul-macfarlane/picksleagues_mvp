@@ -47,7 +47,7 @@ export const CreateLeagueSchema = z.object({
     z.string().url("Must be a valud url.").max(IMG_URL_MAX_LENGTH),
     z.string().length(0), // annoying, but because you can't have a controlled input with the value undefined in react-hook-form, we have to allow this to be an empty string
   ]),
-  sportId: z.string().trim().uuid(),
+  sportLeagueId: z.string().trim().uuid(),
   leagueVisibility: z.enum(
     [
       LeagueVisibilities.LEAGUE_VISIBILITY_PRIVATE,
@@ -160,3 +160,5 @@ export const LeagueInviteFormSchema = z.object({
 
 export const LEAGUE_INVITE_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 export const LEAGUE_ROLE_MAX_LENGTH = 32;
+export const PICK_TYPE_MAX_LENGTH = 32;
+export const LEAGUE_VISIBILITY_MAX_LENGTH = 32;

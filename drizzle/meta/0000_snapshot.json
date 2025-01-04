@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "64d96e77-5cc7-4909-a557-7db00d8b59cf",
+  "id": "8c61140c-0d63-4c11-88e5-92204c23f64e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -536,8 +536,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "sport_id": {
-          "name": "sport_id",
+        "sport_league_id": {
+          "name": "sport_league_id",
           "type": "text(36)",
           "primaryKey": false,
           "notNull": true,
@@ -590,12 +590,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "leagues_sport_id_sports_id_fk": {
-          "name": "leagues_sport_id_sports_id_fk",
+        "leagues_sport_league_id_sports_leagues_id_fk": {
+          "name": "leagues_sport_league_id_sports_leagues_id_fk",
           "tableFrom": "leagues",
-          "tableTo": "sports",
+          "tableTo": "sports_leagues",
           "columnsFrom": [
-            "sport_id"
+            "sport_league_id"
           ],
           "columnsTo": [
             "id"
@@ -667,6 +667,88 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "sports_leagues": {
+      "name": "sports_leagues",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text(36)",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text(32)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "abbreviation": {
+          "name": "abbreviation",
+          "type": "text(8)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "logo_url": {
+          "name": "logo_url",
+          "type": "text(65535)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "espn_id": {
+          "name": "espn_id",
+          "type": "text(8)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "espn_slug": {
+          "name": "espn_slug",
+          "type": "text(32)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "sports_leagues_name_unique": {
+          "name": "sports_leagues_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        },
+        "sports_leagues_abbreviation_unique": {
+          "name": "sports_leagues_abbreviation_unique",
+          "columns": [
+            "abbreviation"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "sport_seasons": {
       "name": "sport_seasons",
       "columns": {
@@ -677,8 +759,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "sport_id": {
-          "name": "sport_id",
+        "sport_league_id": {
+          "name": "sport_league_id",
           "type": "text(36)",
           "primaryKey": false,
           "notNull": true,
@@ -712,6 +794,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "espn_display_name": {
+          "name": "espn_display_name",
+          "type": "text(32)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -729,14 +818,23 @@
           "default": "(unixepoch())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "sport_league_id_espn_display_name_unique": {
+          "name": "sport_league_id_espn_display_name_unique",
+          "columns": [
+            "sport_league_id",
+            "espn_display_name"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "sport_seasons_sport_id_sports_id_fk": {
-          "name": "sport_seasons_sport_id_sports_id_fk",
+        "sport_seasons_sport_league_id_sports_leagues_id_fk": {
+          "name": "sport_seasons_sport_league_id_sports_leagues_id_fk",
           "tableFrom": "sport_seasons",
-          "tableTo": "sports",
+          "tableTo": "sports_leagues",
           "columnsFrom": [
-            "sport_id"
+            "sport_league_id"
           ],
           "columnsTo": [
             "id"
@@ -758,8 +856,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "sport_id": {
-          "name": "sport_id",
+        "sport_league_id": {
+          "name": "sport_league_id",
           "type": "text(36)",
           "primaryKey": false,
           "notNull": true,
@@ -770,13 +868,6 @@
           "type": "text(256)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "espn_id": {
-          "name": "espn_id",
-          "type": "text(8)",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "location": {
@@ -800,6 +891,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "espn_id": {
+          "name": "espn_id",
+          "type": "text(8)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -818,29 +916,22 @@
         }
       },
       "indexes": {
-        "sport_teams_espn_id_unique": {
-          "name": "sport_teams_espn_id_unique",
+        "sport_league_id_espn_id_unique": {
+          "name": "sport_league_id_espn_id_unique",
           "columns": [
+            "sport_league_id",
             "espn_id"
-          ],
-          "isUnique": true
-        },
-        "sport_id__name": {
-          "name": "sport_id__name",
-          "columns": [
-            "sport_id",
-            "name"
           ],
           "isUnique": true
         }
       },
       "foreignKeys": {
-        "sport_teams_sport_id_sports_id_fk": {
-          "name": "sport_teams_sport_id_sports_id_fk",
+        "sport_teams_sport_league_id_sports_leagues_id_fk": {
+          "name": "sport_teams_sport_league_id_sports_leagues_id_fk",
           "tableFrom": "sport_teams",
-          "tableTo": "sports",
+          "tableTo": "sports_leagues",
           "columnsFrom": [
-            "sport_id"
+            "sport_league_id"
           ],
           "columnsTo": [
             "id"
@@ -890,21 +981,12 @@
           "notNull": true,
           "autoincrement": false
         },
-        "default_start": {
-          "name": "default_start",
+        "espn_number": {
+          "name": "espn_number",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "default_end": {
-          "name": "default_end",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
@@ -923,7 +1005,16 @@
           "default": "(unixepoch())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "season_id_espn_number_unique": {
+          "name": "season_id_espn_number_unique",
+          "columns": [
+            "season_id",
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "sport_weeks_season_id_sport_seasons_id_fk": {
           "name": "sport_weeks_season_id_sport_seasons_id_fk",
@@ -939,52 +1030,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "sports": {
-      "name": "sports",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text(36)",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text(32)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "order": {
-          "name": "order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch())"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(unixepoch())"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },

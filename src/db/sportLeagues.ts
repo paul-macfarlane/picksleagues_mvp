@@ -1,22 +1,26 @@
 import { and, eq, gte } from "drizzle-orm";
 import { db } from "./client";
-import { sports, sportSeasons, sportWeeks } from "./schema";
+import { sportLeagues, sportSeasons, sportWeeks } from "./schema";
 
-export interface DBSport {
+export interface DBSportLeague {
   id: string;
   name: string;
-  order: number;
+  abbreviation: string;
+  logoUrl: string | null;
+  espnId: string | null;
+  espnSlug: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 interface DBSportSeason {
   id: string;
+  sportLeagueId: string;
   name: string;
-  sportId: string;
   startTime: Date;
   endTime: Date;
   active: boolean;
+  espnDisplayName: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,29 +31,31 @@ interface DBSportSeasonDetail extends DBSportSeason {
 
 export interface DBSportWeek {
   id: string;
+  seasonId: string;
   name: string;
   startTime: Date;
   endTime: Date;
-  seasonId: string;
-  defaultStart: boolean;
-  defaultEnd: boolean;
+  espnNumber: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface DBSportWithActiveSeasonDetail extends DBSport {
+export interface DBSportLeagueWithActiveSeasonDetail extends DBSportLeague {
   season: DBSportSeasonDetail;
 }
 
-export async function getAllDBSportsWithActiveSeason(): Promise<
-  DBSportWithActiveSeasonDetail[]
+export async function getAllDBSportLeaguesWithActiveSeason(): Promise<
+  DBSportLeagueWithActiveSeasonDetail[]
 > {
   const queryRows = await db
     .select()
-    .from(sports)
+    .from(sportLeagues)
     .innerJoin(
       sportSeasons,
-      and(eq(sports.id, sportSeasons.sportId), eq(sportSeasons.active, true)),
+      and(
+        eq(sportLeagues.id, sportSeasons.sportLeagueId),
+        eq(sportSeasons.active, true),
+      ),
     )
     .innerJoin(
       sportWeeks,
@@ -57,20 +63,22 @@ export async function getAllDBSportsWithActiveSeason(): Promise<
         eq(sportSeasons.id, sportWeeks.seasonId),
         gte(sportWeeks.startTime, new Date()),
       ),
-    );
+    )
+    .orderBy(sportWeeks.startTime);
   if (!queryRows.length) {
     return [];
   }
 
-  const sportDetails: DBSportWithActiveSeasonDetail[] = [];
-
+  const dbSportLeagueWithActiveSeasonDetails: DBSportLeagueWithActiveSeasonDetail[] =
+    [];
   queryRows.forEach((row) => {
-    const existingSportDetailIndex = sportDetails.findIndex(
-      (detail) => detail.id === row.sports.id,
-    );
+    const existingSportDetailIndex =
+      dbSportLeagueWithActiveSeasonDetails.findIndex(
+        (detail) => detail.id === row.sports_leagues.id,
+      );
     if (existingSportDetailIndex === -1) {
-      sportDetails.push({
-        ...row.sports,
+      dbSportLeagueWithActiveSeasonDetails.push({
+        ...row.sports_leagues,
         season: {
           ...row.sport_seasons,
           weeks: [row.sport_weeks],
@@ -80,14 +88,21 @@ export async function getAllDBSportsWithActiveSeason(): Promise<
       return;
     }
 
-    sportDetails[existingSportDetailIndex].season.weeks.push(row.sport_weeks);
+    dbSportLeagueWithActiveSeasonDetails[
+      existingSportDetailIndex
+    ].season.weeks.push(row.sport_weeks);
   });
 
-  return sportDetails;
+  return dbSportLeagueWithActiveSeasonDetails;
 }
 
-export async function getDBSportById(id: string): Promise<DBSport | null> {
-  const queryRows = await db.select().from(sports).where(eq(sports.id, id));
+export async function getDBSportLeagueById(
+  id: string,
+): Promise<DBSportLeague | null> {
+  const queryRows = await db
+    .select()
+    .from(sportLeagues)
+    .where(eq(sportLeagues.id, id));
   if (!queryRows.length) {
     return null;
   }
@@ -95,14 +110,17 @@ export async function getDBSportById(id: string): Promise<DBSport | null> {
   return queryRows[0];
 }
 
-export async function getActiveSeasonForSport(
-  sportId: string,
+export async function getActiveSeasonForDBSportLeague(
+  sportLeagueId: string,
 ): Promise<DBSportSeason | null> {
   const queryRows = await db
     .select()
     .from(sportSeasons)
     .where(
-      and(eq(sportSeasons.sportId, sportId), eq(sportSeasons.active, true)),
+      and(
+        eq(sportSeasons.sportLeagueId, sportLeagueId),
+        eq(sportSeasons.active, true),
+      ),
     );
   if (!queryRows.length) {
     return null;

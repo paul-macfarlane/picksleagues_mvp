@@ -101,7 +101,7 @@ export default async function Navbar() {
                             active={pathname === getLeagueHomeUrl(league.id)}
                             title={league.name}
                           >
-                            {league.sportName} • {league.pickType}
+                            {league.sportLeagueAbbreviation} • {league.pickType}
                           </CustomMenuItem>
                         ))}
                     </ul>

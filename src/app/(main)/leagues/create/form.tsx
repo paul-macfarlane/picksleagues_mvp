@@ -11,7 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DBSportWeek, DBSportWithActiveSeasonDetail } from "@/db/sports";
+import {
+  DBSportWeek,
+  DBSportLeagueWithActiveSeasonDetail,
+} from "@/db/sportLeagues";
 import { useFormState, useFormStatus } from "react-dom";
 import {
   CreateLeagueSchema,
@@ -49,37 +52,29 @@ import {
 type FormSchema = z.infer<typeof CreateLeagueSchema>;
 
 function getDefaultSportStartWeekId(
-  sport: DBSportWithActiveSeasonDetail,
+  sportLeague: DBSportLeagueWithActiveSeasonDetail,
 ): string {
-  return sport.season.weeks.length
-    ? (
-        sport.season.weeks.find((week) => week.defaultStart) ??
-        sport.season.weeks[0]
-      ).id
-    : "";
+  return sportLeague.season.weeks.length ? sportLeague.season.weeks[0].id : "";
 }
 
 function getDefaultSportEndWeekId(
-  sport: DBSportWithActiveSeasonDetail,
+  sportLeague: DBSportLeagueWithActiveSeasonDetail,
 ): string {
-  return sport.season.weeks.length
-    ? (
-        sport.season.weeks.find((week) => week.defaultEnd) ??
-        sport.season.weeks[sport.season.weeks.length - 1]
-      ).id
+  return sportLeague.season.weeks.length
+    ? sportLeague.season.weeks[sportLeague.season.weeks.length - 1].id
     : "";
 }
 
 function FormContent({
   form,
-  sports,
+  sportLeagues,
   defaultSportWeeks,
   defaultStartWeekId,
   defaultEndWeekId,
   errorMessage,
 }: {
   form: UseFormReturn<FormSchema>;
-  sports: DBSportWithActiveSeasonDetail[];
+  sportLeagues: DBSportLeagueWithActiveSeasonDetail[];
   defaultSportWeeks: DBSportWeek[];
   defaultStartWeekId: string;
   defaultEndWeekId: string;
@@ -145,37 +140,39 @@ function FormContent({
 
           <FormField
             control={form.control}
-            name="sportId"
+            name="sportLeagueId"
             render={({ field }) => (
               <FormItem className="space-y-2">
-                <FormLabel>Sport</FormLabel>
+                <FormLabel>Sport League</FormLabel>
                 <Select
                   onValueChange={(val) => {
                     field.onChange(val);
 
-                    const sport = sports.find((sport) => sport.id === val)!;
-                    setSportWeeks(sport.season.weeks);
+                    const sportLeague = sportLeagues.find(
+                      (sportLeague) => sportLeague.id === val,
+                    )!;
+                    setSportWeeks(sportLeague.season.weeks);
 
-                    const startId = getDefaultSportStartWeekId(sport);
+                    const startId = getDefaultSportStartWeekId(sportLeague);
                     form.setValue("startWeekId", startId);
                     setStartWeekId(startId);
 
-                    const endId = getDefaultSportEndWeekId(sport);
+                    const endId = getDefaultSportEndWeekId(sportLeague);
                     form.setValue("endWeekId", endId);
                     setEndWeekId(endId);
                   }}
                   defaultValue={field.value}
-                  name="sportId"
+                  name="sportLeagueId"
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a sport" />
+                      <SelectValue placeholder="Select a sport league" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {sports.map((sport) => (
-                      <SelectItem key={sport.id} value={sport.id}>
-                        {sport.name}
+                    {sportLeagues.map((sportLeague) => (
+                      <SelectItem key={sportLeague.id} value={sportLeague.id}>
+                        {sportLeague.abbreviation}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -395,17 +392,17 @@ function FormContent({
 }
 
 export function CreateLeagueForm({
-  sports,
+  sportLeagues,
 }: {
-  sports: DBSportWithActiveSeasonDetail[];
+  sportLeagues: DBSportLeagueWithActiveSeasonDetail[];
 }) {
   const router = useRouter();
 
-  const defaultStartWeekId = sports.length
-    ? getDefaultSportStartWeekId(sports[0])
+  const defaultStartWeekId = sportLeagues.length
+    ? getDefaultSportStartWeekId(sportLeagues[0])
     : "";
-  const defaultEndWeekId = sports.length
-    ? getDefaultSportEndWeekId(sports[0])
+  const defaultEndWeekId = sportLeagues.length
+    ? getDefaultSportEndWeekId(sportLeagues[0])
     : "";
 
   const [formState, formAction] = useFormState(createLeagueAction, {});
@@ -414,7 +411,7 @@ export function CreateLeagueForm({
     defaultValues: {
       name: "",
       logoUrl: "",
-      sportId: sports.length ? sports[0].id : "",
+      sportLeagueId: sportLeagues.length ? sportLeagues[0].id : "",
       leagueVisibility: LeagueVisibilities.LEAGUE_VISIBILITY_PRIVATE,
       pickType: PickTypes.PICK_TYPE_AGAINST_THE_SPREAD,
       picksPerWeek: DEFAULT_PICKS_PER_WEEK,
@@ -455,10 +452,10 @@ export function CreateLeagueForm({
                 });
               }
 
-              if (actionResponse?.errors?.sportId) {
-                form.setError("sportId", {
+              if (actionResponse?.errors?.sportLeagueId) {
+                form.setError("sportLeagueId", {
                   type: "custom",
-                  message: actionResponse.errors.sportId,
+                  message: actionResponse.errors.sportLeagueId,
                 });
               }
 
@@ -518,8 +515,10 @@ export function CreateLeagueForm({
       >
         <FormContent
           form={form}
-          sports={sports}
-          defaultSportWeeks={sports.length > 0 ? sports[0].season.weeks : []}
+          sportLeagues={sportLeagues}
+          defaultSportWeeks={
+            sportLeagues.length > 0 ? sportLeagues[0].season.weeks : []
+          }
           defaultStartWeekId={defaultStartWeekId}
           defaultEndWeekId={defaultEndWeekId}
           errorMessage={formState.errors?.form ?? ""}
