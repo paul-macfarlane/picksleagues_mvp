@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "8c61140c-0d63-4c11-88e5-92204c23f64e",
+  "id": "7c22223b-9220-4f33-8752-dd5e25c7534b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -607,6 +607,60 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "odds_providers": {
+      "name": "odds_providers",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text(36)",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "espn_id": {
+          "name": "espn_id",
+          "type": "text(8)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "odds_providers_espn_id_unique": {
+          "name": "odds_providers_espn_id_unique",
+          "columns": [
+            "espn_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "sessions": {
       "name": "sessions",
       "columns": {
@@ -656,6 +710,292 @@
           "tableTo": "users",
           "columnsFrom": [
             "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "sport_game_odds": {
+      "name": "sport_game_odds",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text(36)",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "game_id": {
+          "name": "game_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "favorite_team_id": {
+          "name": "favorite_team_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "under_dog_team_id": {
+          "name": "under_dog_team_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "spread": {
+          "name": "spread",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "over_under": {
+          "name": "over_under",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "game_id_provider_id_unique": {
+          "name": "game_id_provider_id_unique",
+          "columns": [
+            "game_id",
+            "provider_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "sport_game_odds_game_id_sport_games_id_fk": {
+          "name": "sport_game_odds_game_id_sport_games_id_fk",
+          "tableFrom": "sport_game_odds",
+          "tableTo": "sport_games",
+          "columnsFrom": [
+            "game_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sport_game_odds_provider_id_odds_providers_id_fk": {
+          "name": "sport_game_odds_provider_id_odds_providers_id_fk",
+          "tableFrom": "sport_game_odds",
+          "tableTo": "odds_providers",
+          "columnsFrom": [
+            "provider_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sport_game_odds_favorite_team_id_sport_teams_id_fk": {
+          "name": "sport_game_odds_favorite_team_id_sport_teams_id_fk",
+          "tableFrom": "sport_game_odds",
+          "tableTo": "sport_teams",
+          "columnsFrom": [
+            "favorite_team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sport_game_odds_under_dog_team_id_sport_teams_id_fk": {
+          "name": "sport_game_odds_under_dog_team_id_sport_teams_id_fk",
+          "tableFrom": "sport_game_odds",
+          "tableTo": "sport_teams",
+          "columnsFrom": [
+            "under_dog_team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "sport_games": {
+      "name": "sport_games",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text(36)",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "week_id": {
+          "name": "week_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text(32)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "clock": {
+          "name": "clock",
+          "type": "text(16)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "period": {
+          "name": "period",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "away_team_id": {
+          "name": "away_team_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "away_team_score": {
+          "name": "away_team_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "home_team_id": {
+          "name": "home_team_id",
+          "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "home_team_score": {
+          "name": "home_team_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "espn_event_id": {
+          "name": "espn_event_id",
+          "type": "text(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "sport_games_espn_event_id_unique": {
+          "name": "sport_games_espn_event_id_unique",
+          "columns": [
+            "espn_event_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "sport_games_week_id_sport_weeks_id_fk": {
+          "name": "sport_games_week_id_sport_weeks_id_fk",
+          "tableFrom": "sport_games",
+          "tableTo": "sport_weeks",
+          "columnsFrom": [
+            "week_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sport_games_away_team_id_sport_teams_id_fk": {
+          "name": "sport_games_away_team_id_sport_teams_id_fk",
+          "tableFrom": "sport_games",
+          "tableTo": "sport_teams",
+          "columnsFrom": [
+            "away_team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sport_games_home_team_id_sport_teams_id_fk": {
+          "name": "sport_games_home_team_id_sport_teams_id_fk",
+          "tableFrom": "sport_games",
+          "tableTo": "sport_teams",
+          "columnsFrom": [
+            "home_team_id"
           ],
           "columnsTo": [
             "id"
@@ -984,6 +1324,13 @@
         "espn_number": {
           "name": "espn_number",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "espn_events_ref": {
+          "name": "espn_events_ref",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

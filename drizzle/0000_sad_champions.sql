@@ -81,6 +81,14 @@ CREATE TABLE `leagues` (
 	FOREIGN KEY (`sport_league_id`) REFERENCES `sports_leagues`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE TABLE `odds_providers` (
+	`id` text(36) PRIMARY KEY NOT NULL,
+	`name` text(64) NOT NULL,
+	`espn_id` text(8),
+	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`updated_at` integer DEFAULT (unixepoch()) NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `sessions` (
 	`session_token` text PRIMARY KEY NOT NULL,
 	`userId` text(36) NOT NULL,
@@ -88,6 +96,41 @@ CREATE TABLE `sessions` (
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `sport_game_odds` (
+	`id` text(36) PRIMARY KEY NOT NULL,
+	`game_id` text(36) NOT NULL,
+	`provider_id` text(36) NOT NULL,
+	`favorite_team_id` text(36) NOT NULL,
+	`under_dog_team_id` text(36) NOT NULL,
+	`spread` real NOT NULL,
+	`over_under` real NOT NULL,
+	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
+	FOREIGN KEY (`game_id`) REFERENCES `sport_games`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`provider_id`) REFERENCES `odds_providers`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`favorite_team_id`) REFERENCES `sport_teams`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`under_dog_team_id`) REFERENCES `sport_teams`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `sport_games` (
+	`id` text(36) PRIMARY KEY NOT NULL,
+	`week_id` text(36) NOT NULL,
+	`start_time` integer NOT NULL,
+	`status` text(32) NOT NULL,
+	`clock` text(16) NOT NULL,
+	`period` integer NOT NULL,
+	`away_team_id` text(36) NOT NULL,
+	`away_team_score` integer NOT NULL,
+	`home_team_id` text(36) NOT NULL,
+	`home_team_score` integer NOT NULL,
+	`espn_event_id` text(16),
+	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
+	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
+	FOREIGN KEY (`week_id`) REFERENCES `sport_weeks`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`away_team_id`) REFERENCES `sport_teams`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`home_team_id`) REFERENCES `sport_teams`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `sports_leagues` (
@@ -134,6 +177,7 @@ CREATE TABLE `sport_weeks` (
 	`start_time` integer NOT NULL,
 	`end_time` integer NOT NULL,
 	`espn_number` integer,
+	`espn_events_ref` text,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`season_id`) REFERENCES `sport_seasons`(`id`) ON UPDATE no action ON DELETE cascade
@@ -162,6 +206,9 @@ CREATE TABLE `verification_tokens` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `authenticators_credential_id_unique` ON `authenticators` (`credential_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `odds_providers_espn_id_unique` ON `odds_providers` (`espn_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `game_id_provider_id_unique` ON `sport_game_odds` (`game_id`,`provider_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `sport_games_espn_event_id_unique` ON `sport_games` (`espn_event_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `sports_leagues_name_unique` ON `sports_leagues` (`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `sports_leagues_abbreviation_unique` ON `sports_leagues` (`abbreviation`);--> statement-breakpoint
 CREATE UNIQUE INDEX `sport_league_id_espn_display_name_unique` ON `sport_seasons` (`sport_league_id`,`espn_display_name`);--> statement-breakpoint

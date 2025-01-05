@@ -22,6 +22,7 @@ import {
   text,
   primaryKey,
   unique,
+  real,
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
@@ -223,6 +224,7 @@ export const sportWeeks = sqliteTable(
     startTime: integer("start_time", { mode: "timestamp" }).notNull(),
     endTime: integer("end_time", { mode: "timestamp" }).notNull(),
     espnNumber: integer("espn_number"),
+    espnEventsRef: text("espn_events_ref"),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
@@ -238,6 +240,86 @@ export const sportWeeks = sqliteTable(
     ),
   }),
 );
+
+export const sportGames = sqliteTable("sport_games", {
+  id: text("id", { length: UUID_LENGTH })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  weekId: text("week_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => sportWeeks.id, { onDelete: "cascade" }),
+  startTime: integer("start_time", { mode: "timestamp" }).notNull(),
+  status: text("status", { length: 32 }).notNull(),
+  clock: text("clock", { length: 16 }).notNull(),
+  period: integer("period").notNull(),
+  awayTeamId: text("away_team_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => sportTeams.id, { onDelete: "cascade" }),
+  awayTeamScore: integer("away_team_score").notNull(),
+  homeTeamId: text("home_team_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => sportTeams.id, { onDelete: "cascade" }),
+  homeTeamScore: integer("home_team_score").notNull(),
+  espnEventId: text("espn_event_id", { length: 16 }).unique(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`)
+    .$onUpdate(() => new Date()),
+});
+
+export const sportGameOdds = sqliteTable(
+  "sport_game_odds",
+  {
+    id: text("id", { length: UUID_LENGTH })
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    gameId: text("game_id", { length: UUID_LENGTH })
+      .notNull()
+      .references(() => sportGames.id, { onDelete: "cascade" }),
+    providerId: text("provider_id", { length: UUID_LENGTH })
+      .notNull()
+      .references(() => oddsProviders.id, { onDelete: "cascade" }),
+    favoriteTeamId: text("favorite_team_id", { length: UUID_LENGTH })
+      .notNull()
+      .references(() => sportTeams.id, { onDelete: "cascade" }),
+    underDogTeamId: text("under_dog_team_id", { length: UUID_LENGTH })
+      .notNull()
+      .references(() => sportTeams.id, { onDelete: "cascade" }),
+    spread: real("spread").notNull(),
+    overUnder: real("over_under").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    gameIdProviderIdUnique: unique("game_id_provider_id_unique").on(
+      t.gameId,
+      t.providerId,
+    ),
+  }),
+);
+
+export const oddsProviders = sqliteTable("odds_providers", {
+  id: text("id", { length: UUID_LENGTH })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name", { length: 64 }).notNull(),
+  espnId: text("espn_id", { length: 8 }).unique(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`)
+    .$onUpdate(() => new Date()),
+});
 
 export const sportTeams = sqliteTable(
   "sport_teams",
