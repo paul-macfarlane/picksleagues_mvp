@@ -133,6 +133,7 @@ async function main() {
             startTime: new Date(espnWeek.startDate),
             endTime: new Date(espnWeek.endDate),
             espnNumber: espnWeek.number,
+            espnEventsRef: espnWeek.events.$ref,
           })),
         );
       }
@@ -210,6 +211,7 @@ interface UpsertDBSportWeek {
   startTime: Date;
   endTime: Date;
   espnNumber?: number;
+  espnEventsRef?: string;
 }
 
 async function upsertSportWeeks(tx: Transaction, upserts: UpsertDBSportWeek[]) {
@@ -222,6 +224,7 @@ async function upsertSportWeeks(tx: Transaction, upserts: UpsertDBSportWeek[]) {
         startTime: sql`excluded.start_time`,
         endTime: sql`excluded.end_time`,
         espnNumber: sql`excluded.espn_number`,
+        espnEventsRef: sql`excluded.espn_events_ref`,
       },
     })
     .returning();
