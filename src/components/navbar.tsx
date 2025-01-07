@@ -22,25 +22,28 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { DBLeagueDetails, getDBLeagueDetailsForUser } from "@/db/leagues";
-import { getLeagueHomeUrl } from "@/models/leagues";
+import {
+  DBPicksLeagueDetails,
+  getDBPicksLeagueDetailsForUser,
+} from "@/db/picksLeagues";
+import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
 import { headers } from "next/headers";
 import { Separator } from "./ui/separator";
 
-// users are pretty unlikely to be in more than 10 leagues, but if they are they can view those on the dashboard
-const MAX_LEAGUES_TO_DISPLAY = 10;
+// users are pretty unlikely to be in more than 10 picks sport-leagues, but if they are they can view those on the dashboard
+const MAX_PICKS_LEAGUES_TO_DISPLAY = 10;
 
 export default async function Navbar() {
   const session = await auth();
 
   let dbUser: DBUser | null = null;
-  let dbLeaguesForUser: DBLeagueDetails[] = [];
+  let dbPicksLeagueDetails: DBPicksLeagueDetails[] = [];
   if (session?.user?.id) {
     dbUser = await getDBUserById(session.user.id);
     if (dbUser) {
-      dbLeaguesForUser = await getDBLeagueDetailsForUser(
+      dbPicksLeagueDetails = await getDBPicksLeagueDetailsForUser(
         dbUser.id,
-        MAX_LEAGUES_TO_DISPLAY,
+        MAX_PICKS_LEAGUES_TO_DISPLAY,
       );
     } else {
       console.error(
@@ -75,30 +78,32 @@ export default async function Navbar() {
                       </CustomMenuItem>
 
                       <CustomMenuItem
-                        href="/leagues/create"
-                        active={pathname === "/leagues/create"}
-                        title="Create a League"
+                        href="/picks-leagues/create"
+                        active={pathname === "/picks-leagues/create"}
+                        title="Create a Picks League"
                       >
                         Start a new league and invite friends
                       </CustomMenuItem>
 
                       <CustomMenuItem
-                        href="/leagues/join"
-                        active={pathname === "/leagues/join"}
-                        title="Join a League"
+                        href="/picks-leagues/join"
+                        active={pathname === "/picks-leagues/join"}
+                        title="Join a Picks League"
                       >
                         Join an existing league
                       </CustomMenuItem>
 
                       <Separator />
 
-                      {dbLeaguesForUser
-                        .slice(0, MAX_LEAGUES_TO_DISPLAY)
+                      {dbPicksLeagueDetails
+                        .slice(0, MAX_PICKS_LEAGUES_TO_DISPLAY)
                         .map((league) => (
                           <CustomMenuItem
                             key={league.id}
-                            href={getLeagueHomeUrl(league.id)}
-                            active={pathname === getLeagueHomeUrl(league.id)}
+                            href={getPicksLeagueHomeUrl(league.id)}
+                            active={
+                              pathname === getPicksLeagueHomeUrl(league.id)
+                            }
                             title={league.name}
                           >
                             {league.sportLeagueAbbreviation} • {league.pickType}
@@ -111,7 +116,7 @@ export default async function Navbar() {
             </NavigationMenu>
           </div>
         ) : (
-          // for unauthed users
+          // for un-authed users
           <Link className="flex items-center space-x-2" href={"/"}>
             <Trophy className="h-6 w-6 text-primary" />
             <span className="text-2xl font-bold">Picks Leagues</span>
@@ -149,16 +154,16 @@ export default async function Navbar() {
                       </li>
                       <li>
                         <a
-                          href="/leagues/create"
-                          className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/leagues/create" ? "bg-accent" : ""}`}
+                          href="/picks-leagues/create"
+                          className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/picks-sport-leagues/create" ? "bg-accent" : ""}`}
                         >
                           Create a League
                         </a>
                       </li>
                       <li>
                         <a
-                          href="/leagues/join"
-                          className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/leagues/join" ? "bg-accent" : ""}`}
+                          href="/picks-leagues/join"
+                          className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/picks-sport-leagues/join" ? "bg-accent" : ""}`}
                         >
                           Join a League
                         </a>
@@ -166,13 +171,13 @@ export default async function Navbar() {
 
                       <Separator />
 
-                      {dbLeaguesForUser
-                        .slice(0, MAX_LEAGUES_TO_DISPLAY)
+                      {dbPicksLeagueDetails
+                        .slice(0, MAX_PICKS_LEAGUES_TO_DISPLAY)
                         .map((league) => (
                           <li key={league.id}>
                             <a
-                              href={getLeagueHomeUrl(league.id)}
-                              className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === getLeagueHomeUrl(league.id) ? "bg-accent" : ""}`}
+                              href={getPicksLeagueHomeUrl(league.id)}
+                              className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === getPicksLeagueHomeUrl(league.id) ? "bg-accent" : ""}`}
                             >
                               {league.name}
                             </a>

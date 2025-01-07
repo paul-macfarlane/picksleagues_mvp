@@ -6,7 +6,7 @@ import {
   ESPNRef,
   ESPNLogo,
   ESPNLink,
-} from "@/integrations/espn/types";
+} from "@/integrations/espn/shared";
 
 interface Team {
   $ref?: string;
@@ -18,7 +18,6 @@ interface Team {
   };
   slug: string;
   location: string;
-  name: string;
   nickname: string;
   abbreviation: string;
   displayName: string;
@@ -94,19 +93,19 @@ async function getTeamsForLeague(
 }
 
 interface GetESPNTeamParam {
-  sport: ESPNSportSlug;
-  league: ESPNLeagueSlug;
+  sportSlug: ESPNSportSlug;
+  leagueSlug: ESPNLeagueSlug;
   seasonDisplayName: string;
 }
 
-export async function getESPNSportTeams(
+export async function getESPNSportLeagueTeams(
   params: GetESPNTeamParam[],
 ): Promise<Team[]> {
   let teams: Team[] = [];
   for (let i = 0; i < params.length; i++) {
     const sportTeams = await getTeamsForLeague(
-      params[i].sport,
-      params[i].league,
+      params[i].sportSlug,
+      params[i].leagueSlug,
       params[i].seasonDisplayName,
     );
     teams = [...teams, ...sportTeams];

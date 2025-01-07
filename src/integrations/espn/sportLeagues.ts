@@ -3,7 +3,7 @@ import {
   ESPNLogo,
   ESPNRef,
   ESPNSportSlug,
-} from "@/integrations/espn/types";
+} from "@/integrations/espn/shared";
 import axios from "axios";
 
 interface League {
@@ -98,7 +98,6 @@ async function getSportLeague(
   return response.data;
 }
 
-// todo "college-football" seems to timeout when all the teams are fetched, because it is a lot of teams
 const LEAGUE_SLUGS = ["nfl"];
 
 export async function getESPNSportLeagues(
@@ -106,8 +105,8 @@ export async function getESPNSportLeagues(
 ): Promise<League[]> {
   const leagues = [];
 
-  // there is also a paginated endpoint at https://sports.core.api.espn.com/v2/sports/{{sport}}/leagues/{{league}}?lang={{lang}}&region={{region}}
-  // but right now only 2 leagues are supported so it's simpler to hardcode the names
+  // there is also a paginated endpoint at https://sports.core.api.espn.com/v2/sports/{{sport}}/picks-sport-leagues/{{league}}?lang={{lang}}&region={{region}}
+  // but right now only 2 picks-sport-leagues are supported so it's simpler to hardcode the names
   for (const leagueSlug of LEAGUE_SLUGS) {
     const sportLeague = await getSportLeague(sportSlug, leagueSlug);
     leagues.push(sportLeague);

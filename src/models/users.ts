@@ -33,10 +33,8 @@ export const UpdateProfileFormSchema = z.object({
       MAX_LAST_NAME_LENGTH,
       `Cannot be more than ${MAX_LAST_NAME_LENGTH} characters.`,
     ),
-  imageUrl: z
-    .string()
-    .trim()
-    .url("Must be a valid url.")
-    .max(IMG_URL_MAX_LENGTH)
-    .optional(),
+  imageUrl: z.union([
+    z.string().url("Must be a valid url.").max(IMG_URL_MAX_LENGTH),
+    z.string().length(0), // annoying, but because you can't have a controlled input with the value undefined in react-hook-form, we have to allow this to be an empty string
+  ]),
 });
