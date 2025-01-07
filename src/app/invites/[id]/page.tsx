@@ -1,16 +1,19 @@
 import { auth } from "@/auth";
 import ErrorPage from "@/components/error-page";
-import {
-  createDBLeagueMember,
-  getLeagueDetailsForInvite,
-  getDBLeagueMember,
-  accceptDBLeagueInvite,
-} from "@/db/leagues";
 import { getDBUserById } from "@/db/users";
-import { withTransaction } from "@/db/util";
-import { getLeagueHomeUrl, LeagueMemberRoles } from "@/models/leagues";
+import { withTransaction } from "@/db/transactions";
+import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import {
+  createDBPicksLeagueMember,
+  getDBPicksLeagueMember,
+} from "@/db/picksLeagueMembers";
+import {
+  acceptDBPicksLeagueInvite,
+  getDBPicksLeagueDetailsForInvite,
+} from "@/db/picksLeagueInvite";
+import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 
 export default async function InvitesPage({
   params,
@@ -77,7 +80,7 @@ export default async function InvitesPage({
     );
   }
 
-  const dbLeague = await getLeagueDetailsForInvite(parseInviteId.data);
+  const dbLeague = await getDBPicksLeagueDetailsForInvite(parseInviteId.data);
   if (!dbLeague) {
     return (
       <ErrorPage
@@ -121,18 +124,21 @@ export default async function InvitesPage({
     );
   }
 
-  const existingLeagueMember = await getDBLeagueMember(dbLeague.id, dbUser.id);
+  const existingLeagueMember = await getDBPicksLeagueMember(
+    dbLeague.id,
+    dbUser.id,
+  );
   if (!existingLeagueMember) {
     const createDBLeagueMemberData = {
       userId: dbUser.id,
       leagueId: dbLeague.id,
-      role: LeagueMemberRoles.MEMBER,
+      role: PicksLeagueMemberRoles.MEMBER,
     };
     try {
       await withTransaction(async (tx) => {
-        await accceptDBLeagueInvite(dbUser.id, dbLeague.invite.id, tx);
+        await acceptDBPicksLeagueInvite(dbUser.id, dbLeague.invite.id, tx);
 
-        const dbLeagueMember = await createDBLeagueMember(
+        const dbLeagueMember = await createDBPicksLeagueMember(
           createDBLeagueMemberData,
           tx,
         );
@@ -165,5 +171,5 @@ export default async function InvitesPage({
     }
   }
 
-  return redirect(getLeagueHomeUrl(dbLeague.id));
+  return redirect(getPicksLeagueHomeUrl(dbLeague.id));
 }

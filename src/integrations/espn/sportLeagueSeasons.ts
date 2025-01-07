@@ -4,7 +4,7 @@ import {
   ESPNListResponse,
   ESPNRef,
   ESPNSportSlug,
-} from "@/integrations/espn/types";
+} from "@/integrations/espn/shared";
 
 interface Week {
   $ref: string;
@@ -68,6 +68,7 @@ export async function getActiveESPNSportLeagueSeason(
   sportSlug: ESPNSportSlug,
   leagueSlug: ESPNLeagueSlug,
 ): Promise<Season | null> {
+  const now = new Date();
   const seasonRefs = await getESPNSportLeagueSeasonsRefs(sportSlug, leagueSlug);
   if (!seasonRefs.length) {
     return null;
@@ -76,8 +77,19 @@ export async function getActiveESPNSportLeagueSeason(
   const response = await axios.get<Season>(
     seasonRefs[0].$ref.replace("http://", "https://"),
   );
+  if (
+    new Date(response.data.startDate) < now &&
+    new Date(response.data.endDate) > now
+  ) {
+    return response.data;
+  }
 
-  return response.data;
+  // If the first season is not active, the next season should be.
+  const nextResponse = await axios.get<Season>(
+    seasonRefs[1].$ref.replace("http://", "https://"),
+  );
+
+  return nextResponse.data;
 }
 
 async function getESPNSportLeagueSeasonsRefs(

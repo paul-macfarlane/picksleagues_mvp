@@ -1,14 +1,13 @@
 import { UUID_LENGTH, IMG_URL_MAX_LENGTH } from "@/models/db";
 import {
-  LEAGUE_ROLE_MAX_LENGTH,
-  LEAGUE_VISIBILITY_MAX_LENGTH,
-  MAX_LEAGUE_NAME_LENGTH,
-  PICK_TYPE_MAX_LENGTH,
-} from "@/models/leagues";
+  PICKS_LEAGUE_VISIBILITY_MAX_LENGTH,
+  PICKS_LEAGUE_MAX_NAME_LENGTH,
+  PICKS_LEAGUE_PICK_TYPE_MAX_LENGTH,
+} from "@/models/picksLeagues";
 import {
   SPORT_LEAGUE_NAME_MAX_LENGTH,
-  SPORT_SEASON_MAX_LENGTH,
-  SPORT_WEEK_MAX_LENGTH,
+  SPORT_LEAGUE_SEASON_MAX_LENGTH,
+  SPORT_LEAGUE_WEEK_MAX_LENGTH,
 } from "@/models/sportLeagues";
 import {
   MAX_FIRST_NAME_LENGTH,
@@ -25,6 +24,7 @@ import {
   real,
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccountType } from "next-auth/adapters";
+import { PICKS_LEAGUE_ROLE_MAX_LENGTH } from "@/models/picksLeagueMembers";
 
 /**
  * table used by auth.js to store users, some custom fields added on top
@@ -172,7 +172,6 @@ export const sportLeagues = sqliteTable("sports_leagues", {
   abbreviation: text("abbreviation", { length: 8 }).notNull().unique(),
   logoUrl: text("logo_url", { length: IMG_URL_MAX_LENGTH }),
   espnId: text("espn_id", { length: 8 }),
-  espnSlug: text("espn_slug", { length: 32 }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -182,20 +181,19 @@ export const sportLeagues = sqliteTable("sports_leagues", {
     .$onUpdate(() => new Date()),
 });
 
-export const sportSeasons = sqliteTable(
-  "sport_seasons",
+export const sportLeagueSeasons = sqliteTable(
+  "sport_league_seasons",
   {
     id: text("id", { length: UUID_LENGTH })
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    sportLeagueId: text("sport_league_id", { length: UUID_LENGTH })
+    leagueId: text("league_id", { length: UUID_LENGTH })
       .notNull()
       .references(() => sportLeagues.id, { onDelete: "cascade" }),
-    name: text("name", { length: SPORT_SEASON_MAX_LENGTH }).notNull(),
+    name: text("name", { length: SPORT_LEAGUE_SEASON_MAX_LENGTH }).notNull(),
     startTime: integer("start_time", { mode: "timestamp" }).notNull(),
     endTime: integer("end_time", { mode: "timestamp" }).notNull(),
     active: integer("active", { mode: "boolean" }).notNull(),
-    espnDisplayName: text("espn_display_name", { length: 32 }),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
@@ -205,25 +203,22 @@ export const sportSeasons = sqliteTable(
       .$onUpdate(() => new Date()),
   },
   (t) => ({
-    sportLeagueIdESPNDisplayNameUnique: unique(
-      "sport_league_id_espn_display_name_unique",
-    ).on(t.sportLeagueId, t.espnDisplayName),
+    leagueIdNameUnique: unique("league_id_name_unique").on(t.leagueId, t.name),
   }),
 );
 
-export const sportWeeks = sqliteTable(
-  "sport_weeks",
+export const sportLeagueWeeks = sqliteTable(
+  "sport_league_weeks",
   {
     id: text("id", { length: UUID_LENGTH })
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     seasonId: text("season_id", { length: UUID_LENGTH })
       .notNull()
-      .references(() => sportSeasons.id, { onDelete: "cascade" }),
-    name: text("name", { length: SPORT_WEEK_MAX_LENGTH }).notNull(),
+      .references(() => sportLeagueSeasons.id, { onDelete: "cascade" }),
+    name: text("name", { length: SPORT_LEAGUE_WEEK_MAX_LENGTH }).notNull(),
     startTime: integer("start_time", { mode: "timestamp" }).notNull(),
     endTime: integer("end_time", { mode: "timestamp" }).notNull(),
-    espnNumber: integer("espn_number"),
     espnEventsRef: text("espn_events_ref"),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
@@ -241,26 +236,26 @@ export const sportWeeks = sqliteTable(
   }),
 );
 
-export const sportGames = sqliteTable("sport_games", {
+export const sportLeagueGames = sqliteTable("sport_league_games", {
   id: text("id", { length: UUID_LENGTH })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   weekId: text("week_id", { length: UUID_LENGTH })
     .notNull()
-    .references(() => sportWeeks.id, { onDelete: "cascade" }),
+    .references(() => sportLeagueWeeks.id, { onDelete: "cascade" }),
   startTime: integer("start_time", { mode: "timestamp" }).notNull(),
   status: text("status", { length: 32 }).notNull(),
   clock: text("clock", { length: 16 }).notNull(),
   period: integer("period").notNull(),
   awayTeamId: text("away_team_id", { length: UUID_LENGTH })
     .notNull()
-    .references(() => sportTeams.id, { onDelete: "cascade" }),
+    .references(() => sportLeagueTeams.id, { onDelete: "cascade" }),
   awayTeamScore: integer("away_team_score").notNull(),
   homeTeamId: text("home_team_id", { length: UUID_LENGTH })
     .notNull()
-    .references(() => sportTeams.id, { onDelete: "cascade" }),
+    .references(() => sportLeagueTeams.id, { onDelete: "cascade" }),
   homeTeamScore: integer("home_team_score").notNull(),
-  espnEventId: text("espn_event_id", { length: 16 }).unique(),
+  espnId: text("espn_id", { length: 16 }).unique(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -270,24 +265,24 @@ export const sportGames = sqliteTable("sport_games", {
     .$onUpdate(() => new Date()),
 });
 
-export const sportGameOdds = sqliteTable(
-  "sport_game_odds",
+export const sportLeagueGameOdds = sqliteTable(
+  "sport_league_game_odds",
   {
     id: text("id", { length: UUID_LENGTH })
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     gameId: text("game_id", { length: UUID_LENGTH })
       .notNull()
-      .references(() => sportGames.id, { onDelete: "cascade" }),
+      .references(() => sportLeagueGames.id, { onDelete: "cascade" }),
     providerId: text("provider_id", { length: UUID_LENGTH })
       .notNull()
       .references(() => oddsProviders.id, { onDelete: "cascade" }),
     favoriteTeamId: text("favorite_team_id", { length: UUID_LENGTH })
       .notNull()
-      .references(() => sportTeams.id, { onDelete: "cascade" }),
+      .references(() => sportLeagueTeams.id, { onDelete: "cascade" }),
     underDogTeamId: text("under_dog_team_id", { length: UUID_LENGTH })
       .notNull()
-      .references(() => sportTeams.id, { onDelete: "cascade" }),
+      .references(() => sportLeagueTeams.id, { onDelete: "cascade" }),
     spread: real("spread").notNull(),
     overUnder: real("over_under").notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
@@ -321,13 +316,13 @@ export const oddsProviders = sqliteTable("odds_providers", {
     .$onUpdate(() => new Date()),
 });
 
-export const sportTeams = sqliteTable(
-  "sport_teams",
+export const sportLeagueTeams = sqliteTable(
+  "sport_league_teams",
   {
     id: text("id", { length: UUID_LENGTH })
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    sportLeagueId: text("sport_league_id", { length: UUID_LENGTH })
+    leagueId: text("league_id", { length: UUID_LENGTH })
       .notNull()
       .references(() => sportLeagues.id, { onDelete: "cascade" }),
     name: text("name", { length: 256 }).notNull(),
@@ -344,26 +339,28 @@ export const sportTeams = sqliteTable(
       .$onUpdate(() => new Date()),
   },
   (t) => ({
-    sportLeagueIdEspnIdUnique: unique("sport_league_id_espn_id_unique").on(
-      t.sportLeagueId,
+    leagueIdEspnIdUnique: unique("league_id_espn_id_unique").on(
+      t.leagueId,
       t.espnId,
     ),
   }),
 );
 
-export const leagues = sqliteTable("leagues", {
+export const picksLeagues = sqliteTable("picks_leagues", {
   id: text("id", { length: UUID_LENGTH })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  name: text("name", { length: MAX_LEAGUE_NAME_LENGTH }).notNull(),
+  name: text("name", { length: PICKS_LEAGUE_MAX_NAME_LENGTH }).notNull(),
   logoUrl: text("logo_url", { length: IMG_URL_MAX_LENGTH }),
   sportLeagueId: text("sport_league_id", { length: UUID_LENGTH })
     .notNull()
     .references(() => sportLeagues.id, { onDelete: "cascade" }),
   picksPerWeek: integer("picks_per_week").notNull(),
-  pickType: text("pick_type", { length: PICK_TYPE_MAX_LENGTH }).notNull(),
-  leagueVisibility: text("league_visibility", {
-    length: LEAGUE_VISIBILITY_MAX_LENGTH,
+  pickType: text("pick_type", {
+    length: PICKS_LEAGUE_PICK_TYPE_MAX_LENGTH,
+  }).notNull(),
+  visibility: text("visibility", {
+    length: PICKS_LEAGUE_VISIBILITY_MAX_LENGTH,
   }).notNull(),
   size: integer("size").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
@@ -375,22 +372,26 @@ export const leagues = sqliteTable("leagues", {
     .$onUpdate(() => new Date()),
 });
 
-export const leagueSeasons = sqliteTable("league_seasons", {
+export const picksLeagueSeasons = sqliteTable("picks_league_seasons", {
   id: text("id", { length: UUID_LENGTH })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   leagueId: text("league_id", { length: UUID_LENGTH })
     .notNull()
-    .references(() => leagues.id, { onDelete: "cascade" }),
-  sportSeasonId: text("sport_season_id", { length: UUID_LENGTH })
+    .references(() => picksLeagues.id, { onDelete: "cascade" }),
+  sportLeagueSeasonId: text("sport_league_season_id", { length: UUID_LENGTH })
     .notNull()
-    .references(() => sportSeasons.id, { onDelete: "cascade" }),
-  startSportWeekId: text("start_sport_week_id", { length: UUID_LENGTH })
+    .references(() => sportLeagueSeasons.id, { onDelete: "cascade" }),
+  startSportLeagueWeekId: text("start_sport_league_week_id", {
+    length: UUID_LENGTH,
+  })
     .notNull()
-    .references(() => sportWeeks.id, { onDelete: "cascade" }),
-  endSportWeekId: text("end_sport_week_id", { length: UUID_LENGTH })
+    .references(() => sportLeagueWeeks.id, { onDelete: "cascade" }),
+  endSportLeagueWeekId: text("end_sport_league_week_id", {
+    length: UUID_LENGTH,
+  })
     .notNull()
-    .references(() => sportWeeks.id, { onDelete: "cascade" }),
+    .references(() => sportLeagueWeeks.id, { onDelete: "cascade" }),
   active: integer("active", { mode: "boolean" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
@@ -401,14 +402,14 @@ export const leagueSeasons = sqliteTable("league_seasons", {
     .$onUpdate(() => new Date()),
 });
 
-export const leagueMembers = sqliteTable("league_members", {
+export const picksLeagueMembers = sqliteTable("picks_league_members", {
   userId: text("user_id", { length: UUID_LENGTH })
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   leagueId: text("league_id", { length: UUID_LENGTH })
     .notNull()
-    .references(() => leagues.id, { onDelete: "cascade" }),
-  role: text("role", { length: LEAGUE_ROLE_MAX_LENGTH }).notNull(),
+    .references(() => picksLeagues.id, { onDelete: "cascade" }),
+  role: text("role", { length: PICKS_LEAGUE_ROLE_MAX_LENGTH }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -418,13 +419,13 @@ export const leagueMembers = sqliteTable("league_members", {
     .$onUpdate(() => new Date()),
 });
 
-export const leagueInvites = sqliteTable("league_invites", {
+export const picksLeagueInvites = sqliteTable("picks_league_invites", {
   id: text("id", { length: UUID_LENGTH })
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   leagueId: text("league_id", { length: UUID_LENGTH })
     .notNull()
-    .references(() => leagues.id, { onDelete: "cascade" }),
+    .references(() => picksLeagues.id, { onDelete: "cascade" }),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
   acceptedByUserId: text("accepted_by_user_id", {
     length: UUID_LENGTH,

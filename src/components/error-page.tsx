@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Button } from "./ui/button";
+import { ReactNode } from "react";
 
 export default function ErrorPage({
   title,
@@ -17,7 +18,7 @@ export default function ErrorPage({
 }: {
   title: string;
   description?: string;
-  content?: React.ReactNode;
+  content?: ReactNode;
   buttonProps?: {
     link: string;
     text: string;
