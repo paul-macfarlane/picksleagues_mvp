@@ -15,11 +15,10 @@ import {
 } from "@/db/picksLeagueInvite";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 
-export default async function InvitesPage({
-  params,
-}: {
-  params: { id: unknown };
+export default async function InvitesPage(props: {
+  params: Promise<{ id: unknown }>;
 }) {
+  const params = await props.params;
   const parseInviteId = z.string().uuid().safeParse(params.id);
   if (!parseInviteId.success) {
     return (

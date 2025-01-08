@@ -22,7 +22,7 @@ export default async function CreatePicksLeague() {
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">
-            Create a New Picks League
+            Create a new Picks League
           </CardTitle>
           <CardDescription>
             Set up your Pick League&apos;s details and rules

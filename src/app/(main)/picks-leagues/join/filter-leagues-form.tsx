@@ -229,8 +229,13 @@ export default function FilterLeaguesForm({
                       type="number"
                       value={picksPerWeek ?? ""}
                       onChange={(value) => {
-                        field.onChange(value.target.valueAsNumber);
-                        setPicksPerWeek(value.target.valueAsNumber);
+                        if (isNaN(value.target.valueAsNumber)) {
+                          field.onChange("");
+                          setPicksPerWeek(undefined);
+                        } else {
+                          field.onChange(value.target.valueAsNumber);
+                          setPicksPerWeek(value.target.valueAsNumber);
+                        }
                       }}
                     />
                   </FormControl>
@@ -251,8 +256,13 @@ export default function FilterLeaguesForm({
                       type="number"
                       value={size ?? ""}
                       onChange={(value) => {
-                        field.onChange(value.target.valueAsNumber);
-                        setSize(value.target.valueAsNumber);
+                        if (isNaN(value.target.valueAsNumber)) {
+                          field.onChange("");
+                          setSize(undefined);
+                        } else {
+                          field.onChange(value.target.valueAsNumber);
+                          setSize(value.target.valueAsNumber);
+                        }
                       }}
                     />
                   </FormControl>

@@ -16,11 +16,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-export default async function AuthPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
+export default async function AuthPage(props: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
+  const searchParams = await props.searchParams;
   const session = await auth();
   if (session?.user) {
     return redirect("/dashboard");

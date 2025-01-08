@@ -22,11 +22,10 @@ function ErrorComponent({ message }: { message: string }) {
   );
 }
 
-export default async function PicksLeaguePage({
-  params,
-}: {
-  params: { leagueIdSubPaths: string[] | undefined };
+export default async function PicksLeaguePage(props: {
+  params: Promise<{ leagueIdSubPaths: string[] | undefined }>;
 }) {
+  const params = await props.params;
   const session = await auth();
   if (!session?.user?.id) {
     return redirect("/auth");
@@ -62,7 +61,7 @@ export default async function PicksLeaguePage({
     );
   }
 
-  const headerList = headers();
+  const headerList = await headers();
   const pathname = headerList.get("x-current-path");
 
   let tabs = MEMBER_PICKS_LEAGUE_TABS;

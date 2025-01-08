@@ -11,12 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useRef, useState } from "react";
+import { useRef, useState, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { z } from "zod";
-import { useFormState } from "react-dom";
 import { picksLeagueInviteFormAction } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/invite-action";
 import { PicksLeagueInviteFormSchema } from "@/models/picksLeagueInvites";
 
@@ -32,7 +31,10 @@ export function InviteDialog({ leagueId }: { leagueId: string }) {
     setLinkCopied(true);
   };
 
-  const [formState, formAction] = useFormState(picksLeagueInviteFormAction, {});
+  const [formState, formAction] = useActionState(
+    picksLeagueInviteFormAction,
+    {},
+  );
   const form = useForm<FormSchema>({
     resolver: zodResolver(PicksLeagueInviteFormSchema),
   });
