@@ -5,11 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UpdateProfileFormSchema } from "@/models/users";
-import { useForm, UseFormReturn } from "react-hook-form";
-import { useFormState, useFormStatus } from "react-dom";
+import { useForm } from "react-hook-form";
+import { useFormStatus } from "react-dom";
 import { updateProfileAction } from "./action";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useActionState } from "react";
 import {
   Form,
   FormControl,
@@ -25,109 +25,6 @@ import { useRouter } from "next/navigation";
 import { isUrl } from "@/lib/utils";
 
 type FormSchema = z.infer<typeof UpdateProfileFormSchema>;
-
-function FormContent({
-  form,
-  errorMessage,
-}: {
-  form: UseFormReturn<FormSchema>;
-  errorMessage?: string;
-}) {
-  const { pending } = useFormStatus();
-
-  const imageUrl = form.watch("imageUrl");
-  const username = form.watch("username");
-
-  return (
-    <>
-      <CardContent className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-20 w-20">
-            <AvatarImage
-              src={imageUrl && isUrl(imageUrl) ? imageUrl : ""}
-              alt={"Your Profile Avatar"}
-            />
-            <AvatarFallback>
-              {username.charAt(0).toUpperCase() ?? "A"}
-            </AvatarFallback>
-          </Avatar>
-
-          <FormField
-            control={form.control}
-            name="imageUrl"
-            render={({ field }) => (
-              <FormItem className="flex w-full flex-col gap-1">
-                <FormLabel>Profile Picture URL</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="https://example.com/your-image.jpg"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem className="flex flex-col gap-1">
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormDescription>
-                Usernames are unique and must be between 8-20 characters
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="firstName"
-          render={({ field }) => (
-            <FormItem className="flex flex-col gap-1">
-              <FormLabel>First Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="lastName"
-          render={({ field }) => (
-            <FormItem className="flex flex-col gap-1">
-              <FormLabel>Last Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </CardContent>
-
-      <CardFooter className="mt-4 flex flex-col gap-4">
-        <div className="flex w-full gap-4">
-          <Button disabled={pending} type="submit" className="w-full">
-            Save
-          </Button>
-        </div>
-
-        <p className="text-sm font-medium text-destructive">{errorMessage}</p>
-      </CardFooter>
-    </>
-  );
-}
 
 interface UpdateProfileFormProps {
   defaultValues: {
@@ -145,7 +42,7 @@ export default function UpdateProfileForm({
 }: UpdateProfileFormProps) {
   const router = useRouter();
 
-  const [formState, formAction] = useFormState(updateProfileAction, {});
+  const [formState, formAction] = useActionState(updateProfileAction, {});
   const form = useForm<FormSchema>({
     resolver: zodResolver(UpdateProfileFormSchema),
     defaultValues: {
@@ -156,6 +53,10 @@ export default function UpdateProfileForm({
     },
   });
   const formRef = useRef<HTMLFormElement>(null);
+  const { pending } = useFormStatus();
+
+  const imageUrl = form.watch("imageUrl");
+  const username = form.watch("username");
 
   const { toast } = useToast();
 
@@ -228,7 +129,95 @@ export default function UpdateProfileForm({
           })(e);
         }}
       >
-        <FormContent form={form} errorMessage={formState.errors?.form} />
+        <CardContent className="space-y-6">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-20 w-20">
+              <AvatarImage
+                src={imageUrl && isUrl(imageUrl) ? imageUrl : ""}
+                alt={"Your Profile Avatar"}
+              />
+              <AvatarFallback>
+                {username.charAt(0).toUpperCase() ?? "A"}
+              </AvatarFallback>
+            </Avatar>
+
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem className="flex w-full flex-col gap-1">
+                  <FormLabel>Profile Picture URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="https://example.com/your-image.jpg"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-1">
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormDescription>
+                  Usernames are unique and must be between 8-20 characters
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-1">
+                <FormLabel>First Name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-1">
+                <FormLabel>Last Name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </CardContent>
+
+        <CardFooter className="mt-4 flex flex-col gap-4">
+          <div className="flex w-full gap-4">
+            <Button disabled={pending} type="submit" className="w-full">
+              Save
+            </Button>
+          </div>
+
+          {formState.errors?.form && (
+            <p className="text-sm font-medium text-destructive">
+              {formState.errors.form}
+            </p>
+          )}
+        </CardFooter>
       </form>
     </Form>
   );

@@ -16,7 +16,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider
           attribute="class"
@@ -25,7 +25,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex h-full flex-col">{children}</div>
-
           <Toaster />
         </ThemeProvider>
       </body>

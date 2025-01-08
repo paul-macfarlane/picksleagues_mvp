@@ -78,11 +78,10 @@ function getPageNumberUrl(
   return `/picks-leagues/join?${queryParams}`;
 }
 
-export default async function JoinLeagues({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
+export default async function JoinLeagues(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const searchParams = await props.searchParams;
   const session = await auth();
   if (!session?.user?.id) {
     return redirect("/auth");

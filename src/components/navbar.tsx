@@ -52,7 +52,8 @@ export default async function Navbar() {
     }
   }
 
-  const pathname = headers().get("x-current-path");
+  const headersRes = await headers();
+  const pathname = headersRes.get("x-current-path");
 
   return (
     <header className="sticky top-0 z-10 mx-auto w-full border-b border-primary bg-primary-foreground p-4">
@@ -145,28 +146,28 @@ export default async function Navbar() {
                   <div className="py-4">
                     <ul className="space-y-1">
                       <li>
-                        <a
-                          href="/dashboard"
+                        <Link
+                          href={"/dashboard"}
                           className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/dashboard" ? "bg-accent" : ""}`}
                         >
                           Dashboard
-                        </a>
+                        </Link>
                       </li>
                       <li>
-                        <a
-                          href="/picks-leagues/create"
+                        <Link
+                          href={"/picks-leagues/create"}
                           className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/picks-sport-leagues/create" ? "bg-accent" : ""}`}
                         >
                           Create a League
-                        </a>
+                        </Link>
                       </li>
                       <li>
-                        <a
+                        <Link
                           href="/picks-leagues/join"
                           className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/picks-sport-leagues/join" ? "bg-accent" : ""}`}
                         >
                           Join a League
-                        </a>
+                        </Link>
                       </li>
 
                       <Separator />
@@ -175,12 +176,12 @@ export default async function Navbar() {
                         .slice(0, MAX_PICKS_LEAGUES_TO_DISPLAY)
                         .map((league) => (
                           <li key={league.id}>
-                            <a
+                            <Link
                               href={getPicksLeagueHomeUrl(league.id)}
                               className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === getPicksLeagueHomeUrl(league.id) ? "bg-accent" : ""}`}
                             >
                               {league.name}
-                            </a>
+                            </Link>
                           </li>
                         ))}
                     </ul>

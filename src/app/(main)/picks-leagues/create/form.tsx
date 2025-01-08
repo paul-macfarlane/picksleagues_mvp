@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DBSportLeagueWithActiveSeasonDetail } from "@/db/sportLeagues";
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import {
   CreatePicksLeagueSchema,
   PICKS_LEAGUE_DEFAULT_SIZE,
@@ -24,7 +24,7 @@ import {
   PicksLeaguePickTypes,
 } from "@/models/picksLeagues";
 import { z } from "zod";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createPicksLeagueAction } from "./action";
 import {
@@ -35,7 +35,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useRef, useState } from "react";
+import { useRef, useState, useActionState } from "react";
 import { isUrl } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -45,7 +45,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 
 type FormSchema = z.infer<typeof CreatePicksLeagueSchema>;
 
@@ -63,338 +62,6 @@ function getDefaultSportEndWeekId(
     : "";
 }
 
-function FormContent({
-  form,
-  sportLeagues,
-  defaultSportLeagueWeeks,
-  defaultStartSportLeagueWeekId,
-  defaultEndSportLeagueWeekId,
-  errorMessage,
-}: {
-  form: UseFormReturn<FormSchema>;
-  sportLeagues: DBSportLeagueWithActiveSeasonDetail[];
-  defaultSportLeagueWeeks: DBSportLeagueWeek[];
-  defaultStartSportLeagueWeekId: string;
-  defaultEndSportLeagueWeekId: string;
-  errorMessage: string;
-}) {
-  const { pending } = useFormStatus();
-
-  const leagueName = form.watch("name");
-  const logoUrl = form.watch("logoUrl");
-
-  const [sportLeagueWeeks, setSportLeagueWeeks] = useState(
-    defaultSportLeagueWeeks,
-  );
-  const [startSportLeagueWeekId, setStartSportLeagueWeekId] = useState(
-    defaultStartSportLeagueWeekId,
-  );
-  const [endSportLeagueWeekId, setEndSportLeagueWeekId] = useState(
-    defaultEndSportLeagueWeekId,
-  );
-
-  return (
-    <>
-      <CardContent className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>League Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter league name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="logoUrl"
-            render={({ field }) => (
-              <FormItem
-                className={`flex w-full items-end gap-2 ${form.formState.errors.name ? "items-center" : ""}`}
-              >
-                <Avatar
-                  className={`h-12 w-12 ${form.formState.errors.logoUrl ? "self-center" : ""}`}
-                >
-                  <AvatarImage
-                    src={isUrl(logoUrl) ? logoUrl : ""}
-                    alt="League logo"
-                  />
-                  <AvatarFallback>
-                    {leagueName.length ? leagueName.charAt(0) : "L"}
-                  </AvatarFallback>
-                </Avatar>
-                <div
-                  className={`flex w-full flex-col gap-2 ${form.formState.errors.name ? "self-start" : ""}`}
-                >
-                  <FormLabel>Logo URL (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter logo URL" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </div>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="sportLeagueId"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Sport League</FormLabel>
-                <Select
-                  onValueChange={(val) => {
-                    field.onChange(val);
-
-                    const sportLeague = sportLeagues.find(
-                      (sportLeague) => sportLeague.id === val,
-                    )!;
-                    setSportLeagueWeeks(sportLeague.season.weeks);
-
-                    const startId = getDefaultSportStartWeekId(sportLeague);
-                    form.setValue("startSportLeagueWeekId", startId);
-                    setStartSportLeagueWeekId(startId);
-
-                    const endId = getDefaultSportEndWeekId(sportLeague);
-                    form.setValue("endSportLeagueWeekId", endId);
-                    setEndSportLeagueWeekId(endId);
-                  }}
-                  defaultValue={field.value}
-                  name="sportLeagueId"
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a sport league" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {sportLeagues.map((sportLeague) => (
-                      <SelectItem key={sportLeague.id} value={sportLeague.id}>
-                        {sportLeague.abbreviation}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="visibility"
-            render={({ field }) => (
-              <FormItem className="flex flex-col justify-end">
-                <FormLabel className="flex items-center gap-2">
-                  League Visibility{" "}
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        type="button"
-                        className="h-min w-min"
-                      >
-                        <Info className="h-4 w-4" />
-                      </Button>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <ul className="flex list-disc flex-col gap-2 p-2">
-                        <li>
-                          Select &quot;Private&quot; to only allow invited users
-                          to join your league.
-                        </li>
-                        <li>
-                          Select &quot;Public&quot; to allow anyone with a Picks
-                          Leagues account to join your league.
-                        </li>
-                      </ul>
-                    </HoverCardContent>
-                  </HoverCard>
-                </FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  name="visibility"
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose League Visbility" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PICKS_LEAGUE_VISIBILITY_VALUES.map((visibility) => (
-                      <SelectItem key={visibility} value={visibility}>
-                        {visibility}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="pickType"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Pick Type</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  name="pickType"
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a pick type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PICKS_LEAGUE_PICK_TYPE_VALUES.map((pickType) => (
-                      <SelectItem key={pickType} value={pickType}>
-                        {pickType}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="picksPerWeek"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Picks Per Week</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(value) => {
-                      field.onChange(value.target.valueAsNumber);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="startSportLeagueWeekId"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Start Week</FormLabel>
-                <Select
-                  onValueChange={(val) => {
-                    if (val) {
-                      field.onChange(val);
-                      setStartSportLeagueWeekId(val);
-                    }
-                  }}
-                  value={startSportLeagueWeekId}
-                  name="startSportLeagueWeekId"
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select start week" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {sportLeagueWeeks.map((week) => (
-                      <SelectItem key={`startWeek-${week.id}`} value={week.id}>
-                        {week.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="endSportLeagueWeekId"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>End Week</FormLabel>
-                <Select
-                  onValueChange={(val) => {
-                    if (val) {
-                      field.onChange(val);
-                      setEndSportLeagueWeekId(val);
-                    }
-                  }}
-                  value={endSportLeagueWeekId}
-                  name="endSportLeagueWeekId"
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select end week" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {sportLeagueWeeks.map((week) => (
-                      <SelectItem key={`endWeek-${week.id}`} value={week.id}>
-                        {week.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="size"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>Size</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  {...field}
-                  onChange={(value) => {
-                    field.onChange(value.target.valueAsNumber);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </CardContent>
-
-      <CardFooter className="flex flex-col gap-4">
-        <Button className="w-full" disabled={pending} type="submit">
-          Create League
-        </Button>
-
-        {errorMessage ? (
-          <p className="text-sm font-medium text-destructive">{errorMessage}</p>
-        ) : (
-          <></>
-        )}
-      </CardFooter>
-    </>
-  );
-}
-
 export function CreatePicksLeagueForm({
   sportLeagues,
 }: {
@@ -409,7 +76,7 @@ export function CreatePicksLeagueForm({
     ? getDefaultSportEndWeekId(sportLeagues[0])
     : "";
 
-  const [formState, formAction] = useFormState(createPicksLeagueAction, {});
+  const [formState, formAction] = useActionState(createPicksLeagueAction, {});
   const form = useForm<FormSchema>({
     resolver: zodResolver(CreatePicksLeagueSchema),
     defaultValues: {
@@ -425,6 +92,22 @@ export function CreatePicksLeagueForm({
     },
   });
   const formRef = useRef<HTMLFormElement>(null);
+  const { pending } = useFormStatus();
+
+  const leagueName = form.watch("name");
+  const logoUrl = form.watch("logoUrl");
+
+  const defaultSportLeagueWeeks =
+    sportLeagues.length > 0 ? sportLeagues[0].season.weeks : [];
+  const [sportLeagueWeeks, setSportLeagueWeeks] = useState(
+    defaultSportLeagueWeeks,
+  );
+  const [startSportLeagueWeekId, setStartSportLeagueWeekId] = useState(
+    defaultStartSportLeagueWeekId,
+  );
+  const [endSportLeagueWeekId, setEndSportLeagueWeekId] = useState(
+    defaultEndSportLeagueWeekId,
+  );
 
   const { toast } = useToast();
 
@@ -517,16 +200,315 @@ export function CreatePicksLeagueForm({
           })(e);
         }}
       >
-        <FormContent
-          form={form}
-          sportLeagues={sportLeagues}
-          defaultSportLeagueWeeks={
-            sportLeagues.length > 0 ? sportLeagues[0].season.weeks : []
-          }
-          defaultStartSportLeagueWeekId={defaultStartSportLeagueWeekId}
-          defaultEndSportLeagueWeekId={defaultEndSportLeagueWeekId}
-          errorMessage={formState.errors?.form ?? ""}
-        />
+        <CardContent className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>League Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter league name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="logoUrl"
+              render={({ field }) => (
+                <FormItem
+                  className={`flex w-full items-end gap-2 ${form.formState.errors.name ? "items-center" : ""}`}
+                >
+                  <Avatar
+                    className={`h-12 w-12 ${form.formState.errors.logoUrl ? "self-center" : ""}`}
+                  >
+                    <AvatarImage
+                      src={isUrl(logoUrl) ? logoUrl : ""}
+                      alt="League logo"
+                    />
+                    <AvatarFallback>
+                      {leagueName.length ? leagueName.charAt(0) : "L"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div
+                    className={`flex w-full flex-col gap-2 ${form.formState.errors.name ? "self-start" : ""}`}
+                  >
+                    <FormLabel>Logo URL (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter logo URL" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sportLeagueId"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Sport League</FormLabel>
+                  <Select
+                    onValueChange={(val) => {
+                      field.onChange(val);
+
+                      const sportLeague = sportLeagues.find(
+                        (sportLeague) => sportLeague.id === val,
+                      )!;
+                      setSportLeagueWeeks(sportLeague.season.weeks);
+
+                      const startId = getDefaultSportStartWeekId(sportLeague);
+                      form.setValue("startSportLeagueWeekId", startId);
+                      setStartSportLeagueWeekId(startId);
+
+                      const endId = getDefaultSportEndWeekId(sportLeague);
+                      form.setValue("endSportLeagueWeekId", endId);
+                      setEndSportLeagueWeekId(endId);
+                    }}
+                    defaultValue={field.value}
+                    name="sportLeagueId"
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a sport league" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {sportLeagues.map((sportLeague) => (
+                        <SelectItem key={sportLeague.id} value={sportLeague.id}>
+                          {sportLeague.abbreviation}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="visibility"
+              render={({ field }) => (
+                <FormItem className="flex flex-col justify-end">
+                  <FormLabel className="flex items-center gap-2">
+                    League Visibility{" "}
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          type="button"
+                          className="h-min w-min"
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80">
+                        <ul className="flex list-disc flex-col gap-2 p-2">
+                          <li>
+                            Select &quot;Private&quot; to only allow invited
+                            users to join your league.
+                          </li>
+                          <li>
+                            Select &quot;Public&quot; to allow anyone with a
+                            Picks Leagues account to join your league.
+                          </li>
+                        </ul>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    name="visibility"
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose League Visbility" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PICKS_LEAGUE_VISIBILITY_VALUES.map((visibility) => (
+                        <SelectItem key={visibility} value={visibility}>
+                          {visibility}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pickType"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Pick Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    name="pickType"
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a pick type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PICKS_LEAGUE_PICK_TYPE_VALUES.map((pickType) => (
+                        <SelectItem key={pickType} value={pickType}>
+                          {pickType}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="picksPerWeek"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Picks Per Week</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(value) => {
+                        if (isNaN(value.target.valueAsNumber)) {
+                          field.onChange("");
+                        } else {
+                          field.onChange(value.target.valueAsNumber);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="startSportLeagueWeekId"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Start Week</FormLabel>
+                  <Select
+                    onValueChange={(val) => {
+                      if (val) {
+                        field.onChange(val);
+                        setStartSportLeagueWeekId(val);
+                      }
+                    }}
+                    value={startSportLeagueWeekId}
+                    name="startSportLeagueWeekId"
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select start week" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {sportLeagueWeeks.map((week) => (
+                        <SelectItem
+                          key={`startWeek-${week.id}`}
+                          value={week.id}
+                        >
+                          {week.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="endSportLeagueWeekId"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>End Week</FormLabel>
+                  <Select
+                    onValueChange={(val) => {
+                      if (val) {
+                        field.onChange(val);
+                        setEndSportLeagueWeekId(val);
+                      }
+                    }}
+                    value={endSportLeagueWeekId}
+                    name="endSportLeagueWeekId"
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select end week" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {sportLeagueWeeks.map((week) => (
+                        <SelectItem key={`endWeek-${week.id}`} value={week.id}>
+                          {week.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="size"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Size</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(value) => {
+                      if (isNaN(value.target.valueAsNumber)) {
+                        field.onChange("");
+                      } else {
+                        field.onChange(value.target.valueAsNumber);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </CardContent>
+
+        <CardFooter className="flex flex-col gap-4">
+          <Button className="w-full" disabled={pending} type="submit">
+            Create League
+          </Button>
+
+          {formState.errors?.form ? (
+            <p className="text-sm font-medium text-destructive">
+              {formState.errors.form}
+            </p>
+          ) : (
+            <></>
+          )}
+        </CardFooter>
       </form>
     </Form>
   );

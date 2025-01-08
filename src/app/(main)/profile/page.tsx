@@ -10,11 +10,10 @@ import { redirect } from "next/navigation";
 import { getDBUserById } from "@/db/users";
 import { z } from "zod";
 
-export default async function Profile({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
+export default async function Profile(props: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
+  const searchParams = await props.searchParams;
   const session = await auth();
   if (!session?.user?.id) {
     return redirect("/auth");
