@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
               providerId: dbOddsProvider.id!,
               favoriteTeamId: favoriteDBTeamId,
               underDogTeamId: underDogDBTeamId,
-              spread: oddsData.spread,
+              spread: Math.abs(oddsData.spread),
               overUnder: oddsData.overUnder,
             });
           }
