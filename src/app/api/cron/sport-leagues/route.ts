@@ -11,7 +11,7 @@ import {
   getESPNSportLeagueSeasonWeeks,
 } from "@/integrations/espn/sportLeagueWeeks";
 import { upsertDBSportLeagueWeeks } from "@/db/sportLeagueWeeks";
-import { withTransaction } from "@/db/transactions";
+import { withDBTransaction } from "@/db/transactions";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await withTransaction(async (tx) => {
+    await withDBTransaction(async (tx) => {
       const espnSportLeagues = await getESPNSportLeagues(
         ESPNSportSlug.FOOTBALL,
       );

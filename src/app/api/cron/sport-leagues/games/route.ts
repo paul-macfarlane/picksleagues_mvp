@@ -15,7 +15,7 @@ import {
 } from "@/db/sportLeagueGameOdds";
 import { getESPNEventOddsFromRefUrl } from "@/integrations/espn/sportLeagueEventOdds";
 import { NextRequest } from "next/server";
-import { withTransaction } from "@/db/transactions";
+import { withDBTransaction } from "@/db/transactions";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await withTransaction(async (tx) => {
+    await withDBTransaction(async (tx) => {
       const dbSportWeeks = await getCurrentDBSportLeagueWeeks(tx);
       if (!dbSportWeeks.length) {
         console.warn("No active sport weeks found.");

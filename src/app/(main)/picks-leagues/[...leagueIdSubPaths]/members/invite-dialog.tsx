@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { z } from "zod";
-import { picksLeagueInviteFormAction } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/invite-action";
+import { picksLeagueInviteFormAction } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/invite-action";
 import { PicksLeagueInviteFormSchema } from "@/models/picksLeagueInvites";
 
 type FormSchema = z.infer<typeof PicksLeagueInviteFormSchema>;

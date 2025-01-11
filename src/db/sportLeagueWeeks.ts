@@ -1,7 +1,7 @@
 import { sportLeagueWeeks } from "@/db/schema";
 import { and, gt, lte, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { Transaction } from "@/db/transactions";
+import { DBTransaction } from "@/db/transactions";
 
 export interface DBSportLeagueWeek {
   id: string;
@@ -15,7 +15,7 @@ export interface DBSportLeagueWeek {
 }
 
 export async function getCurrentDBSportLeagueWeeks(
-  tx?: Transaction,
+  tx?: DBTransaction,
 ): Promise<DBSportLeagueWeek[]> {
   const now = new Date();
   let queryRows = [];
@@ -54,7 +54,7 @@ export interface UpsertDBSportLeagueWeek {
 
 export async function upsertDBSportLeagueWeeks(
   upserts: UpsertDBSportLeagueWeek[],
-  tx: Transaction,
+  tx: DBTransaction,
 ): Promise<DBSportLeagueWeek[]> {
   if (tx) {
     return tx

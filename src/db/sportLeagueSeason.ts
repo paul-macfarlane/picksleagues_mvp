@@ -1,5 +1,5 @@
 import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
-import { Transaction } from "@/db/transactions";
+import { DBTransaction } from "@/db/transactions";
 import { sportLeagueSeasons } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { db } from "@/db/client";
@@ -29,7 +29,7 @@ export interface UpsertDBSportLeagueSeason {
 
 export async function upsertDBSportLeagueSeasons(
   upserts: UpsertDBSportLeagueSeason[],
-  tx?: Transaction,
+  tx?: DBTransaction,
 ): Promise<DBSportLeagueSeason[]> {
   if (tx) {
     return tx

@@ -1,5 +1,5 @@
 import { oddsProviders, sportLeagueGameOdds } from "@/db/schema";
-import { Transaction } from "@/db/transactions";
+import { DBTransaction } from "@/db/transactions";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 
@@ -13,7 +13,7 @@ export interface DBOddsProvider {
 
 export async function getDBOddsProviderByEspnId(
   espnId: string,
-  tx?: Transaction,
+  tx?: DBTransaction,
 ): Promise<DBOddsProvider | null> {
   if (tx) {
     const queryRows = await tx
@@ -37,7 +37,7 @@ export interface UpsertDBOddsProvider {
 
 export async function upsertDBOddsProviders(
   upserts: UpsertDBOddsProvider[],
-  tx?: Transaction,
+  tx?: DBTransaction,
 ) {
   if (tx) {
     return tx
@@ -75,7 +75,7 @@ export interface UpsertDBSportLeagueGameOdds {
 
 export async function upsertDBSportLeagueGameOdds(
   upserts: UpsertDBSportLeagueGameOdds[],
-  tx?: Transaction,
+  tx?: DBTransaction,
 ) {
   if (tx) {
     return tx
