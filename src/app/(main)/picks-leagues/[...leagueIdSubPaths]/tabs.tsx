@@ -24,7 +24,7 @@ export default function PicksLeagueTabs({
   const router = useRouter();
 
   return (
-    <Tabs defaultValue={defaultValue}>
+    <Tabs defaultValue={defaultValue} className={"space-y-4"}>
       <TabsList
         className={`grid h-auto grid-cols-1 ${tabs.length === 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}
       >

@@ -10,7 +10,7 @@ import {
   sportLeagues,
   sportLeagueWeeks,
 } from "./schema";
-import { Transaction as DBTransaction } from "./transactions";
+import { DBTransaction } from "./transactions";
 import {
   aliasedTable,
   and,
@@ -21,6 +21,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
+import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 
 export interface DBPicksLeague {
   id: string;
@@ -315,4 +316,88 @@ export async function getDBPicksLeagueByIdWithUserRole(
       (queryRows[0].role as PicksLeagueMemberRoles) ??
       PicksLeagueMemberRoles.NONE,
   };
+}
+
+export interface DBPicksLeagueSettingDetails extends DBPicksLeague {
+  startSportLeagueWeek: DBSportLeagueWeek;
+  endSportLeagueWeek: DBSportLeagueWeek;
+}
+
+export async function getPickLeagueSettingsDetails(
+  leagueId: string,
+): Promise<DBPicksLeagueSettingDetails | null> {
+  const startSportLeagueWeeksAlias = aliasedTable(
+    sportLeagueWeeks,
+    "startWeeks",
+  );
+  const endSportLeagueWeeksAlias = aliasedTable(sportLeagueWeeks, "endWeeks");
+
+  const queryRows = await db
+    .select({
+      picksLeague: getTableColumns(picksLeagues),
+      startSportLeagueWeek: getTableColumns(startSportLeagueWeeksAlias),
+      endSportLeagueWeek: getTableColumns(endSportLeagueWeeksAlias),
+    })
+    .from(picksLeagues)
+    .innerJoin(
+      picksLeagueSeasons,
+      and(
+        eq(picksLeagues.id, picksLeagueSeasons.leagueId),
+        eq(picksLeagueSeasons.active, true),
+      ),
+    )
+    .innerJoin(
+      startSportLeagueWeeksAlias,
+      eq(
+        picksLeagueSeasons.startSportLeagueWeekId,
+        startSportLeagueWeeksAlias.id,
+      ),
+    )
+    .innerJoin(
+      endSportLeagueWeeksAlias,
+      eq(picksLeagueSeasons.endSportLeagueWeekId, endSportLeagueWeeksAlias.id),
+    )
+    .where(eq(picksLeagues.id, leagueId));
+  if (!queryRows.length) {
+    return null;
+  }
+
+  return {
+    ...queryRows[0].picksLeague,
+    startSportLeagueWeek: queryRows[0].startSportLeagueWeek,
+    endSportLeagueWeek: queryRows[0].endSportLeagueWeek,
+  };
+}
+
+export interface UpdateDBPicksLeague {
+  name?: string;
+  logoUrl?: string | null;
+  sportLeagueId?: string;
+  picksPerWeek?: number;
+  pickType?: PicksLeaguePickTypes;
+  visibility?: PicksLeagueVisibilities;
+  size?: number;
+}
+
+export async function updateDBPicksLeague(
+  id: string,
+  update: UpdateDBPicksLeague,
+  tx?: DBTransaction,
+): Promise<DBPicksLeague | null> {
+  const queryRows = tx
+    ? await tx
+        .update(picksLeagues)
+        .set(update)
+        .where(eq(picksLeagues.id, id))
+        .returning()
+    : await db
+        .update(picksLeagues)
+        .set(update)
+        .where(eq(picksLeagues.id, id))
+        .returning();
+  if (!queryRows.length) {
+    return null;
+  }
+
+  return queryRows[0];
 }

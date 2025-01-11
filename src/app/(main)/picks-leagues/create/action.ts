@@ -8,7 +8,7 @@ import {
   getDBSportLeagueWeekById,
 } from "@/db/sportLeagues";
 import { getDBUserById } from "@/db/users";
-import { withTransaction } from "@/db/transactions";
+import { withDBTransaction } from "@/db/transactions";
 import { CreatePicksLeagueSchema } from "@/models/picksLeagues";
 import { redirect } from "next/navigation";
 import { createDBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
@@ -163,7 +163,7 @@ export async function createPicksLeagueAction(
 
   let dbPicksLeague: DBPicksLeague | undefined = undefined;
   try {
-    dbPicksLeague = await withTransaction(async (tx) => {
+    dbPicksLeague = await withDBTransaction(async (tx) => {
       const createDBPicksLeagueData = {
         name: parsed.data.name,
         logoUrl: parsed.data.logoUrl,

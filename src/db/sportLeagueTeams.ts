@@ -1,7 +1,7 @@
 import { sportLeagueTeams } from "@/db/schema";
 import { db } from "@/db/client";
 import { eq, sql } from "drizzle-orm";
-import { Transaction } from "@/db/transactions";
+import { DBTransaction } from "@/db/transactions";
 
 export interface DBSportLeagueTeam {
   id: string;
@@ -17,7 +17,7 @@ export interface DBSportLeagueTeam {
 
 export async function getDBSportLeagueTeamByEspnId(
   espnId: string,
-  tx?: Transaction,
+  tx?: DBTransaction,
 ): Promise<DBSportLeagueTeam | null> {
   if (tx) {
     const queryRows = await tx
@@ -45,7 +45,7 @@ export interface UpsertDBSportLeagueTeam {
 
 export async function upsertDBSportLeagueTeams(
   upserts: UpsertDBSportLeagueTeam[],
-  tx: Transaction,
+  tx: DBTransaction,
 ): Promise<DBSportLeagueTeam[]> {
   if (tx) {
     return tx

@@ -5,7 +5,7 @@ import { InviteDialog } from "./invite-dialog";
 import { Users } from "lucide-react";
 import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 
-export async function MembersTab({ dbLeague }: { dbLeague: DBPicksLeague }) {
+export async function Tab({ dbLeague }: { dbLeague: DBPicksLeague }) {
   const dbLeagueMemberDetails = await getDBPicksLeagueMemberDetails(
     dbLeague.id,
   );

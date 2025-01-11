@@ -6,7 +6,7 @@ import {
   picksLeagues,
 } from "@/db/schema";
 import { DBPicksLeague } from "@/db/picksLeagues";
-import { Transaction as DBTransaction } from "@/db/transactions";
+import { DBTransaction } from "@/db/transactions";
 
 export interface DBPicksLeagueDetailsForInvite extends DBPicksLeague {
   memberCount: number;

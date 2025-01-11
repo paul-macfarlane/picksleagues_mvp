@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import ErrorPage from "@/components/error-page";
 import { getDBUserById } from "@/db/users";
-import { withTransaction } from "@/db/transactions";
+import { withDBTransaction } from "@/db/transactions";
 import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -134,7 +134,7 @@ export default async function InvitesPage(props: {
       role: PicksLeagueMemberRoles.MEMBER,
     };
     try {
-      await withTransaction(async (tx) => {
+      await withDBTransaction(async (tx) => {
         await acceptDBPicksLeagueInvite(dbUser.id, dbLeague.invite.id, tx);
 
         const dbLeagueMember = await createDBPicksLeagueMember(

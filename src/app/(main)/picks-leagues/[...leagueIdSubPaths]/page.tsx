@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { MembersTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members-tab";
+import { Tab as MembersTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/tab";
 import LeagueTabs, {
   SelectedTabWithContent,
 } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/tabs";
@@ -13,6 +13,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
+import { Tab as SettingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/tab";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -93,7 +94,7 @@ export default async function PicksLeaguePage(props: {
       }
 
       selectedTabId = PicksLeagueTabIds.SETTINGS;
-      selectedTabContent = <>Settings</>;
+      selectedTabContent = <SettingsTab dbPicksLeague={dbLeagueWithRole} />;
       break;
     default:
       return (

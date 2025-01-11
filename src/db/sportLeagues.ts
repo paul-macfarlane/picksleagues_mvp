@@ -6,7 +6,7 @@ import {
   DBSportLeagueSeason,
   DBSportLeagueSeasonDetail,
 } from "@/db/sportLeagueSeason";
-import { Transaction } from "@/db/transactions";
+import { DBTransaction } from "@/db/transactions";
 
 export interface DBSportLeague {
   id: string;
@@ -109,11 +109,17 @@ export async function getActiveSeasonForDBSportLeague(
 
 export async function getDBSportLeagueWeekById(
   id: string,
+  tx?: DBTransaction,
 ): Promise<DBSportLeagueWeek | null> {
-  const queryRows = await db
-    .select()
-    .from(sportLeagueWeeks)
-    .where(eq(sportLeagueWeeks.id, id));
+  const queryRows = tx
+    ? await tx
+        .select()
+        .from(sportLeagueWeeks)
+        .where(eq(sportLeagueWeeks.id, id))
+    : await db
+        .select()
+        .from(sportLeagueWeeks)
+        .where(eq(sportLeagueWeeks.id, id));
   if (!queryRows.length) {
     return null;
   }
@@ -130,7 +136,7 @@ export interface UpsertDBSportLeague {
 
 export async function upsertDBSportLeagues(
   upserts: UpsertDBSportLeague[],
-  tx?: Transaction,
+  tx?: DBTransaction,
 ): Promise<DBSportLeague[]> {
   if (tx) {
     return tx

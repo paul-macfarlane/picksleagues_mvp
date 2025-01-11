@@ -1,4 +1,4 @@
-import { Transaction as DBTransaction } from "@/db/transactions";
+import { DBTransaction } from "@/db/transactions";
 import { picksLeagueMembers, users } from "@/db/schema";
 import { db } from "@/db/client";
 import { and, eq } from "drizzle-orm";

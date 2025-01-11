@@ -40,79 +40,85 @@ export const PICKS_LEAGUE_VISIBILITY_VALUES = Object.values(
   PicksLeagueVisibilities,
 );
 
+const picksLeagueNameSchema = z
+  .string()
+  .trim()
+  .min(PICKS_LEAGUE_MIN_NAME_LENGTH, PICKS_LEAGUE_MIN_NAME_LENGTH_ERROR)
+  .max(PICKS_LEAGUE_MAX_NAME_LENGTH, PICKS_LEAGUE_MAX_NAME_LENGTH_ERROR);
+
+const picksLeagueLogoUrlSchema = z.union([
+  z.string().url("Must be a valid url.").max(IMG_URL_MAX_LENGTH),
+  z.string().length(0), // annoying, but because you can't have a controlled input with the value undefined in react-hook-form, we have to allow this to be an empty string
+]);
+
+const picksLeagueVisibilitySchema = z.enum(
+  [PicksLeagueVisibilities.PRIVATE, PicksLeagueVisibilities.PUBLIC],
+  {
+    message: `Invalid League Visibility. Must be one of ${PICKS_LEAGUE_VISIBILITY_VALUES.join(", ")}.`,
+  },
+);
+
+const picksLeaguePickTypeSchema = z.enum(
+  [
+    PicksLeaguePickTypes.AGAINST_THE_SPREAD,
+    PicksLeaguePickTypes.STRAIGHT_UP,
+    PicksLeaguePickTypes.OVER_UNDER,
+  ],
+  {
+    message: `Invalid Pick Type. Must be one of ${PICKS_LEAGUE_PICK_TYPE_VALUES.join(", ")}.`,
+  },
+);
+
+const picksLeaguePicksPerWeekSchema = z.union([
+  z
+    .number({
+      message: PICKS_LEAGUE_PICKS_PER_WEEK_NUMBER_ERROR,
+    })
+    .int("Must be a whole number")
+    .min(PICKS_LEAGUE_MIN_PICKS_PER_WEEK, PICKS_LEAGUE_MIN_PICKS_PER_WEEK_ERROR)
+    .max(
+      PICKS_LEAGUE_MAX_PICKS_PER_WEEK,
+      PICKS_LEAGUE_MAX_PICKS_PER_WEEK_ERROR,
+    ),
+  z.coerce
+    .number({
+      message: PICKS_LEAGUE_PICKS_PER_WEEK_NUMBER_ERROR,
+    })
+    .int("Must be a whole number")
+    .min(PICKS_LEAGUE_MIN_PICKS_PER_WEEK, PICKS_LEAGUE_MIN_PICKS_PER_WEEK_ERROR)
+    .max(
+      PICKS_LEAGUE_MAX_PICKS_PER_WEEK,
+      PICKS_LEAGUE_MAX_PICKS_PER_WEEK_ERROR,
+    ),
+]);
+
+const picksLeagueSizeSchema = z.union([
+  z
+    .number({
+      message: PICKS_LEAGUE_SIZE_NUMBER_ERROR,
+    })
+    .int("Must be a whole number")
+    .min(PICKS_LEAGUE_MIN_SIZE, PICKS_LEAGUE_MIN_SIZE_ERROR)
+    .max(PICKS_LEAGUE_MAX_SIZE, PICKS_LEAGUE_MAX_SIZE_ERROR),
+  z.coerce
+    .number({
+      message: PICKS_LEAGUE_SIZE_NUMBER_ERROR,
+    })
+    .int("Must be a whole number")
+    .min(PICKS_LEAGUE_MIN_SIZE, PICKS_LEAGUE_MIN_SIZE_ERROR)
+    .max(PICKS_LEAGUE_MAX_SIZE, PICKS_LEAGUE_MAX_SIZE_ERROR),
+]);
+
 export const CreatePicksLeagueSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(PICKS_LEAGUE_MIN_NAME_LENGTH, PICKS_LEAGUE_MIN_NAME_LENGTH_ERROR)
-    .max(PICKS_LEAGUE_MAX_NAME_LENGTH, PICKS_LEAGUE_MAX_NAME_LENGTH_ERROR),
-  logoUrl: z.union([
-    z.string().url("Must be a valid url.").max(IMG_URL_MAX_LENGTH),
-    z.string().length(0), // annoying, but because you can't have a controlled input with the value undefined in react-hook-form, we have to allow this to be an empty string
-  ]),
+  name: picksLeagueNameSchema,
+  logoUrl: picksLeagueLogoUrlSchema,
   sportLeagueId: z.string().trim().uuid(),
-  visibility: z.enum(
-    [PicksLeagueVisibilities.PRIVATE, PicksLeagueVisibilities.PUBLIC],
-    {
-      message: `Invalid League Visibility. Must be one of ${PICKS_LEAGUE_VISIBILITY_VALUES.join(", ")}.`,
-    },
-  ),
-  pickType: z.enum(
-    [
-      PicksLeaguePickTypes.AGAINST_THE_SPREAD,
-      PicksLeaguePickTypes.STRAIGHT_UP,
-      PicksLeaguePickTypes.OVER_UNDER,
-    ],
-    {
-      message: `Invalid Pick Type. Must be one of ${PICKS_LEAGUE_PICK_TYPE_VALUES.join(", ")}.`,
-    },
-  ),
-  picksPerWeek: z.union([
-    z
-      .number({
-        message: PICKS_LEAGUE_PICKS_PER_WEEK_NUMBER_ERROR,
-      })
-      .int("Must be a whole number")
-      .min(
-        PICKS_LEAGUE_MIN_PICKS_PER_WEEK,
-        PICKS_LEAGUE_MIN_PICKS_PER_WEEK_ERROR,
-      )
-      .max(
-        PICKS_LEAGUE_MAX_PICKS_PER_WEEK,
-        PICKS_LEAGUE_MAX_PICKS_PER_WEEK_ERROR,
-      ),
-    z.coerce
-      .number({
-        message: PICKS_LEAGUE_PICKS_PER_WEEK_NUMBER_ERROR,
-      })
-      .int("Must be a whole number")
-      .min(
-        PICKS_LEAGUE_MIN_PICKS_PER_WEEK,
-        PICKS_LEAGUE_MIN_PICKS_PER_WEEK_ERROR,
-      )
-      .max(
-        PICKS_LEAGUE_MAX_PICKS_PER_WEEK,
-        PICKS_LEAGUE_MAX_PICKS_PER_WEEK_ERROR,
-      ),
-  ]),
+  visibility: picksLeagueVisibilitySchema,
+  pickType: picksLeaguePickTypeSchema,
+  picksPerWeek: picksLeaguePicksPerWeekSchema,
   startSportLeagueWeekId: z.string().trim().uuid(),
   endSportLeagueWeekId: z.string().trim().uuid(),
-  size: z.union([
-    z
-      .number({
-        message: PICKS_LEAGUE_SIZE_NUMBER_ERROR,
-      })
-      .int("Must be a whole number")
-      .min(PICKS_LEAGUE_MIN_SIZE, PICKS_LEAGUE_MIN_SIZE_ERROR)
-      .max(PICKS_LEAGUE_MAX_SIZE, PICKS_LEAGUE_MAX_SIZE_ERROR),
-    z.coerce
-      .number({
-        message: PICKS_LEAGUE_SIZE_NUMBER_ERROR,
-      })
-      .int("Must be a whole number")
-      .min(PICKS_LEAGUE_MIN_SIZE, PICKS_LEAGUE_MIN_SIZE_ERROR)
-      .max(PICKS_LEAGUE_MAX_SIZE, PICKS_LEAGUE_MAX_SIZE_ERROR),
-  ]),
+  size: picksLeagueSizeSchema,
 });
 
 export enum PicksLeagueTabIds {
@@ -156,3 +162,16 @@ export function getPicksLeagueHomeUrl(leagueId: string): string {
 
 export const PICKS_LEAGUE_PICK_TYPE_MAX_LENGTH = 32;
 export const PICKS_LEAGUE_VISIBILITY_MAX_LENGTH = 32;
+
+export const UpdatePicksLeagueSchema = z.object({
+  id: z.string().trim().uuid(),
+  name: picksLeagueNameSchema,
+  logoUrl: picksLeagueLogoUrlSchema,
+  sportLeagueId: z.string().trim().uuid(),
+  visibility: picksLeagueVisibilitySchema,
+  pickType: picksLeaguePickTypeSchema,
+  picksPerWeek: picksLeaguePicksPerWeekSchema,
+  startSportLeagueWeekId: z.string().trim().uuid(),
+  endSportLeagueWeekId: z.string().trim().uuid(),
+  size: picksLeagueSizeSchema,
+});

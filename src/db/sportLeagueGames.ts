@@ -1,4 +1,4 @@
-import { Transaction } from "@/db/transactions";
+import { DBTransaction } from "@/db/transactions";
 import { sportLeagueGames } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { db } from "@/db/client";
@@ -34,7 +34,7 @@ export interface DBSportLeagueGame {
 
 export async function upsertDBSportGames(
   upserts: UpsertDBSportLeagueGame[],
-  tx?: Transaction,
+  tx?: DBTransaction,
 ): Promise<DBSportLeagueGame[]> {
   if (tx) {
     return tx
