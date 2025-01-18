@@ -69,7 +69,5 @@ export async function getUserDBPicksLeaguePicksForCurrentWeek(
       ),
     );
 
-  console.log("queryRows", queryRows);
-
   return queryRows.map((row) => row.picksLeaguePick);
 }
