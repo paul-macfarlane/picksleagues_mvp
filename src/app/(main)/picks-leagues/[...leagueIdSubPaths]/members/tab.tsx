@@ -1,11 +1,15 @@
 import { DBPicksLeague } from "@/db/picksLeagues";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { InviteDialog } from "./invite-dialog";
+import { PicksLeagueInviteDialog } from "./invite-dialog";
 import { Users } from "lucide-react";
 import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 
-export async function Tab({ dbLeague }: { dbLeague: DBPicksLeague }) {
+export async function PicksLeagueMembersTab({
+  dbLeague,
+}: {
+  dbLeague: DBPicksLeague;
+}) {
   const dbLeagueMemberDetails = await getDBPicksLeagueMemberDetails(
     dbLeague.id,
   );
@@ -48,7 +52,7 @@ export async function Tab({ dbLeague }: { dbLeague: DBPicksLeague }) {
           </ul>
 
           {dbLeagueMemberDetails.length < dbLeague.size && (
-            <InviteDialog leagueId={dbLeague.id} />
+            <PicksLeagueInviteDialog leagueId={dbLeague.id} />
           )}
         </CardContent>
       </Card>

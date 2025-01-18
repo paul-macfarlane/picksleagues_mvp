@@ -1,7 +1,9 @@
 import { DBTransaction } from "@/db/transactions";
-import { sportLeagueGames } from "@/db/schema";
-import { sql } from "drizzle-orm";
+import { sportLeagueGameOdds, sportLeagueGames } from "@/db/schema";
+import { eq, getTableColumns, inArray, sql } from "drizzle-orm";
 import { db } from "@/db/client";
+
+import { DBSportLeagueGameOdds } from "@/db/sportLeagueGameOdds";
 
 export interface UpsertDBSportLeagueGame {
   weekId: string;
@@ -71,4 +73,41 @@ export async function upsertDBSportGames(
       })
       .returning();
   }
+}
+
+export interface DBSportLeagueGameWithOdds extends DBSportLeagueGame {
+  odds: DBSportLeagueGameOdds[];
+}
+
+export async function getDBSportLeagueGamesWithOddsFromIds(
+  ids: string[],
+): Promise<DBSportLeagueGameWithOdds[]> {
+  const queryRows = await db
+    .select({
+      sportLeagueGame: getTableColumns(sportLeagueGames),
+      sportLeagueGameOdds: getTableColumns(sportLeagueGameOdds),
+    })
+    .from(sportLeagueGames)
+    .innerJoin(
+      sportLeagueGameOdds,
+      eq(sportLeagueGameOdds.gameId, sportLeagueGames.id),
+    )
+    .where(inArray(sportLeagueGames.id, ids));
+
+  const games: DBSportLeagueGameWithOdds[] = [];
+  for (const row of queryRows) {
+    const indexOfGame = games.findIndex(
+      (game) => game.id === row.sportLeagueGame.id,
+    );
+    if (indexOfGame === -1) {
+      games.push({
+        ...row.sportLeagueGame,
+        odds: [row.sportLeagueGameOdds],
+      });
+    } else {
+      games[indexOfGame].odds.push(row.sportLeagueGameOdds);
+    }
+  }
+
+  return games;
 }

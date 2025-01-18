@@ -284,7 +284,6 @@ export const sportLeagueGameOdds = sqliteTable(
       .notNull()
       .references(() => sportLeagueTeams.id, { onDelete: "cascade" }),
     spread: real("spread").notNull(),
-    overUnder: real("over_under").notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
@@ -430,6 +429,39 @@ export const picksLeagueInvites = sqliteTable("picks_league_invites", {
   acceptedByUserId: text("accepted_by_user_id", {
     length: UUID_LENGTH,
   }).references(() => users.id, { onDelete: "cascade" }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`)
+    .$onUpdate(() => new Date()),
+});
+
+export const picksLeaguePicks = sqliteTable("picks_league_picks", {
+  id: text("id", { length: UUID_LENGTH })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  leagueId: text("league_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => picksLeagues.id, { onDelete: "cascade" }),
+  sportLeagueWeekId: text("sport_league_week_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => sportLeagueWeeks.id, { onDelete: "cascade" }),
+  sportLeagueGameId: text("sport_league_game_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => sportLeagueGames.id, { onDelete: "cascade" }),
+  type: text("type", { length: 32 }).notNull(),
+  teamId: text("team_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => sportLeagueTeams.id, { onDelete: "cascade" }),
+  spread: real("spread"),
+  favorite: integer("favorite", {
+    mode: "boolean",
+  }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

@@ -1,6 +1,6 @@
 import {
-  PicksLeagueVisibilities,
   PicksLeaguePickTypes,
+  PicksLeagueVisibilities,
 } from "@/models/picksLeagues";
 import { db } from "./client";
 import {
@@ -22,6 +22,7 @@ import {
 } from "drizzle-orm";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
+import { DBPicksLeagueMember } from "@/db/picksLeagueMembers";
 
 export interface DBPicksLeague {
   id: string;
@@ -400,4 +401,32 @@ export async function updateDBPicksLeague(
   }
 
   return queryRows[0];
+}
+
+export interface DBPicksLeagueWithMember extends DBPicksLeague {
+  DBPicksLeagueWithMember: DBPicksLeagueMember;
+}
+
+export async function getDBPicksLeagueWithMember(
+  leagueId: string,
+  userId: string,
+): Promise<DBPicksLeagueWithMember | null> {
+  const queryRows = await db
+    .select()
+    .from(picksLeagues)
+    .innerJoin(
+      picksLeagueMembers,
+      eq(picksLeagues.id, picksLeagueMembers.leagueId),
+    )
+    .where(
+      and(eq(picksLeagues.id, leagueId), eq(picksLeagueMembers.userId, userId)),
+    );
+  if (!queryRows.length) {
+    return null;
+  }
+
+  return {
+    ...queryRows[0].picks_leagues,
+    DBPicksLeagueWithMember: queryRows[0].picks_league_members,
+  };
 }

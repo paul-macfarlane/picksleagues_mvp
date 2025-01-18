@@ -25,7 +25,6 @@ const PICKS_LEAGUE_MAX_SIZE_ERROR = `Must be a number less than or equal to ${PI
 export enum PicksLeaguePickTypes {
   AGAINST_THE_SPREAD = "Against the Spread",
   STRAIGHT_UP = "Straight Up",
-  OVER_UNDER = "Over/Under",
 }
 
 export const PICKS_LEAGUE_PICK_TYPE_VALUES =
@@ -58,12 +57,8 @@ const picksLeagueVisibilitySchema = z.enum(
   },
 );
 
-const picksLeaguePickTypeSchema = z.enum(
-  [
-    PicksLeaguePickTypes.AGAINST_THE_SPREAD,
-    PicksLeaguePickTypes.STRAIGHT_UP,
-    PicksLeaguePickTypes.OVER_UNDER,
-  ],
+export const picksLeaguePickTypeSchema = z.enum(
+  [PicksLeaguePickTypes.AGAINST_THE_SPREAD, PicksLeaguePickTypes.STRAIGHT_UP],
   {
     message: `Invalid Pick Type. Must be one of ${PICKS_LEAGUE_PICK_TYPE_VALUES.join(", ")}.`,
   },

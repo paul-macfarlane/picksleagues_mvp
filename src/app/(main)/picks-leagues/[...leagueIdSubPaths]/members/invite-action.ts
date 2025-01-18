@@ -17,7 +17,7 @@ export interface LeagueInviteActionState {
   inviteUrl?: string;
 }
 
-export async function picksLeagueInviteFormAction(
+export async function picksLeagueInviteAction(
   _prevState: LeagueInviteActionState,
   formData: FormData,
 ): Promise<LeagueInviteActionState> {
@@ -75,6 +75,6 @@ export async function picksLeagueInviteFormAction(
   }
 
   return {
-    inviteUrl: `${process.env.HOST!}/invites/${dbInvite.id}`,
+    inviteUrl: `${process.env.NEXT_PUBLIC_HOST!}/invites/${dbInvite.id}`,
   };
 }

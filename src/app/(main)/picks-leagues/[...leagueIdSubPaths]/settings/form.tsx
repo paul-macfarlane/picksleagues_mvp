@@ -32,7 +32,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRef, useState, useActionState } from "react";
-import { isUrl } from "@/lib/utils";
+import { isUrl } from "@/shared/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Info } from "lucide-react";
 import {
@@ -59,7 +59,7 @@ function getDefaultSportEndWeekId(
     : "";
 }
 
-export function EditPicksLeagueForm({
+export function PicksLeagueSettingsForm({
   sportLeagues,
   picksLeague,
   canEditSeasonSettings,

@@ -164,7 +164,6 @@ export async function GET(request: NextRequest) {
               favoriteTeamId: favoriteDBTeamId,
               underDogTeamId: underDogDBTeamId,
               spread: Math.abs(oddsData.spread),
-              overUnder: oddsData.overUnder,
             });
           }
 

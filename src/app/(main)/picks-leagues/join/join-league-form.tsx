@@ -10,7 +10,7 @@ import { Form } from "@/components/ui/form";
 import { useRef, useActionState } from "react";
 import { DBPicksLeagueDetailsWithWeek } from "@/db/picksLeagues";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { isUrl } from "@/lib/utils";
+import { isUrl } from "@/shared/utils";
 import {
   Card,
   CardContent,

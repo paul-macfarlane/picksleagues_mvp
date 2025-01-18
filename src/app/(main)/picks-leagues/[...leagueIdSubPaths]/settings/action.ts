@@ -15,7 +15,7 @@ import {
   getActiveDBPicksLeagueSeason,
   updateDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
-import { canEditPicksLeagueSeasonSettings } from "@/services/picksLeagues";
+import { canEditPicksLeagueSeasonSettings } from "@/shared/picksLeagues";
 
 interface UpdatePicksLeagueActionState {
   errors?: {
@@ -34,7 +34,7 @@ interface UpdatePicksLeagueActionState {
 }
 
 export async function updatePicksLeagueAction(
-  prevState: UpdatePicksLeagueActionState,
+  _prevState: UpdatePicksLeagueActionState,
   formData: FormData,
 ): Promise<UpdatePicksLeagueActionState> {
   const session = await auth();
