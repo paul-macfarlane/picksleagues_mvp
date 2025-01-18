@@ -36,7 +36,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRef, useState, useActionState } from "react";
-import { isUrl } from "@/lib/utils";
+import { isUrl } from "@/shared/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Info } from "lucide-react";

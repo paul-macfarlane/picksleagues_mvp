@@ -4,20 +4,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { EditPicksLeagueForm } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/form";
+import { PicksLeagueSettingsForm } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/form";
 import { DBPicksLeague, getPickLeagueSettingsDetails } from "@/db/picksLeagues";
 import { getAllDBSportLeaguesWithActiveSeason } from "@/db/sportLeagues";
-import { canEditPicksLeagueSeasonSettings } from "@/services/picksLeagues";
+import { canEditPicksLeagueSeasonSettings } from "@/shared/picksLeagues";
 
-export async function Tab({ dbPicksLeague }: { dbPicksLeague: DBPicksLeague }) {
+export async function PicksLeagueSettingsTab({
+  dbPicksLeague,
+}: {
+  dbPicksLeague: DBPicksLeague;
+}) {
   const dbPicksLeagueDetails = await getPickLeagueSettingsDetails(
     dbPicksLeague.id,
   );
   if (!dbPicksLeagueDetails) {
     return (
-      <div>
-        <span>League not found. Please return to your dashboard.</span>
-      </div>
+      <Card className="mx-auto w-full max-w-4xl">
+        <CardHeader>
+          <CardTitle>League not found</CardTitle>
+          <CardDescription>
+            Modify your league&#39;s settings and configuration. Some settings
+            cannot be changed while the season is in progress.
+          </CardDescription>
+        </CardHeader>
+      </Card>
     );
   }
 
@@ -35,7 +45,7 @@ export async function Tab({ dbPicksLeague }: { dbPicksLeague: DBPicksLeague }) {
         </CardDescription>
       </CardHeader>
 
-      <EditPicksLeagueForm
+      <PicksLeagueSettingsForm
         sportLeagues={dbSportLeagueDetails}
         picksLeague={dbPicksLeagueDetails}
         canEditSeasonSettings={canEditSeasonSettings}

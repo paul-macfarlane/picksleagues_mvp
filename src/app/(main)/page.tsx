@@ -52,8 +52,8 @@ export default async function Home() {
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Predict winners, bet against the spread, or go for over/unders.
-                Test your sports knowledge weekly.
+                Pick against the spread or straight up. Test your sports
+                knowledge weekly.
               </CardDescription>
             </CardContent>
           </Card>

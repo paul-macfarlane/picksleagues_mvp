@@ -38,7 +38,7 @@ export interface UpsertDBOddsProvider {
 export async function upsertDBOddsProviders(
   upserts: UpsertDBOddsProvider[],
   tx?: DBTransaction,
-) {
+): Promise<DBOddsProvider[]> {
   if (tx) {
     return tx
       .insert(oddsProviders)
@@ -70,13 +70,12 @@ export interface UpsertDBSportLeagueGameOdds {
   favoriteTeamId: string;
   underDogTeamId: string;
   spread: number;
-  overUnder: number;
 }
 
 export async function upsertDBSportLeagueGameOdds(
   upserts: UpsertDBSportLeagueGameOdds[],
   tx?: DBTransaction,
-) {
+): Promise<DBSportLeagueGameOdds[]> {
   if (tx) {
     return tx
       .insert(sportLeagueGameOdds)
@@ -87,7 +86,6 @@ export async function upsertDBSportLeagueGameOdds(
           favoriteTeamId: sql`excluded.favorite_team_id`,
           underDogTeamId: sql`excluded.under_dog_team_id`,
           spread: sql`excluded.spread`,
-          overUnder: sql`excluded.over_under`,
         },
       })
       .returning();
@@ -101,9 +99,23 @@ export async function upsertDBSportLeagueGameOdds(
           favoriteTeamId: sql`excluded.favorite_team_id`,
           underDogTeamId: sql`excluded.under_dog_team_id`,
           spread: sql`excluded.spread`,
-          overUnder: sql`excluded.over_under`,
         },
       })
       .returning();
   }
+}
+
+export interface DBSportLeagueGameOdds {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  gameId: string;
+  providerId: string;
+  favoriteTeamId: string;
+  underDogTeamId: string;
+  spread: number;
+}
+
+export interface DbWeeklyPickGameOddsData extends DBSportLeagueGameOdds {
+  provider: DBOddsProvider;
 }

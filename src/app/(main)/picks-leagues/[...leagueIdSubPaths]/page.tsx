@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import { Tab as MembersTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/tab";
 import LeagueTabs, {
   SelectedTabWithContent,
 } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/tabs";
@@ -13,7 +12,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
-import { Tab as SettingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/tab";
+import { PicksLeagueMembersTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/tab";
+import { PicksLeagueSettingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/tab";
+import { PicksLeagueMyPicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/my-picks/tab";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -74,11 +75,18 @@ export default async function PicksLeaguePage(props: {
   let selectedTabContent = <>Default (should not happen)</>;
   switch (pathname) {
     case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.MEMBERS}`:
-      selectedTabContent = <MembersTab dbLeague={dbLeagueWithRole} />;
+      selectedTabContent = (
+        <PicksLeagueMembersTab dbLeague={dbLeagueWithRole} />
+      );
       break;
     case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.MY_PICKS}`:
       selectedTabId = PicksLeagueTabIds.MY_PICKS;
-      selectedTabContent = <>My Picks</>;
+      selectedTabContent = (
+        <PicksLeagueMyPicksTab
+          dbPicksLeague={dbLeagueWithRole}
+          userId={session.user.id}
+        />
+      );
       break;
     case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.LEAGUE_PICKS}`:
       selectedTabId = PicksLeagueTabIds.LEAGUE_PICKS;
@@ -94,7 +102,9 @@ export default async function PicksLeaguePage(props: {
       }
 
       selectedTabId = PicksLeagueTabIds.SETTINGS;
-      selectedTabContent = <SettingsTab dbPicksLeague={dbLeagueWithRole} />;
+      selectedTabContent = (
+        <PicksLeagueSettingsTab dbPicksLeague={dbLeagueWithRole} />
+      );
       break;
     default:
       return (

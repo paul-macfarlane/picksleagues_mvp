@@ -76,17 +76,17 @@ export default async function Dashboard() {
           </ul>
         </CardContent>
 
-        <CardFooter className="flex w-full gap-2 md:gap-4">
+        <CardFooter className="flex w-full justify-between gap-2 md:gap-4">
           <Button className="flex w-full gap-1 md:gap-2" asChild>
             <Link href={"/picks-leagues/create"}>
-              <Plus className="h-4 w-4" /> Create Picks League
+              <Plus className="h-4 w-4" /> Create League
             </Link>
           </Button>
 
           <Button className="flex w-full gap-1 md:gap-2" asChild>
             <Link href={"/picks-leagues/join"}>
               <CircleArrowRight className="h-4 w-4" />
-              Join Picks League
+              Join League
             </Link>
           </Button>
         </CardFooter>

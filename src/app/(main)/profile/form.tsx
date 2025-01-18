@@ -22,7 +22,7 @@ import {
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { isUrl } from "@/lib/utils";
+import { isUrl } from "@/shared/utils";
 
 type FormSchema = z.infer<typeof UpdateProfileFormSchema>;
 

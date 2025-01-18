@@ -8,6 +8,41 @@
       "when": 1736221527397,
       "tag": "0000_fresh_marauders",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1736625537014,
+      "tag": "0001_light_starbolt",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1736644838948,
+      "tag": "0002_mixed_maestro",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1736644923658,
+      "tag": "0003_right_tony_stark",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1736913073748,
+      "tag": "0004_aberrant_alex_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1736913269381,
+      "tag": "0005_luxuriant_lake",
+      "breakpoints": true
     }
   ]
 }

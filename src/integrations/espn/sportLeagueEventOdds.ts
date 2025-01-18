@@ -4,7 +4,6 @@ interface OddsData {
   $ref: string;
   provider: Provider;
   details: string;
-  overUnder: number;
   spread: number;
   overOdds: number;
   underOdds: number;

@@ -16,12 +16,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { z } from "zod";
-import { picksLeagueInviteFormAction } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/invite-action";
+import { picksLeagueInviteAction } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/invite-action";
 import { PicksLeagueInviteFormSchema } from "@/models/picksLeagueInvites";
 
 type FormSchema = z.infer<typeof PicksLeagueInviteFormSchema>;
 
-export function InviteDialog({ leagueId }: { leagueId: string }) {
+export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
   const [inviteLink, setInviteLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
   const [error, setError] = useState("");
@@ -31,10 +31,7 @@ export function InviteDialog({ leagueId }: { leagueId: string }) {
     setLinkCopied(true);
   };
 
-  const [formState, formAction] = useActionState(
-    picksLeagueInviteFormAction,
-    {},
-  );
+  const [formState, formAction] = useActionState(picksLeagueInviteAction, {});
   const form = useForm<FormSchema>({
     resolver: zodResolver(PicksLeagueInviteFormSchema),
   });
@@ -48,7 +45,7 @@ export function InviteDialog({ leagueId }: { leagueId: string }) {
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit(async () => {
-            const actionResponse = await picksLeagueInviteFormAction(
+            const actionResponse = await picksLeagueInviteAction(
               formState,
               new FormData(formRef.current!),
             );

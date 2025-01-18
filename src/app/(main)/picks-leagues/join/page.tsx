@@ -117,7 +117,6 @@ export default async function JoinLeagues(props: {
       .enum([
         PicksLeaguePickTypes.AGAINST_THE_SPREAD,
         PicksLeaguePickTypes.STRAIGHT_UP,
-        PicksLeaguePickTypes.OVER_UNDER,
       ])
       .safeParse(searchParams["pickType"]);
     if (parsePickType.success) {
