@@ -18,8 +18,8 @@ export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
   let indicatorVariant:
     | "default"
     | "destructive"
-    | "caution"
-    | "blue"
+    | "warning"
+    | "neutral-blue"
     | undefined;
   switch (gamePickStatus) {
     case GamePickStatuses.WIN:
@@ -33,14 +33,14 @@ export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
       indicatorVariant = "destructive";
       break;
     case GamePickStatuses.PUSH:
-      gameBorder = "border-yellow-400"; // todo make a css var out of the yellow and blue here
+      gameBorder = "border-warning";
       indicatorText = GamePickStatuses.PUSH;
-      indicatorVariant = "caution";
+      indicatorVariant = "warning";
       break;
     case GamePickStatuses.PICKED:
-      gameBorder = "border-yellow-400";
+      gameBorder = "border-neutral-blue";
       indicatorText = GamePickStatuses.PICKED;
-      indicatorVariant = "blue";
+      indicatorVariant = "neutral-blue";
       break;
     default:
       break;

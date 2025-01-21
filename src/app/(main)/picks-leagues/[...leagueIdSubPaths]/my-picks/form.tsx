@@ -231,7 +231,7 @@ function GameTeamLabel({
     <Label
       htmlFor={itemId}
       className={`flex items-center justify-between gap-2 rounded-md border px-4 py-2 focus-within:bg-accent hover:cursor-pointer hover:bg-accent ${
-        checked ? `border-blue-400 bg-accent` : ""
+        checked ? `border-neutral-blue bg-accent` : ""
       } `}
     >
       <RadioGroupItem
