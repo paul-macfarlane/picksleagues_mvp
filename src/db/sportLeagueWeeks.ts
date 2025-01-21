@@ -1,5 +1,6 @@
 import {
   oddsProviders,
+  picksLeagueMembers,
   picksLeaguePicks,
   picksLeagues,
   sportLeagueGameOdds,
@@ -8,6 +9,7 @@ import {
   sportLeagueSeasons,
   sportLeagueTeams,
   sportLeagueWeeks,
+  users,
 } from "@/db/schema";
 import {
   aliasedTable,
@@ -24,6 +26,7 @@ import { DBSportLeagueGame } from "@/db/sportLeagueGames";
 import { DbWeeklyPickGameOddsData } from "@/db/sportLeagueGameOdds";
 import { DBPicksLeaguePick } from "@/db/picksLeaguesPicks";
 import { DBSportLeagueTeam } from "@/db/sportLeagueTeams";
+import { DBUser } from "@/db/users";
 
 export interface DBSportLeagueWeek {
   id: string;
@@ -64,6 +67,39 @@ export async function getCurrentDBSportLeagueWeeks(
       );
     return queryRows;
   }
+}
+
+export interface DBSportLeagueWeek {
+  id: string;
+  name: string;
+  startTime: Date;
+  endTime: Date;
+  seasonId: string;
+  espnEventsRef: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function getCurrentDBSportLeagueWeek(
+  sportLeagueId: string,
+): Promise<DBSportLeagueWeek | null> {
+  const now = new Date();
+  const queryRows = await db
+    .select({ week: getTableColumns(sportLeagueWeeks) })
+    .from(sportLeagueWeeks)
+    .innerJoin(
+      sportLeagueSeasons,
+      eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
+    )
+    .where(
+      and(
+        lte(sportLeagueWeeks.startTime, now),
+        gt(sportLeagueWeeks.endTime, now),
+        eq(sportLeagueSeasons.leagueId, sportLeagueId),
+      ),
+    );
+
+  return queryRows.length ? queryRows[0].week : null;
 }
 
 export interface UpsertDBSportLeagueWeek {
@@ -220,4 +256,99 @@ export async function getUserDBWeeklyPickData(
     ...week,
     games,
   };
+}
+
+export interface DBWeeklyPickDataByUserGame extends DBSportLeagueGame {
+  userPick: DBPicksLeaguePick;
+  awayTeam: DBSportLeagueTeam;
+  homeTeam: DBSportLeagueTeam;
+}
+
+export interface DBWeeklyPickDataByUser extends DBUser {
+  games: DBWeeklyPickDataByUserGame[];
+}
+
+export async function getLeagueDBWeeklyPickDataByUser(
+  picksLeagueId: string,
+): Promise<DBWeeklyPickDataByUser[]> {
+  const awayTeamAlias = aliasedTable(sportLeagueTeams, "awaitTeamAlias");
+  const homeTeamAlias = aliasedTable(sportLeagueTeams, "homeTeamAlias");
+
+  const now = new Date();
+  const queryRows = await db
+    .select({
+      user: getTableColumns(users),
+      pick: getTableColumns(picksLeaguePicks),
+      game: getTableColumns(sportLeagueGames),
+      awayTeam: getTableColumns(awayTeamAlias),
+      homeTeam: getTableColumns(homeTeamAlias),
+    })
+    .from(picksLeagueMembers)
+    .innerJoin(users, eq(users.id, picksLeaguePicks.userId))
+    .leftJoin(
+      picksLeaguePicks,
+      eq(picksLeaguePicks.userId, picksLeagueMembers.userId),
+    )
+    .innerJoin(
+      sportLeagueWeeks,
+      eq(sportLeagueWeeks.id, picksLeaguePicks.sportLeagueWeekId),
+    )
+    .innerJoin(
+      sportLeagueGames,
+      eq(sportLeagueGames.id, picksLeaguePicks.sportLeagueGameId),
+    )
+    .innerJoin(awayTeamAlias, eq(awayTeamAlias.id, sportLeagueGames.awayTeamId))
+    .innerJoin(homeTeamAlias, eq(homeTeamAlias.id, sportLeagueGames.homeTeamId))
+    .innerJoin(
+      sportLeagueGameOdds,
+      eq(sportLeagueGameOdds.gameId, sportLeagueGames.id),
+    )
+    .innerJoin(
+      oddsProviders,
+      eq(oddsProviders.id, sportLeagueGameOdds.providerId),
+    )
+    .where(
+      and(
+        eq(picksLeagueMembers.leagueId, picksLeagueId),
+        lte(sportLeagueWeeks.startTime, now),
+        gt(sportLeagueWeeks.endTime, now),
+      ),
+    );
+
+  const userPickData: DBWeeklyPickDataByUser[] = [];
+  queryRows.forEach((row) => {
+    const indexOfUser = userPickData.findIndex(
+      (user) => user.id === row.user.id,
+    );
+    if (indexOfUser === -1) {
+      userPickData.push({
+        ...row.user,
+        games:
+          row.game && row.pick
+            ? [
+                {
+                  ...row.game,
+                  userPick: row.pick,
+                  awayTeam: row.awayTeam,
+                  homeTeam: row.homeTeam,
+                },
+              ]
+            : [],
+      });
+    } else if (row.game && row.pick) {
+      const indexOfGame = userPickData[indexOfUser].games.findIndex(
+        (game) => game.id === row.game.id,
+      );
+      if (indexOfGame == -1) {
+        userPickData[indexOfUser].games.push({
+          ...row.game,
+          userPick: row.pick,
+          awayTeam: row.awayTeam,
+          homeTeam: row.homeTeam,
+        });
+      }
+    }
+  });
+
+  return userPickData;
 }

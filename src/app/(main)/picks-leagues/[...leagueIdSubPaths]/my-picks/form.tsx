@@ -18,6 +18,7 @@ import {
 } from "@/shared/picksLeaguePicks";
 import { DbWeeklyPickGameData } from "@/db/sportLeagueWeeks";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 interface SelectedPickDetail {
   sportLeagueGameId: string;
@@ -31,6 +32,7 @@ interface MyPicksFormProps {
   games: DbWeeklyPickGameData[];
   correctPickCount: number;
   correctPickPercentage: number;
+  gamesRemaining: number;
 }
 
 export function PicksLeagueMyPicksForm({
@@ -40,6 +42,7 @@ export function PicksLeagueMyPicksForm({
   games,
   correctPickCount,
   correctPickPercentage,
+  gamesRemaining,
 }: MyPicksFormProps) {
   const [selectedPickDetails, setSelectedPickDetails] = useState<
     SelectedPickDetail[]
@@ -121,7 +124,7 @@ export function PicksLeagueMyPicksForm({
           <div className="mt-2 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {picksMade
-                ? `${correctPickCount}/${requiredAmountOfPicks} picks correct`
+                ? `${correctPickCount}/${requiredAmountOfPicks} Picks Correct - ${gamesRemaining} Remaining`
                 : `${selectedPickDetails.length}/${requiredAmountOfPicks} picks made`}
             </p>
 
@@ -140,80 +143,125 @@ export function PicksLeagueMyPicksForm({
         </div>
 
         <div className="h-full">
-          {games.map((game) => (
-            <div key={game.id} className="mb-6 rounded border p-4 last:mb-0">
-              <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-                <span className="font-semibold">
-                  {game.awayTeam.name} @ {game.homeTeam.name}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {getGamePickTimeDisplay(game)}
-                </span>
-              </div>
+          {games.map((game) => {
+            const gamePickStatus = getGamePickStatus(game, game.userPick);
+            let gameBorder = "";
+            let indicatorText = "";
+            let indicatorVariant:
+              | "default"
+              | "destructive"
+              | "caution"
+              | "blue"
+              | undefined;
+            switch (gamePickStatus) {
+              case GamePickStatuses.WIN:
+                gameBorder = "border-primary";
+                indicatorText = GamePickStatuses.WIN;
+                indicatorVariant = "default";
+                break;
+              case GamePickStatuses.LOSS:
+                gameBorder = "border-destructive";
+                indicatorText = GamePickStatuses.LOSS;
+                indicatorVariant = "destructive";
+                break;
+              case GamePickStatuses.PUSH:
+                gameBorder = "border-yellow-400";
+                indicatorText = GamePickStatuses.PUSH;
+                indicatorVariant = "caution";
+                break;
+              case GamePickStatuses.PICKED:
+                indicatorText = GamePickStatuses.PICKED;
+                indicatorVariant = "blue";
+                break;
+              default:
+                break;
+            }
 
-              <RadioGroup
-                disabled={picksMade}
-                value={(() => {
-                  const pick = selectedPickDetails.find(
-                    (pick) => pick.sportLeagueGameId === game.id,
-                  );
-                  if (pick) {
-                    return `${pick.sportLeagueGameId}:${pick.teamId}`;
-                  }
-                  return undefined;
-                })()}
-                className="space-y-1"
+            // todo need a unified component/appearance for displaying user game picks between here and the league picks tab
+
+            return (
+              <div
+                key={game.id}
+                className={`mb-6 rounded border p-4 last:mb-0 ${gameBorder} flex flex-col justify-center gap-2`}
               >
-                <GameTeamLabel
-                  itemId={`${game.id}:${game.awayTeamId}`}
-                  disabled={picksMade}
-                  checked={
-                    !!selectedPickDetails.find(
-                      (pick) =>
-                        pick.sportLeagueGameId === game.id &&
-                        pick.teamId === game.awayTeamId,
-                    )
-                  }
-                  onClick={() =>
-                    handlePickClicked({
-                      sportLeagueGameId: game.id,
-                      teamId: game.awayTeamId,
-                    })
-                  }
-                  logoUrl={game.awayTeam.logoUrl!}
-                  logoAlt={`${game.awayTeam.name} logo`}
-                  teamLocation={game.awayTeam.location}
-                  spreadDisplay={getGamePickSpreadDisplay(game, "AWAY")}
-                  teamScore={game.period > 0 ? game.awayTeamScore : null}
-                  gamePickStatus={getGamePickStatus(game)}
-                />
+                {indicatorText && (
+                  <div>
+                    <Badge variant={indicatorVariant}>{indicatorText}</Badge>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-1">
+                  <span className="font-semibold">
+                    {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {getGamePickTimeDisplay(game)}
+                  </span>
+                </div>
 
-                <GameTeamLabel
-                  itemId={`${game.id}:${game.homeTeamId}`}
+                <RadioGroup
                   disabled={picksMade}
-                  checked={
-                    !!selectedPickDetails.find(
-                      (pick) =>
-                        pick.sportLeagueGameId === game.id &&
-                        pick.teamId === game.homeTeamId,
-                    )
-                  }
-                  onClick={() =>
-                    handlePickClicked({
-                      sportLeagueGameId: game.id,
-                      teamId: game.homeTeamId,
-                    })
-                  }
-                  logoUrl={game.homeTeam.logoUrl!}
-                  logoAlt={`${game.homeTeam.name} logo`}
-                  teamLocation={game.homeTeam.location}
-                  spreadDisplay={getGamePickSpreadDisplay(game, "HOME")}
-                  teamScore={game.period > 0 ? game.homeTeamScore : null}
-                  gamePickStatus={getGamePickStatus(game)}
-                />
-              </RadioGroup>
-            </div>
-          ))}
+                  value={(() => {
+                    const pick = selectedPickDetails.find(
+                      (pick) => pick.sportLeagueGameId === game.id,
+                    );
+                    if (pick) {
+                      return `${pick.sportLeagueGameId}:${pick.teamId}`;
+                    }
+                    return undefined;
+                  })()}
+                  className="space-y-1"
+                >
+                  <GameTeamLabel
+                    itemId={`${game.id}:${game.awayTeamId}`}
+                    disabled={picksMade}
+                    checked={
+                      !!selectedPickDetails.find(
+                        (pick) =>
+                          pick.sportLeagueGameId === game.id &&
+                          pick.teamId === game.awayTeamId,
+                      )
+                    }
+                    onClick={() =>
+                      handlePickClicked({
+                        sportLeagueGameId: game.id,
+                        teamId: game.awayTeamId,
+                      })
+                    }
+                    logoUrl={game.awayTeam.logoUrl!}
+                    logoAlt={`${game.awayTeam.name} logo`}
+                    teamAbbreviation={game.awayTeam.abbreviation}
+                    spreadDisplay={getGamePickSpreadDisplay(game, "AWAY")}
+                    teamScore={game.period > 0 ? game.awayTeamScore : null}
+                    gamePickStatus={gamePickStatus}
+                  />
+
+                  <GameTeamLabel
+                    itemId={`${game.id}:${game.homeTeamId}`}
+                    disabled={picksMade}
+                    checked={
+                      !!selectedPickDetails.find(
+                        (pick) =>
+                          pick.sportLeagueGameId === game.id &&
+                          pick.teamId === game.homeTeamId,
+                      )
+                    }
+                    onClick={() =>
+                      handlePickClicked({
+                        sportLeagueGameId: game.id,
+                        teamId: game.homeTeamId,
+                      })
+                    }
+                    logoUrl={game.homeTeam.logoUrl!}
+                    logoAlt={`${game.homeTeam.name} logo`}
+                    teamAbbreviation={game.homeTeam.abbreviation}
+                    spreadDisplay={getGamePickSpreadDisplay(game, "HOME")}
+                    teamScore={game.period > 0 ? game.homeTeamScore : null}
+                    gamePickStatus={getGamePickStatus(game, game.userPick)}
+                  />
+                </RadioGroup>
+              </div>
+            );
+          })}
         </div>
       </CardContent>
 
@@ -239,7 +287,7 @@ interface GameTeamLabelProps {
   onClick: () => void;
   logoUrl: string;
   logoAlt: string;
-  teamLocation: string;
+  teamAbbreviation: string;
   spreadDisplay: string | null;
   teamScore: number | null;
   gamePickStatus: GamePickStatuses;
@@ -252,18 +300,34 @@ function GameTeamLabel({
   onClick,
   logoUrl,
   logoAlt,
-  teamLocation,
+  teamAbbreviation,
   spreadDisplay,
   teamScore,
   gamePickStatus,
 }: GameTeamLabelProps) {
+  let border = "";
+  if (checked) {
+    switch (gamePickStatus) {
+      case GamePickStatuses.WIN:
+        border = "border-primary";
+        break;
+      case GamePickStatuses.LOSS:
+        border = "border-destructive";
+        break;
+      case GamePickStatuses.PUSH:
+        border = "border-yellow-400";
+        break;
+      default:
+        border = "border-blue-400";
+        break;
+    }
+  }
+
   return (
     <Label
       htmlFor={itemId}
-      className={`flex items-center justify-between gap-2 rounded-md border px-4 py-2 ${!disabled ? `focus-within:bg-accent hover:bg-accent` : ""} ${
-        checked
-          ? `${gamePickStatus === GamePickStatuses.LOSS ? "border-destructive" : "border-primary"} bg-accent`
-          : ""
+      className={`flex items-center justify-between gap-2 rounded-md border px-4 py-2 ${!disabled ? `focus-within:bg-accent hover:bg-accent` : ""} ${border} ${
+        checked ? `bg-accent` : ""
       } `}
     >
       <RadioGroupItem
@@ -282,7 +346,7 @@ function GameTeamLabel({
           height={32}
           className="g-8 mr-2 w-8"
         />
-        <span>{teamLocation}</span>
+        <span>{teamAbbreviation}</span>
         {spreadDisplay && (
           <span className="text-sm font-medium">{spreadDisplay}</span>
         )}

@@ -15,6 +15,7 @@ import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { PicksLeagueMembersTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/tab";
 import { PicksLeagueSettingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/tab";
 import { PicksLeagueMyPicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/my-picks/tab";
+import { LeaguePicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/league-picks/tab";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -90,7 +91,7 @@ export default async function PicksLeaguePage(props: {
       break;
     case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.LEAGUE_PICKS}`:
       selectedTabId = PicksLeagueTabIds.LEAGUE_PICKS;
-      selectedTabContent = <>League Picks</>;
+      selectedTabContent = <LeaguePicksTab dbPicksLeague={dbLeagueWithRole} />;
       break;
     case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.SETTINGS}`:
       if (dbLeagueWithRole.role !== PicksLeagueMemberRoles.COMMISSIONER) {

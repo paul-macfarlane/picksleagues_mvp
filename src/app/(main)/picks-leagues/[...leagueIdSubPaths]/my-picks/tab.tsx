@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
 import { getUserDBWeeklyPickData } from "@/db/sportLeagueWeeks";
+import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 
 export async function PicksLeagueMyPicksTab({
   dbPicksLeague,
@@ -45,10 +46,13 @@ export async function PicksLeagueMyPicksTab({
   );
 
   const correctPickCount = picksData.games.filter(
-    (game) => getGamePickStatus(game) === GamePickStatuses.WIN,
+    (game) => getGamePickStatus(game, game.userPick) === GamePickStatuses.WIN,
   ).length;
   const correctPickPercentage =
     (correctPickCount / requiredAmountOfPicks) * 100;
+  const gamesRemaining = picksData.games.filter(
+    (game) => game.status !== SportLeagueGameStatuses.FINAL,
+  ).length;
   const cardDescription = picksMade
     ? "View your picks for this week."
     : `Make your picks for this week's games
@@ -71,6 +75,7 @@ export async function PicksLeagueMyPicksTab({
           games={picksData.games}
           correctPickCount={correctPickCount}
           correctPickPercentage={correctPickPercentage}
+          gamesRemaining={gamesRemaining}
         />
       ) : (
         <CardContent>
