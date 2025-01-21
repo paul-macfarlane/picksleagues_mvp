@@ -16,7 +16,7 @@ export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
   let gameBorder = "";
   let indicatorText = "";
   let indicatorVariant:
-    | "default"
+    | "success"
     | "destructive"
     | "warning"
     | "neutral-blue"
@@ -25,7 +25,7 @@ export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
     case GamePickStatuses.WIN:
       gameBorder = "border-primary";
       indicatorText = GamePickStatuses.WIN;
-      indicatorVariant = "default";
+      indicatorVariant = "success";
       break;
     case GamePickStatuses.LOSS:
       gameBorder = "border-destructive";
