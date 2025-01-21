@@ -23,7 +23,7 @@ export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
     | undefined;
   switch (gamePickStatus) {
     case GamePickStatuses.WIN:
-      gameBorder = "border-primary";
+      gameBorder = "border-success";
       indicatorText = GamePickStatuses.WIN;
       indicatorVariant = "success";
       break;
