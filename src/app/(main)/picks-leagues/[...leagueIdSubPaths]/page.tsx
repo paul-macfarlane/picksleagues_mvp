@@ -16,6 +16,7 @@ import { PicksLeagueMembersTab } from "@/app/(main)/picks-leagues/[...leagueIdSu
 import { PicksLeagueSettingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/tab";
 import { PicksLeagueMyPicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/my-picks/tab";
 import { LeaguePicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/league-picks/tab";
+import { getDBUserById } from "@/db/users";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -34,6 +35,15 @@ export default async function PicksLeaguePage(props: {
     return redirect("/auth");
   }
 
+  const dbUser = await getDBUserById(session.user.id);
+  if (!dbUser) {
+    console.error(
+      `Unable to find user in db for session on picks league page with user id ${session.user.id}`,
+    );
+
+    return redirect("/auth");
+  }
+
   const parseLeagueId = z
     .string()
     .uuid()
@@ -46,19 +56,19 @@ export default async function PicksLeaguePage(props: {
     );
   }
 
-  const leagueId = parseLeagueId.data;
+  const picksLeagueId = parseLeagueId.data;
 
-  const dbLeagueWithRole = await getDBPicksLeagueByIdWithUserRole(
-    leagueId,
+  const dbPicksLeagueWithUserRole = await getDBPicksLeagueByIdWithUserRole(
+    picksLeagueId,
     session.user.id,
   );
-  if (!dbLeagueWithRole) {
+  if (!dbPicksLeagueWithUserRole) {
     return (
       <ErrorComponent message="League not found. Please return to your dashboard." />
     );
   }
 
-  if (dbLeagueWithRole.role === PicksLeagueMemberRoles.NONE) {
+  if (dbPicksLeagueWithUserRole.role === PicksLeagueMemberRoles.NONE) {
     return (
       <ErrorComponent message="You are not a part of this league. Please return to your dashboard." />
     );
@@ -68,33 +78,41 @@ export default async function PicksLeaguePage(props: {
   const pathname = headerList.get("x-current-path");
 
   let tabs = MEMBER_PICKS_LEAGUE_TABS;
-  if (dbLeagueWithRole.role === PicksLeagueMemberRoles.COMMISSIONER) {
+  if (dbPicksLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER) {
     tabs = COMMISSIONER_PICKS_LEAGUE_TABS;
   }
 
   let selectedTabId = PicksLeagueTabIds.MEMBERS;
   let selectedTabContent = <>Default (should not happen)</>;
   switch (pathname) {
-    case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.MEMBERS}`:
+    case `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.MEMBERS}`:
       selectedTabContent = (
-        <PicksLeagueMembersTab dbLeague={dbLeagueWithRole} />
+        <PicksLeagueMembersTab dbLeague={dbPicksLeagueWithUserRole} />
       );
       break;
-    case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.MY_PICKS}`:
+    case `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.MY_PICKS}`:
       selectedTabId = PicksLeagueTabIds.MY_PICKS;
       selectedTabContent = (
         <PicksLeagueMyPicksTab
-          dbPicksLeague={dbLeagueWithRole}
+          dbPicksLeague={dbPicksLeagueWithUserRole}
           userId={session.user.id}
         />
       );
       break;
-    case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.LEAGUE_PICKS}`:
+    case `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.LEAGUE_PICKS}`:
       selectedTabId = PicksLeagueTabIds.LEAGUE_PICKS;
-      selectedTabContent = <LeaguePicksTab dbPicksLeague={dbLeagueWithRole} />;
+      selectedTabContent = (
+        <LeaguePicksTab
+          picksLeagueId={dbPicksLeagueWithUserRole.id}
+          sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
+          userId={dbUser.id}
+        />
+      );
       break;
-    case `/picks-leagues/${leagueId}/${PicksLeagueTabIds.SETTINGS}`:
-      if (dbLeagueWithRole.role !== PicksLeagueMemberRoles.COMMISSIONER) {
+    case `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.SETTINGS}`:
+      if (
+        dbPicksLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER
+      ) {
         return (
           <ErrorComponent
             message={`You don't have permissions to view this page. Please return to your dashboard.`}
@@ -104,7 +122,7 @@ export default async function PicksLeaguePage(props: {
 
       selectedTabId = PicksLeagueTabIds.SETTINGS;
       selectedTabContent = (
-        <PicksLeagueSettingsTab dbPicksLeague={dbLeagueWithRole} />
+        <PicksLeagueSettingsTab dbPicksLeague={dbPicksLeagueWithUserRole} />
       );
       break;
     default:
@@ -122,16 +140,18 @@ export default async function PicksLeaguePage(props: {
     <div className="container mx-auto space-y-4">
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{dbLeagueWithRole.name}</h1>
+          <h1 className="text-3xl font-bold">
+            {dbPicksLeagueWithUserRole.name}
+          </h1>
           <p className="text-muted-foreground">
-            {dbLeagueWithRole.sportLeagueAbbreviation} •{" "}
-            {dbLeagueWithRole.pickType}
+            {dbPicksLeagueWithUserRole.sportLeagueAbbreviation} •{" "}
+            {dbPicksLeagueWithUserRole.pickType}
           </p>
         </div>
       </header>
 
       <LeagueTabs
-        leagueId={dbLeagueWithRole.id}
+        leagueId={dbPicksLeagueWithUserRole.id}
         defaultValue={selectedTabId}
         tabs={tabs}
         selectedTab={selectedTab}
