@@ -1,4 +1,3 @@
-import { DBPicksLeague } from "@/db/picksLeagues";
 import { PicksLeagueMyPicksForm } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/my-picks/form";
 import {
   Card,
@@ -10,19 +9,45 @@ import {
 import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
 import {
   DBWeeklyPickDataByUserGame,
+  getCurrentDBSportLeagueWeek,
   getUserDBWeeklyPickData,
 } from "@/db/sportLeagueWeeks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { PicksLeagueGameBox } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GameBox";
 
-export async function PicksLeagueMyPicksTab({
-  dbPicksLeague,
-  userId,
-}: {
-  dbPicksLeague: DBPicksLeague;
+export interface PicksLeagueMyPicksTabProps {
+  picksLeagueId: string;
+  sportsLeagueId: string;
+  picksPerWeek: number;
   userId: string;
-}) {
-  const picksData = await getUserDBWeeklyPickData(dbPicksLeague.id, userId);
+}
+
+export async function PicksLeagueMyPicksTab({
+  picksLeagueId,
+  sportsLeagueId,
+  picksPerWeek,
+  userId,
+}: PicksLeagueMyPicksTabProps) {
+  // todo also allow for week id to come from query params, default to current week
+  const currentDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
+  if (!currentDBWeek) {
+    return (
+      <Card className="mx-auto w-full max-w-4xl">
+        <CardHeader>
+          <CardTitle>No Pick Data</CardTitle>
+          <CardDescription>
+            There are no picks to make this week.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const picksData = await getUserDBWeeklyPickData(
+    picksLeagueId,
+    currentDBWeek.id,
+    userId,
+  );
   if (!picksData) {
     return (
       <Card className="mx-auto w-full max-w-4xl">
@@ -44,10 +69,7 @@ export async function PicksLeagueMyPicksTab({
     picksData.games = picksData.games.filter((game) => game.startTime > now);
   }
 
-  const requiredAmountOfPicks = Math.min(
-    dbPicksLeague.picksPerWeek,
-    picksData.games.length,
-  );
+  const requiredAmountOfPicks = Math.min(picksPerWeek, picksData.games.length);
 
   const correctPickCount = picksData.games.filter(
     (game) => getGamePickStatus(game, game.userPick) === GamePickStatuses.WIN,
@@ -96,7 +118,7 @@ export async function PicksLeagueMyPicksTab({
 
       {!picksMade && picksData.games.length > 0 && (
         <PicksLeagueMyPicksForm
-          picksLeagueId={dbPicksLeague.id}
+          picksLeagueId={picksLeagueId}
           requiredAmountOfPicks={requiredAmountOfPicks}
           games={picksData.games}
         />

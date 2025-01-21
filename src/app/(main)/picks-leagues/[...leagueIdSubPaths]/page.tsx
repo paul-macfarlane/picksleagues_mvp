@@ -55,7 +55,6 @@ export default async function PicksLeaguePage(props: {
       <ErrorComponent message="Invalid League URL. Please return to your dashboard." />
     );
   }
-
   const picksLeagueId = parseLeagueId.data;
 
   const dbPicksLeagueWithUserRole = await getDBPicksLeagueByIdWithUserRole(
@@ -94,7 +93,9 @@ export default async function PicksLeaguePage(props: {
       selectedTabId = PicksLeagueTabIds.MY_PICKS;
       selectedTabContent = (
         <PicksLeagueMyPicksTab
-          dbPicksLeague={dbPicksLeagueWithUserRole}
+          picksLeagueId={dbPicksLeagueWithUserRole.id}
+          sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
+          picksPerWeek={dbPicksLeagueWithUserRole.picksPerWeek}
           userId={session.user.id}
         />
       );
@@ -115,7 +116,9 @@ export default async function PicksLeaguePage(props: {
       ) {
         return (
           <ErrorComponent
-            message={`You don't have permissions to view this page. Please return to your dashboard.`}
+            message={
+              "You don't have permissions to view this page. Please return to your dashboard."
+            }
           />
         );
       }

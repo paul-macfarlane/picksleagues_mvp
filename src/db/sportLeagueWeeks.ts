@@ -2,10 +2,8 @@ import {
   oddsProviders,
   picksLeagueMembers,
   picksLeaguePicks,
-  picksLeagues,
   sportLeagueGameOdds,
   sportLeagueGames,
-  sportLeagues,
   sportLeagueSeasons,
   sportLeagueTeams,
   sportLeagueWeeks,
@@ -23,7 +21,7 @@ import {
 import { db } from "@/db/client";
 import { DBTransaction } from "@/db/transactions";
 import { DBSportLeagueGame } from "@/db/sportLeagueGames";
-import { DbWeeklyPickGameOddsData } from "@/db/sportLeagueGameOdds";
+import { DBSportLeagueGameOdds } from "@/db/sportLeagueGameOdds";
 import { DBPicksLeaguePick } from "@/db/picksLeaguesPicks";
 import { DBSportLeagueTeam } from "@/db/sportLeagueTeams";
 import { DBUser } from "@/db/users";
@@ -144,7 +142,7 @@ export async function upsertDBSportLeagueWeeks(
 }
 
 export interface DbWeeklyPickGameData extends DBSportLeagueGame {
-  odds: DbWeeklyPickGameOddsData[];
+  odds: DBSportLeagueGameOdds[];
   userPick: DBPicksLeaguePick | null;
   awayTeam: DBSportLeagueTeam;
   homeTeam: DBSportLeagueTeam;
@@ -156,10 +154,10 @@ export interface DBWeeklyPickData extends DBSportLeagueWeek {
 
 export async function getUserDBWeeklyPickData(
   picksLeagueId: string,
+  sportsLeagueWeekId: string,
   userId: string,
 ): Promise<DBWeeklyPickData | null> {
   const now = new Date();
-
   const awayTeamAlias = aliasedTable(sportLeagueTeams, "awaitTeamAlias");
   const homeTeamAlias = aliasedTable(sportLeagueTeams, "homeTeamAlias");
 
@@ -170,22 +168,8 @@ export async function getUserDBWeeklyPickData(
       awayTeamAlias: getTableColumns(awayTeamAlias),
       homeTeamAlias: getTableColumns(homeTeamAlias),
       sportLeagueGameOdds: getTableColumns(sportLeagueGameOdds),
-      oddsProviders: getTableColumns(oddsProviders),
     })
-    .from(picksLeagues)
-    .innerJoin(sportLeagues, eq(picksLeagues.sportLeagueId, sportLeagues.id))
-    .innerJoin(
-      sportLeagueSeasons,
-      eq(sportLeagueSeasons.leagueId, sportLeagues.id),
-    )
-    .innerJoin(
-      sportLeagueWeeks,
-      and(
-        eq(sportLeagueWeeks.seasonId, sportLeagueSeasons.id),
-        lte(sportLeagueWeeks.startTime, now),
-        gt(sportLeagueWeeks.endTime, now),
-      ),
-    )
+    .from(sportLeagueWeeks)
     .innerJoin(
       sportLeagueGames,
       eq(sportLeagueGames.weekId, sportLeagueWeeks.id),
@@ -196,11 +180,13 @@ export async function getUserDBWeeklyPickData(
       sportLeagueGameOdds,
       eq(sportLeagueGameOdds.gameId, sportLeagueGames.id),
     )
-    .innerJoin(
-      oddsProviders,
-      eq(oddsProviders.id, sportLeagueGameOdds.providerId),
-    )
-    .where(eq(picksLeagues.id, picksLeagueId));
+    .where(
+      and(
+        eq(sportLeagueWeeks.id, sportsLeagueWeekId),
+        lte(sportLeagueWeeks.startTime, now),
+        gt(sportLeagueWeeks.endTime, now),
+      ),
+    );
   if (!queryRows.length) {
     return null;
   }
@@ -216,19 +202,11 @@ export async function getUserDBWeeklyPickData(
         ...row.sportLeagueGame,
         awayTeam: row.awayTeamAlias,
         homeTeam: row.homeTeamAlias,
-        odds: [
-          {
-            ...row.sportLeagueGameOdds,
-            provider: row.oddsProviders,
-          },
-        ],
+        odds: [row.sportLeagueGameOdds],
         userPick: null, // may be added later
       });
     } else {
-      games[indexOfGame].odds.push({
-        ...row.sportLeagueGameOdds,
-        provider: row.oddsProviders,
-      });
+      games[indexOfGame].odds.push(row.sportLeagueGameOdds);
     }
   }
 

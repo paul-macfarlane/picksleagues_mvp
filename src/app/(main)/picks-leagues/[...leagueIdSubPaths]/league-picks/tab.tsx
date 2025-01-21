@@ -26,7 +26,7 @@ export async function LeaguePicksTab({
   sportsLeagueId,
   userId,
 }: LeaguePicksTabProps) {
-  // todo could probably inject db week into multiple tabs, this one and my-picks
+  // todo also allow for week id to come from query params, default to current week
   const currentDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
   if (!currentDBWeek) {
     return (
@@ -51,7 +51,7 @@ export async function LeaguePicksTab({
     pickData.unshift(userPickData);
   }
 
-  // todo eventually want to be able to switch between weeks
+  // todo need the ability to toggle between current and previous weeks at some point
   // todo also might want to make picks collapsable, or make carousel of user picks
 
   return (
