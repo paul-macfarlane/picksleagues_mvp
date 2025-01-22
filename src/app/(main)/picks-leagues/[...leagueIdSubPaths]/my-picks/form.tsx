@@ -97,8 +97,6 @@ export function PicksLeagueMyPicksForm({
     }
   };
 
-  // todo consider making teams horizontal next to each other to match other game pick component
-
   return (
     <>
       <CardContent className="flex flex-col gap-4">
@@ -128,9 +126,9 @@ export function PicksLeagueMyPicksForm({
           {games.map((game) => (
             <div
               key={game.id}
-              className={`mb-6 flex flex-col justify-center gap-2 rounded border p-4 last:mb-0`}
+              className={`mb-6 flex flex-col justify-center gap-2 rounded border p-2 last:mb-0 md:gap-4 md:p-4`}
             >
-              <div className="flex items-center justify-between gap-1">
+              <div className="flex items-center justify-between">
                 <span className="font-semibold">
                   {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
                 </span>
@@ -149,7 +147,7 @@ export function PicksLeagueMyPicksForm({
                   }
                   return undefined;
                 })()}
-                className="space-y-1"
+                className="flex flex-col justify-between gap-2 md:flex-row md:gap-4"
               >
                 <GameTeamLabel
                   itemId={`${game.id}:${game.awayTeamId}`}
@@ -241,7 +239,7 @@ function GameTeamLabel({
   return (
     <Label
       htmlFor={itemId}
-      className={`flex items-center justify-between gap-2 rounded-md border px-4 py-2 focus-within:bg-accent hover:cursor-pointer hover:bg-accent ${
+      className={`flex flex-1 items-center justify-between gap-2 rounded-md border px-2 py-2 focus-within:bg-accent hover:cursor-pointer hover:bg-accent md:px-4 ${
         checked ? `border-neutral-blue bg-accent` : ""
       } `}
     >
@@ -254,13 +252,7 @@ function GameTeamLabel({
       />
 
       <div className="flex items-center gap-2">
-        <Image
-          src={logoUrl!}
-          alt={logoAlt}
-          width={32}
-          height={32}
-          className="g-8 mr-2 w-8"
-        />
+        <Image src={logoUrl!} alt={logoAlt} width={32} height={32} />
         <span>{teamAbbreviation}</span>
         {spreadDisplay && (
           <span className="text-sm font-medium">{spreadDisplay}</span>

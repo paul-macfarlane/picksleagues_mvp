@@ -139,7 +139,9 @@ export function PicksLeagueGameBox({
             />
             <span>
               {game.awayTeam.abbreviation}{" "}
-              {`${game.userPick.teamId === game.awayTeamId ? (game.userPick.favorite ? "-" : "+") : game.userPick.favorite ? "+" : "-"}${game.userPick.spread}`}
+              {pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD
+                ? `${game.userPick.teamId === game.awayTeamId ? (game.userPick.favorite ? "-" : "+") : game.userPick.favorite ? "+" : "-"}${game.userPick.spread}`
+                : ""}
             </span>
           </div>
 
@@ -157,7 +159,9 @@ export function PicksLeagueGameBox({
             />
             <span>
               {game.homeTeam.abbreviation}{" "}
-              {`${game.userPick.teamId === game.homeTeamId ? (game.userPick.favorite ? "-" : "+") : game.userPick.favorite ? "+" : "-"}${game.userPick.spread}`}
+              {pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD
+                ? `${game.userPick.teamId === game.homeTeamId ? (game.userPick.favorite ? "-" : "+") : game.userPick.favorite ? "-" : "+"}${game.userPick.spread}`
+                : ""}
             </span>
           </div>
 
