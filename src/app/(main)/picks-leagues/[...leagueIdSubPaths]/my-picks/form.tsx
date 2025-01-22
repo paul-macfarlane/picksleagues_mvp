@@ -16,6 +16,7 @@ import {
 } from "@/shared/picksLeaguePicks";
 import { DbWeeklyPickGameData } from "@/db/sportLeagueWeeks";
 import Image from "next/image";
+import { PicksLeaguePickTypes } from "@/models/picksLeagues";
 
 interface SelectedPickDetail {
   sportLeagueGameId: string;
@@ -26,12 +27,14 @@ interface MyPicksFormProps {
   picksLeagueId: string;
   requiredAmountOfPicks: number;
   games: DbWeeklyPickGameData[];
+  pickType: PicksLeaguePickTypes;
 }
 
 export function PicksLeagueMyPicksForm({
   picksLeagueId,
   requiredAmountOfPicks,
   games,
+  pickType,
 }: MyPicksFormProps) {
   const [selectedPickDetails, setSelectedPickDetails] = useState<
     SelectedPickDetail[]
@@ -166,7 +169,11 @@ export function PicksLeagueMyPicksForm({
                   logoUrl={game.awayTeam.logoUrl!}
                   logoAlt={`${game.awayTeam.name} logo`}
                   teamAbbreviation={game.awayTeam.abbreviation}
-                  spreadDisplay={getGamePickSpreadDisplay(game, "AWAY")}
+                  spreadDisplay={
+                    pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD
+                      ? getGamePickSpreadDisplay(game, "AWAY")
+                      : null
+                  }
                 />
 
                 <GameTeamLabel
@@ -187,7 +194,11 @@ export function PicksLeagueMyPicksForm({
                   logoUrl={game.homeTeam.logoUrl!}
                   logoAlt={`${game.homeTeam.name} logo`}
                   teamAbbreviation={game.homeTeam.abbreviation}
-                  spreadDisplay={getGamePickSpreadDisplay(game, "HOME")}
+                  spreadDisplay={
+                    pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD
+                      ? getGamePickSpreadDisplay(game, "HOME")
+                      : null
+                  }
                 />
               </RadioGroup>
             </div>

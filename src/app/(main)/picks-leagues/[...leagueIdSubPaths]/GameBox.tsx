@@ -6,12 +6,17 @@ import {
 } from "@/shared/picksLeaguePicks";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { PicksLeaguePickTypes } from "@/models/picksLeagues";
 
 export interface PicksLeagueGameBoxProps {
   game: DBWeeklyPickDataByUserGame;
+  pickType: PicksLeaguePickTypes;
 }
 
-export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
+export function PicksLeagueGameBox({
+  game,
+  pickType,
+}: PicksLeagueGameBoxProps) {
   const gamePickStatus = getGamePickStatus(game, game.userPick);
   let gameBorder = "";
   let indicatorText = "";
@@ -49,8 +54,6 @@ export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
   const pickLocation =
     game.userPick.teamId === game.homeTeamId ? "HOME" : "AWAY";
 
-  // todo this right now assumes pick against the spread, maybe just remove pick types because who wants to pick straight up, or handle both pick types?
-
   return (
     <>
       <div className={`hidden rounded border p-2 md:flex md:flex-col`}>
@@ -75,7 +78,9 @@ export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
             <div className="flex items-center gap-2 p-2">
               <span>
                 {game.awayTeam.abbreviation}{" "}
-                {`${game.userPick.teamId === game.awayTeamId ? (game.userPick.favorite ? "-" : "+") : game.userPick.favorite ? "+" : "-"}${game.userPick.spread}`}
+                {pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD
+                  ? `${game.userPick.teamId === game.awayTeamId ? (game.userPick.favorite ? "-" : "+") : game.userPick.favorite ? "+" : "-"}${game.userPick.spread}`
+                  : ""}
               </span>
               <Image
                 src={game.awayTeam.logoUrl!}
@@ -98,7 +103,9 @@ export function PicksLeagueGameBox({ game }: PicksLeagueGameBoxProps) {
               />
               <span>
                 {game.homeTeam.abbreviation}{" "}
-                {`${game.userPick.teamId === game.homeTeamId ? (game.userPick.favorite ? "-" : "+") : game.userPick.favorite ? "+" : "-"}${game.userPick.spread}`}
+                {pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD
+                  ? `${game.userPick.teamId === game.homeTeamId ? (game.userPick.favorite ? "-" : "+") : game.userPick.favorite ? "-" : "+"}${game.userPick.spread}`
+                  : ""}
               </span>
             </div>
 

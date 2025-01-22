@@ -287,9 +287,9 @@ export async function getLeagueDBWeeklyPickDataByUser(
     )
     .where(
       and(
-        eq(picksLeagueMembers.leagueId, picksLeagueId),
         lte(sportLeagueWeeks.startTime, now),
         gt(sportLeagueWeeks.endTime, now),
+        eq(picksLeaguePicks.leagueId, picksLeagueId),
       ),
     );
 

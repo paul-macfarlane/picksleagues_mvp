@@ -14,17 +14,20 @@ import { Separator } from "@/components/ui/separator";
 import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { PicksLeagueGameBox } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GameBox";
+import { PicksLeaguePickTypes } from "@/models/picksLeagues";
 
 export interface LeaguePicksTabProps {
   picksLeagueId: string;
   sportsLeagueId: string;
   userId: string;
+  pickType: PicksLeaguePickTypes;
 }
 
 export async function LeaguePicksTab({
   picksLeagueId,
   sportsLeagueId,
   userId,
+  pickType,
 }: LeaguePicksTabProps) {
   // todo also allow for week id to come from query params, default to current week
   const currentDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
@@ -61,7 +64,9 @@ export async function LeaguePicksTab({
         <span>View picks across the league for this week.</span>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-2 p-4 md:gap-4">
+      <CardContent className="flex flex-col gap-2 md:gap-4">
+        {pickData.length === 0 && <span>No picks for this week.</span>}
+
         {pickData.map((data) => {
           const gamesCorrect = data.games.filter(
             (game) =>
@@ -120,7 +125,11 @@ export async function LeaguePicksTab({
               <Separator />
 
               {data.games.map((game) => (
-                <PicksLeagueGameBox key={game.id} game={game} />
+                <PicksLeagueGameBox
+                  key={game.id}
+                  game={game}
+                  pickType={pickType}
+                />
               ))}
             </div>
           );

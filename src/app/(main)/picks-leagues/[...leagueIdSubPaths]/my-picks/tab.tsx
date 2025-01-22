@@ -14,12 +14,14 @@ import {
 } from "@/db/sportLeagueWeeks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { PicksLeagueGameBox } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GameBox";
+import { PicksLeaguePickTypes } from "@/models/picksLeagues";
 
 export interface PicksLeagueMyPicksTabProps {
   picksLeagueId: string;
   sportsLeagueId: string;
   picksPerWeek: number;
   userId: string;
+  pickType: PicksLeaguePickTypes;
 }
 
 export async function PicksLeagueMyPicksTab({
@@ -27,6 +29,7 @@ export async function PicksLeagueMyPicksTab({
   sportsLeagueId,
   picksPerWeek,
   userId,
+  pickType,
 }: PicksLeagueMyPicksTabProps) {
   // todo also allow for week id to come from query params, default to current week
   const currentDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
@@ -121,6 +124,7 @@ export async function PicksLeagueMyPicksTab({
           picksLeagueId={picksLeagueId}
           requiredAmountOfPicks={requiredAmountOfPicks}
           games={picksData.games}
+          pickType={pickType}
         />
       )}
 
@@ -134,6 +138,7 @@ export async function PicksLeagueMyPicksTab({
           gamesComplete={gamesComplete}
           gamesInProgress={gamesInProgress}
           gamesYetToPlay={gamesYetToPlay}
+          pickType={pickType}
         />
       )}
     </Card>
@@ -146,6 +151,7 @@ interface PicksListProps {
   gamesComplete: number;
   gamesInProgress: number;
   gamesYetToPlay: number;
+  pickType: PicksLeaguePickTypes;
 }
 
 function PicksList({
@@ -154,6 +160,7 @@ function PicksList({
   gamesComplete,
   gamesInProgress,
   gamesYetToPlay,
+  pickType,
 }: PicksListProps) {
   return (
     <CardContent className={"space-y-4"}>
@@ -166,7 +173,7 @@ function PicksList({
       </ul>
 
       {games.map((game) => (
-        <PicksLeagueGameBox key={game.id} game={game} />
+        <PicksLeagueGameBox key={game.id} game={game} pickType={pickType} />
       ))}
     </CardContent>
   );
