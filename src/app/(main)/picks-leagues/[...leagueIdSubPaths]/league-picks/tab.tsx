@@ -24,7 +24,12 @@ import {
   PaginationItem,
   PaginationLink,
 } from "@/components/ui/pagination";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export interface LeaguePicksTabProps {
   picksLeagueId: string;
@@ -78,8 +83,6 @@ export async function LeaguePicksTab({
     selectedDBWeek.id,
   );
 
-  // todo might want to make picks collapsable, or make carousel of user picks
-
   return (
     <div className={"flex flex-col items-center gap-2"}>
       <div className={"mx-auto flex w-full max-w-4xl justify-center"}>
@@ -126,7 +129,7 @@ export async function LeaguePicksTab({
           <span>View picks across the league for {selectedDBWeek.name}.</span>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-2 md:gap-4">
+        <CardContent className="flex flex-col gap-4">
           {pickData.length === 0 && <span>No picks for this week.</span>}
 
           {pickData.map((data) => {
@@ -149,11 +152,11 @@ export async function LeaguePicksTab({
             return (
               <div
                 key={data.id}
-                className="flex flex-col gap-2 space-y-2 rounded border p-2 md:gap-4 md:p-4"
+                className="flex flex-col space-y-2 rounded border"
               >
                 <div
                   className={
-                    "flex flex-col gap-2 p-2 md:flex-row md:items-center md:justify-between"
+                    "flex flex-col gap-2 p-4 md:flex-row md:items-center md:justify-between"
                   }
                 >
                   <div className="flex gap-2 md:flex-row md:items-center">
@@ -188,15 +191,28 @@ export async function LeaguePicksTab({
                   </div>
                 </div>
 
-                <Separator />
+                <Collapsible className="!m-0 flex flex-col !p-0 md:gap-4">
+                  <CollapsibleTrigger
+                    className={
+                      "flex w-full items-center justify-center gap-2 rounded border bg-accent p-1 md:p-2"
+                    }
+                  >
+                    <ChevronsUpDown className="h-4 w-4" />
+                    <span>Toggle Picks</span>
+                  </CollapsibleTrigger>
 
-                {data.games.map((game) => (
-                  <PicksLeagueGameBox
-                    key={game.id}
-                    game={game}
-                    pickType={pickType}
-                  />
-                ))}
+                  <CollapsibleContent>
+                    <div className="flex flex-col gap-2">
+                      {data.games.map((game) => (
+                        <PicksLeagueGameBox
+                          key={game.id}
+                          game={game}
+                          pickType={pickType}
+                        />
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             );
           })}
