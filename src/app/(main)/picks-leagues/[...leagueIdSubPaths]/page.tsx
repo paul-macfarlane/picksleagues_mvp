@@ -29,8 +29,11 @@ function ErrorComponent({ message }: { message: string }) {
 
 export default async function PicksLeaguePage(props: {
   params: Promise<{ leagueIdSubPaths: string[] | undefined }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await props.params;
+  const searchParams = await props.searchParams;
+
   const session = await auth();
   if (!session?.user?.id) {
     return redirect("/auth");
@@ -77,64 +80,86 @@ export default async function PicksLeaguePage(props: {
   const headerList = await headers();
   const pathname = headerList.get("x-current-path");
 
+  let weekId: string | null = null;
+  const searchParamWeekIdParsed = z
+    .string()
+    .trim()
+    .uuid()
+    .safeParse(searchParams["weekId"]);
+  if (searchParamWeekIdParsed.success) {
+    weekId = searchParamWeekIdParsed.data;
+  }
+
   let tabs = MEMBER_PICKS_LEAGUE_TABS;
   if (dbPicksLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER) {
     tabs = COMMISSIONER_PICKS_LEAGUE_TABS;
   }
-
   let selectedTabId = PicksLeagueTabIds.MEMBERS;
   let selectedTabContent = <>Default (should not happen)</>;
-  switch (pathname) {
-    case `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.MEMBERS}`:
-      selectedTabContent = (
-        <PicksLeagueMembersTab dbLeague={dbPicksLeagueWithUserRole} />
-      );
-      break;
-    case `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.MY_PICKS}`:
-      selectedTabId = PicksLeagueTabIds.MY_PICKS;
-      selectedTabContent = (
-        <PicksLeagueMyPicksTab
-          picksLeagueId={dbPicksLeagueWithUserRole.id}
-          sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
-          picksPerWeek={dbPicksLeagueWithUserRole.picksPerWeek}
-          userId={session.user.id}
-          pickType={dbPicksLeagueWithUserRole.pickType as PicksLeaguePickTypes}
-        />
-      );
-      break;
-    case `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.LEAGUE_PICKS}`:
-      selectedTabId = PicksLeagueTabIds.LEAGUE_PICKS;
-      selectedTabContent = (
-        <LeaguePicksTab
-          picksLeagueId={dbPicksLeagueWithUserRole.id}
-          sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
-          userId={dbUser.id}
-          pickType={dbPicksLeagueWithUserRole.pickType as PicksLeaguePickTypes}
-        />
-      );
-      break;
-    case `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.SETTINGS}`:
-      if (
-        dbPicksLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER
-      ) {
-        return (
-          <ErrorComponent
-            message={
-              "You don't have permissions to view this page. Please return to your dashboard."
-            }
-          />
-        );
-      }
-
-      selectedTabId = PicksLeagueTabIds.SETTINGS;
-      selectedTabContent = (
-        <PicksLeagueSettingsTab dbPicksLeague={dbPicksLeagueWithUserRole} />
-      );
-      break;
-    default:
+  if (
+    pathname?.startsWith(
+      `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.MEMBERS}`,
+    )
+  ) {
+    selectedTabContent = (
+      <PicksLeagueMembersTab dbLeague={dbPicksLeagueWithUserRole} />
+    );
+  } else if (
+    pathname?.startsWith(
+      `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.MY_PICKS}`,
+    )
+  ) {
+    selectedTabId = PicksLeagueTabIds.MY_PICKS;
+    selectedTabContent = (
+      <PicksLeagueMyPicksTab
+        picksLeagueId={dbPicksLeagueWithUserRole.id}
+        sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
+        picksPerWeek={dbPicksLeagueWithUserRole.picksPerWeek}
+        userId={session.user.id}
+        pickType={dbPicksLeagueWithUserRole.pickType as PicksLeaguePickTypes}
+        weekId={weekId}
+      />
+    );
+  } else if (
+    pathname?.startsWith(
+      `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.LEAGUE_PICKS}`,
+    )
+  ) {
+    selectedTabId = PicksLeagueTabIds.LEAGUE_PICKS;
+    selectedTabContent = (
+      <LeaguePicksTab
+        picksLeagueId={dbPicksLeagueWithUserRole.id}
+        sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
+        userId={dbUser.id}
+        pickType={dbPicksLeagueWithUserRole.pickType as PicksLeaguePickTypes}
+        weekId={weekId}
+      />
+    );
+  } else if (
+    pathname?.startsWith(
+      `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.SETTINGS}`,
+    )
+  ) {
+    if (
+      dbPicksLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER
+    ) {
       return (
-        <ErrorComponent message="Invalid League URL. Please return to your dashboard." />
+        <ErrorComponent
+          message={
+            "You don't have permissions to view this page. Please return to your dashboard."
+          }
+        />
       );
+    }
+
+    selectedTabId = PicksLeagueTabIds.SETTINGS;
+    selectedTabContent = (
+      <PicksLeagueSettingsTab dbPicksLeague={dbPicksLeagueWithUserRole} />
+    );
+  } else {
+    return (
+      <ErrorComponent message="Invalid League URL. Please return to your dashboard." />
+    );
   }
 
   const selectedTab: SelectedTabWithContent = {
