@@ -115,7 +115,3 @@ export interface DBSportLeagueGameOdds {
   underDogTeamId: string;
   spread: number;
 }
-
-export interface DbWeeklyPickGameOddsData extends DBSportLeagueGameOdds {
-  provider: DBOddsProvider;
-}

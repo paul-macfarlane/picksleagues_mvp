@@ -6,7 +6,7 @@ export function canEditPicksLeagueSeasonSettings(
   const now = new Date();
 
   return (
-    picksLeague.startSportLeagueWeek.startTime <= now ||
-    picksLeague.endSportLeagueWeek.endTime >= now
+    picksLeague.startSportLeagueWeek.startTime >= now ||
+    picksLeague.endSportLeagueWeek.endTime <= now
   );
 }

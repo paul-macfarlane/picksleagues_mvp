@@ -1,28 +1,36 @@
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { DbWeeklyPickGameData } from "@/db/sportLeagueWeeks";
+import { DBSportLeagueGame } from "@/db/sportLeagueGames";
+import { DBPicksLeaguePick } from "@/db/picksLeaguesPicks";
 
 export enum GamePickStatuses {
   WIN = "Win",
   PUSH = "Push",
   LOSS = "Loss",
-  TBD = "TBD",
+  PICKED = "Picked",
+  UNPICKED = "Unpicked",
 }
 
 export function getGamePickStatus(
-  game: DbWeeklyPickGameData,
+  game: DBSportLeagueGame,
+  pick: DBPicksLeaguePick | null,
 ): GamePickStatuses {
-  if (!game.userPick || game.status !== SportLeagueGameStatuses.FINAL) {
-    return GamePickStatuses.TBD;
+  if (!pick) {
+    return GamePickStatuses.UNPICKED;
+  }
+
+  if (game.status !== SportLeagueGameStatuses.FINAL) {
+    return GamePickStatuses.PICKED;
   }
 
   const pointDifferential =
-    game.homeTeamId === game.userPick.teamId
+    game.homeTeamId === pick.teamId
       ? game.homeTeamScore - game.awayTeamScore
       : game.awayTeamScore - game.homeTeamScore;
-  const spreadAdjustment = game.userPick.spread
-    ? game.userPick.favorite
-      ? game.userPick.spread!
-      : game.userPick.spread! * -1
+  const spreadAdjustment = pick.spread
+    ? pick.favorite
+      ? pick.spread!
+      : pick.spread! * -1
     : 0;
 
   if (pointDifferential - spreadAdjustment > 0) {
@@ -39,8 +47,18 @@ export function getGamePickSpreadDisplay(
   homeAway: "HOME" | "AWAY",
 ): string {
   let sign;
-  if (game.userPick) {
-    sign = game.userPick.favorite ? "-" : "+";
+  if (game.userPick && homeAway === "HOME") {
+    if (game.userPick.teamId === game.homeTeamId) {
+      sign = game.userPick.favorite ? "-" : "+";
+    } else {
+      sign = game.userPick.favorite ? "+" : "-";
+    }
+  } else if (game.userPick) {
+    if (game.userPick.teamId === game.awayTeamId) {
+      sign = game.userPick.favorite ? "-" : "+";
+    } else {
+      sign = game.userPick.favorite ? "+" : "-";
+    }
   } else if (homeAway === "HOME") {
     sign = game.odds[0].favoriteTeamId === game.homeTeamId ? "-" : "+";
   } else {
@@ -50,9 +68,8 @@ export function getGamePickSpreadDisplay(
   return `${sign}${game.odds[0].spread}`;
 }
 
-export function getGamePickTimeDisplay(game: DbWeeklyPickGameData): string {
+export function getGamePickTimeDisplay(game: DBSportLeagueGame): string {
   if (game.status === SportLeagueGameStatuses.FINAL) {
-    // todo make enum out of this
     return "Final";
   } else if (game.period > 0) {
     switch (game.period) {

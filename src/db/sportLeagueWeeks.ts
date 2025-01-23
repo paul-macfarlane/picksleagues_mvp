@@ -1,13 +1,15 @@
 import {
   oddsProviders,
+  picksLeagueMembers,
   picksLeaguePicks,
   picksLeagues,
+  picksLeagueSeasons,
   sportLeagueGameOdds,
   sportLeagueGames,
-  sportLeagues,
   sportLeagueSeasons,
   sportLeagueTeams,
   sportLeagueWeeks,
+  users,
 } from "@/db/schema";
 import {
   aliasedTable,
@@ -15,15 +17,17 @@ import {
   eq,
   getTableColumns,
   gt,
+  gte,
   lte,
   sql,
 } from "drizzle-orm";
 import { db } from "@/db/client";
 import { DBTransaction } from "@/db/transactions";
 import { DBSportLeagueGame } from "@/db/sportLeagueGames";
-import { DbWeeklyPickGameOddsData } from "@/db/sportLeagueGameOdds";
+import { DBSportLeagueGameOdds } from "@/db/sportLeagueGameOdds";
 import { DBPicksLeaguePick } from "@/db/picksLeaguesPicks";
 import { DBSportLeagueTeam } from "@/db/sportLeagueTeams";
+import { DBUser } from "@/db/users";
 
 export interface DBSportLeagueWeek {
   id: string;
@@ -64,6 +68,39 @@ export async function getCurrentDBSportLeagueWeeks(
       );
     return queryRows;
   }
+}
+
+export interface DBSportLeagueWeek {
+  id: string;
+  name: string;
+  startTime: Date;
+  endTime: Date;
+  seasonId: string;
+  espnEventsRef: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function getCurrentDBSportLeagueWeek(
+  sportLeagueId: string,
+): Promise<DBSportLeagueWeek | null> {
+  const now = new Date();
+  const queryRows = await db
+    .select({ week: getTableColumns(sportLeagueWeeks) })
+    .from(sportLeagueWeeks)
+    .innerJoin(
+      sportLeagueSeasons,
+      eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
+    )
+    .where(
+      and(
+        lte(sportLeagueWeeks.startTime, now),
+        gt(sportLeagueWeeks.endTime, now),
+        eq(sportLeagueSeasons.leagueId, sportLeagueId),
+      ),
+    );
+
+  return queryRows.length ? queryRows[0].week : null;
 }
 
 export interface UpsertDBSportLeagueWeek {
@@ -108,7 +145,7 @@ export async function upsertDBSportLeagueWeeks(
 }
 
 export interface DbWeeklyPickGameData extends DBSportLeagueGame {
-  odds: DbWeeklyPickGameOddsData[];
+  odds: DBSportLeagueGameOdds[];
   userPick: DBPicksLeaguePick | null;
   awayTeam: DBSportLeagueTeam;
   homeTeam: DBSportLeagueTeam;
@@ -120,10 +157,10 @@ export interface DBWeeklyPickData extends DBSportLeagueWeek {
 
 export async function getUserDBWeeklyPickData(
   picksLeagueId: string,
+  sportsLeagueWeekId: string,
   userId: string,
 ): Promise<DBWeeklyPickData | null> {
   const now = new Date();
-
   const awayTeamAlias = aliasedTable(sportLeagueTeams, "awaitTeamAlias");
   const homeTeamAlias = aliasedTable(sportLeagueTeams, "homeTeamAlias");
 
@@ -134,22 +171,8 @@ export async function getUserDBWeeklyPickData(
       awayTeamAlias: getTableColumns(awayTeamAlias),
       homeTeamAlias: getTableColumns(homeTeamAlias),
       sportLeagueGameOdds: getTableColumns(sportLeagueGameOdds),
-      oddsProviders: getTableColumns(oddsProviders),
     })
-    .from(picksLeagues)
-    .innerJoin(sportLeagues, eq(picksLeagues.sportLeagueId, sportLeagues.id))
-    .innerJoin(
-      sportLeagueSeasons,
-      eq(sportLeagueSeasons.leagueId, sportLeagues.id),
-    )
-    .innerJoin(
-      sportLeagueWeeks,
-      and(
-        eq(sportLeagueWeeks.seasonId, sportLeagueSeasons.id),
-        lte(sportLeagueWeeks.startTime, now),
-        gt(sportLeagueWeeks.endTime, now),
-      ),
-    )
+    .from(sportLeagueWeeks)
     .innerJoin(
       sportLeagueGames,
       eq(sportLeagueGames.weekId, sportLeagueWeeks.id),
@@ -160,11 +183,13 @@ export async function getUserDBWeeklyPickData(
       sportLeagueGameOdds,
       eq(sportLeagueGameOdds.gameId, sportLeagueGames.id),
     )
-    .innerJoin(
-      oddsProviders,
-      eq(oddsProviders.id, sportLeagueGameOdds.providerId),
-    )
-    .where(eq(picksLeagues.id, picksLeagueId));
+    .where(
+      and(
+        eq(sportLeagueWeeks.id, sportsLeagueWeekId),
+        lte(sportLeagueWeeks.startTime, now),
+        gt(sportLeagueWeeks.endTime, now),
+      ),
+    );
   if (!queryRows.length) {
     return null;
   }
@@ -180,19 +205,11 @@ export async function getUserDBWeeklyPickData(
         ...row.sportLeagueGame,
         awayTeam: row.awayTeamAlias,
         homeTeam: row.homeTeamAlias,
-        odds: [
-          {
-            ...row.sportLeagueGameOdds,
-            provider: row.oddsProviders,
-          },
-        ],
+        odds: [row.sportLeagueGameOdds],
         userPick: null, // may be added later
       });
     } else {
-      games[indexOfGame].odds.push({
-        ...row.sportLeagueGameOdds,
-        provider: row.oddsProviders,
-      });
+      games[indexOfGame].odds.push(row.sportLeagueGameOdds);
     }
   }
 
@@ -220,4 +237,144 @@ export async function getUserDBWeeklyPickData(
     ...week,
     games,
   };
+}
+
+export interface DBWeeklyPickDataByUserGame extends DBSportLeagueGame {
+  userPick: DBPicksLeaguePick;
+  awayTeam: DBSportLeagueTeam;
+  homeTeam: DBSportLeagueTeam;
+}
+
+export interface DBWeeklyPickDataByUser extends DBUser {
+  games: DBWeeklyPickDataByUserGame[];
+}
+
+export async function getLeagueDBWeeklyPickDataByUser(
+  picksLeagueId: string,
+  sportsLeagueWeekId: string,
+): Promise<DBWeeklyPickDataByUser[]> {
+  const awayTeamAlias = aliasedTable(sportLeagueTeams, "awaitTeamAlias");
+  const homeTeamAlias = aliasedTable(sportLeagueTeams, "homeTeamAlias");
+
+  const queryRows = await db
+    .select({
+      user: getTableColumns(users),
+      pick: getTableColumns(picksLeaguePicks),
+      game: getTableColumns(sportLeagueGames),
+      awayTeam: getTableColumns(awayTeamAlias),
+      homeTeam: getTableColumns(homeTeamAlias),
+    })
+    .from(picksLeagueMembers)
+    .innerJoin(users, eq(users.id, picksLeaguePicks.userId))
+    .leftJoin(
+      picksLeaguePicks,
+      eq(picksLeaguePicks.userId, picksLeagueMembers.userId),
+    )
+    .innerJoin(
+      sportLeagueGames,
+      eq(sportLeagueGames.id, picksLeaguePicks.sportLeagueGameId),
+    )
+    .innerJoin(awayTeamAlias, eq(awayTeamAlias.id, sportLeagueGames.awayTeamId))
+    .innerJoin(homeTeamAlias, eq(homeTeamAlias.id, sportLeagueGames.homeTeamId))
+    .innerJoin(
+      sportLeagueGameOdds,
+      eq(sportLeagueGameOdds.gameId, sportLeagueGames.id),
+    )
+    .innerJoin(
+      oddsProviders,
+      eq(oddsProviders.id, sportLeagueGameOdds.providerId),
+    )
+    .where(
+      and(
+        eq(picksLeaguePicks.sportLeagueWeekId, sportsLeagueWeekId),
+        eq(picksLeaguePicks.leagueId, picksLeagueId),
+      ),
+    );
+
+  const userPickData: DBWeeklyPickDataByUser[] = [];
+  queryRows.forEach((row) => {
+    const indexOfUser = userPickData.findIndex(
+      (user) => user.id === row.user.id,
+    );
+    if (indexOfUser === -1) {
+      userPickData.push({
+        ...row.user,
+        games:
+          row.game && row.pick
+            ? [
+                {
+                  ...row.game,
+                  userPick: row.pick,
+                  awayTeam: row.awayTeam,
+                  homeTeam: row.homeTeam,
+                },
+              ]
+            : [],
+      });
+    } else if (row.game && row.pick) {
+      const indexOfGame = userPickData[indexOfUser].games.findIndex(
+        (game) => game.id === row.game.id,
+      );
+      if (indexOfGame == -1) {
+        userPickData[indexOfUser].games.push({
+          ...row.game,
+          userPick: row.pick,
+          awayTeam: row.awayTeam,
+          homeTeam: row.homeTeam,
+        });
+      }
+    }
+  });
+
+  return userPickData;
+}
+
+export async function getDBSportLeagueWeeksForPicksLeagueSeason(
+  picksLeagueId: string,
+): Promise<DBSportLeagueWeek[]> {
+  const startSportLeagueWeekAlias = aliasedTable(
+    sportLeagueWeeks,
+    "startSportLeagueWeekAlias",
+  );
+  const endSportLeagueWeekAlias = aliasedTable(
+    sportLeagueWeeks,
+    "endSportLeagueWeekAlias",
+  );
+
+  const queryRows = await db
+    .select({
+      sportLeagueWeek: getTableColumns(sportLeagueWeeks),
+    })
+    .from(picksLeagues)
+    .innerJoin(
+      picksLeagueSeasons,
+      eq(picksLeagueSeasons.leagueId, picksLeagues.id),
+    )
+    .innerJoin(
+      startSportLeagueWeekAlias,
+      eq(
+        startSportLeagueWeekAlias.id,
+        picksLeagueSeasons.startSportLeagueWeekId,
+      ),
+    )
+    .innerJoin(
+      endSportLeagueWeekAlias,
+      eq(endSportLeagueWeekAlias.id, picksLeagueSeasons.endSportLeagueWeekId),
+    )
+    .innerJoin(
+      sportLeagueWeeks,
+      and(
+        eq(picksLeagueSeasons.sportLeagueSeasonId, sportLeagueWeeks.seasonId),
+        gte(sportLeagueWeeks.startTime, startSportLeagueWeekAlias.startTime),
+        lte(sportLeagueWeeks.endTime, endSportLeagueWeekAlias.endTime),
+      ),
+    )
+    .where(
+      and(
+        eq(picksLeagues.id, picksLeagueId),
+        eq(picksLeagueSeasons.active, true), // assumption is that there is only 1 active season at a time
+      ),
+    );
+
+  return queryRows.map((row) => row.sportLeagueWeek);
 }

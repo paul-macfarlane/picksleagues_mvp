@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/hover-card";
 import { DBPicksLeagueSettingDetails } from "@/db/picksLeagues";
 import { updatePicksLeagueAction } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/action";
+import { useRouter } from "next/navigation";
 
 type FormSchema = z.infer<typeof UpdatePicksLeagueSchema>;
 
@@ -69,10 +70,10 @@ export function PicksLeagueSettingsForm({
   canEditSeasonSettings: boolean;
 }) {
   const defaultStartSportLeagueWeekId = sportLeagues.length
-    ? getDefaultSportStartWeekId(sportLeagues[0])
+    ? picksLeague.startSportLeagueWeek.id
     : "";
   const defaultEndSportLeagueWeekId = sportLeagues.length
-    ? getDefaultSportEndWeekId(sportLeagues[0])
+    ? picksLeague.endSportLeagueWeek.id
     : "";
 
   const [formState, formAction] = useActionState(updatePicksLeagueAction, {});
@@ -97,8 +98,16 @@ export function PicksLeagueSettingsForm({
   const leagueName = form.watch("name");
   const logoUrl = form.watch("logoUrl");
 
-  const defaultSportLeagueWeeks =
-    sportLeagues.length > 0 ? sportLeagues[0].season.weeks : [];
+  let defaultSportLeagueWeeks = [];
+  if (canEditSeasonSettings) {
+    defaultSportLeagueWeeks =
+      sportLeagues.length > 0 ? sportLeagues[0].season.weeks : [];
+  } else {
+    defaultSportLeagueWeeks = [
+      picksLeague.startSportLeagueWeek,
+      picksLeague.endSportLeagueWeek,
+    ];
+  }
   const [sportLeagueWeeks, setSportLeagueWeeks] = useState(
     defaultSportLeagueWeeks,
   );
@@ -110,6 +119,8 @@ export function PicksLeagueSettingsForm({
   );
 
   const { toast } = useToast();
+
+  const router = useRouter();
 
   return (
     <Form {...form}>
@@ -205,6 +216,8 @@ export function PicksLeagueSettingsForm({
               title: "League Updated!",
               description: "Your league has been successfully updated.",
             });
+
+            router.refresh();
           })(e);
         }}
       >
