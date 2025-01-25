@@ -156,7 +156,11 @@ export default async function PicksLeaguePage(props: {
     selectedTabContent = (
       <PicksLeagueSettingsTab dbPicksLeague={dbPicksLeagueWithUserRole} />
     );
-  } else if (`/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.STANDINGS}`) {
+  } else if (
+    pathname?.startsWith(
+      `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.STANDINGS}`,
+    )
+  ) {
     selectedTabId = PicksLeagueTabIds.STANDINGS;
     selectedTabContent = (
       <PicksLeagueStandingsTab picksLeagueId={picksLeagueId} />
