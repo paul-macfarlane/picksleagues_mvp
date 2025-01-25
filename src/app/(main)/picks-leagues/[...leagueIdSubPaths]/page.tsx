@@ -18,6 +18,7 @@ import { PicksLeagueSettingsTab } from "@/app/(main)/picks-leagues/[...leagueIdS
 import { PicksLeagueMyPicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/my-picks/tab";
 import { LeaguePicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/league-picks/tab";
 import { getDBUserById } from "@/db/users";
+import { PicksLeagueStandingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/standings/tab";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -131,7 +132,6 @@ export default async function PicksLeaguePage(props: {
         picksLeagueId={dbPicksLeagueWithUserRole.id}
         sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
         userId={dbUser.id}
-        pickType={dbPicksLeagueWithUserRole.pickType as PicksLeaguePickTypes}
         weekId={weekId}
       />
     );
@@ -155,6 +155,15 @@ export default async function PicksLeaguePage(props: {
     selectedTabId = PicksLeagueTabIds.SETTINGS;
     selectedTabContent = (
       <PicksLeagueSettingsTab dbPicksLeague={dbPicksLeagueWithUserRole} />
+    );
+  } else if (
+    pathname?.startsWith(
+      `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.STANDINGS}`,
+    )
+  ) {
+    selectedTabId = PicksLeagueTabIds.STANDINGS;
+    selectedTabContent = (
+      <PicksLeagueStandingsTab picksLeagueId={picksLeagueId} />
     );
   } else {
     return (

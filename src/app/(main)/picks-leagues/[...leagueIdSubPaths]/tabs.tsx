@@ -26,7 +26,7 @@ export default function PicksLeagueTabs({
   return (
     <Tabs defaultValue={defaultValue} className={"space-y-4"}>
       <TabsList
-        className={`grid h-auto grid-cols-1 ${tabs.length === 4 ? "md:grid-cols-4" : "md:grid-cols-3"}`}
+        className={`grid h-auto grid-cols-1 ${tabs.length === 5 ? "md:grid-cols-5" : "md:grid-cols-4"}`}
       >
         {tabs.map((tab) => (
           <TabsTrigger

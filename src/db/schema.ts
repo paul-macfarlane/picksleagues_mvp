@@ -25,6 +25,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 import { PICKS_LEAGUE_ROLE_MAX_LENGTH } from "@/models/picksLeagueMembers";
+import { GamePickStatuses } from "@/shared/picksLeaguePicks";
 
 /**
  * table used by auth.js to store users, some custom fields added on top
@@ -462,6 +463,33 @@ export const picksLeaguePicks = sqliteTable("picks_league_picks", {
   favorite: integer("favorite", {
     mode: "boolean",
   }),
+  status: text("status", { length: 32 })
+    .notNull()
+    .default(GamePickStatuses.PICKED),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`)
+    .$onUpdate(() => new Date()),
+});
+
+export const picksLeagueStandings = sqliteTable("picks_league_standings", {
+  id: text("id", { length: UUID_LENGTH })
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id", { length: UUID_LENGTH })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  seasonId: text("season_id")
+    .notNull()
+    .references(() => picksLeagueSeasons.id, { onDelete: "cascade" }),
+  wins: integer().notNull().default(0),
+  losses: integer().notNull().default(0),
+  pushes: integer().notNull().default(0),
+  points: real().notNull().default(0.0),
+  rank: integer().notNull().default(0),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

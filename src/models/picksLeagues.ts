@@ -121,6 +121,7 @@ export enum PicksLeagueTabIds {
   MY_PICKS = "my-picks",
   LEAGUE_PICKS = "league-picks",
   SETTINGS = "settings",
+  STANDINGS = "standings",
 }
 
 export interface PicksLeagueTab {
@@ -132,6 +133,10 @@ export const MEMBER_PICKS_LEAGUE_TABS: PicksLeagueTab[] = [
   {
     id: PicksLeagueTabIds.MEMBERS,
     name: "League Members",
+  },
+  {
+    id: PicksLeagueTabIds.STANDINGS,
+    name: "League Standings",
   },
   {
     id: PicksLeagueTabIds.MY_PICKS,
