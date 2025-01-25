@@ -15,16 +15,10 @@ import {
 } from "@/db/sportLeagueWeeks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { PicksLeagueGameBox } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GameBox";
-import { PicksLeaguePickTypes } from "@/models/picksLeagues";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-} from "@/components/ui/pagination";
+import { PicksLeaguePickTypes, PicksLeagueTabIds } from "@/models/picksLeagues";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getPrevAndNextDBWeekForPicksLeague } from "@/services/sportLeagueWeeks";
+import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/WeekSwitcher";
 
 export interface PicksLeagueMyPicksTabProps {
   picksLeagueId: string;
@@ -43,7 +37,7 @@ export async function PicksLeagueMyPicksTab({
   pickType,
   weekId,
 }: PicksLeagueMyPicksTabProps) {
-  let selectedDBWeek: DBSportLeagueWeek | null = null;
+  let selectedDBWeek: DBSportLeagueWeek | null;
   if (weekId) {
     selectedDBWeek = await getDBSportLeagueWeekById(weekId);
   } else {
@@ -105,43 +99,13 @@ export async function PicksLeagueMyPicksTab({
 
   return (
     <div className={"flex flex-col items-center gap-2"}>
-      <div className={"mx-auto flex w-full max-w-4xl justify-center"}>
-        <Pagination>
-          <PaginationContent>
-            {previousWeek && (
-              <PaginationItem>
-                <PaginationLink
-                  className={"w-full p-2 md:p-4"}
-                  href={`/picks-leagues/${picksLeagueId}/my-picks?weekId=${previousWeek.id}`}
-                >
-                  <ChevronLeft /> {previousWeek.name}
-                </PaginationLink>
-              </PaginationItem>
-            )}
-
-            <PaginationItem>
-              <PaginationLink
-                isActive
-                className={"w-full p-2 md:p-4"}
-                href={`/picks-leagues/${picksLeagueId}/my-picks?weekId=${selectedDBWeek.id}`}
-              >
-                {selectedDBWeek.name}
-              </PaginationLink>
-            </PaginationItem>
-
-            {nextWeek && (
-              <PaginationItem>
-                <PaginationLink
-                  className={"w-full p-2 md:p-4"}
-                  href={`/picks-leagues/${picksLeagueId}/my-picks?weekId=${nextWeek.id}`}
-                >
-                  {nextWeek.name} <ChevronRight />
-                </PaginationLink>
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
-      </div>
+      <WeekSwitcher
+        previousWeek={previousWeek}
+        picksLeagueId={picksLeagueId}
+        selectedDBWeek={selectedDBWeek}
+        nextWeek={nextWeek}
+        tab={PicksLeagueTabIds.MY_PICKS}
+      />
 
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
@@ -157,7 +121,7 @@ export async function PicksLeagueMyPicksTab({
             <span>View your picks for {selectedDBWeek.name}.</span>
           )}
 
-          {!picksMade && picksData && (
+          {!picksMade && picksData.games.length > 0 && (
             <div className="flex flex-col gap-2">
               <span>Make your picks for this week&#39;s games.</span>
 
@@ -176,7 +140,10 @@ export async function PicksLeagueMyPicksTab({
 
         {!picksMade && picksData.games.length === 0 && (
           <CardContent>
-            <span>There are no more picks that can be made this week.</span>
+            <span>
+              There are no more picks that can be made for {selectedDBWeek.name}
+              .
+            </span>
           </CardContent>
         )}
 

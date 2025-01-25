@@ -43,6 +43,34 @@
       "when": 1736913269381,
       "tag": "0005_luxuriant_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1737677990163,
+      "tag": "0006_pale_sleepwalker",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1737680834997,
+      "tag": "0007_normal_night_nurse",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1737681970768,
+      "tag": "0008_bouncy_proudstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1737820208501,
+      "tag": "0009_noisy_norrin_radd",
+      "breakpoints": true
     }
   ]
 }

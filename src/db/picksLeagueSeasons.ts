@@ -1,7 +1,12 @@
 import { DBTransaction } from "@/db/transactions";
-import { picksLeagueSeasons } from "@/db/schema";
+import {
+  picksLeagueMembers,
+  picksLeagueSeasons,
+  picksLeagueStandings,
+} from "@/db/schema";
 import { db } from "@/db/client";
-import { and, eq } from "drizzle-orm";
+import { and, eq, getTableColumns, isNull } from "drizzle-orm";
+import { DBPicksLeagueMember } from "@/db/picksLeagueMembers";
 
 export interface CreateDBPicksLeagueSeason {
   leagueId: string;
@@ -95,4 +100,58 @@ export async function getActiveDBPicksLeagueSeason(
   }
 
   return queryRows[0];
+}
+
+export async function getActiveDBPicksLeagueSeasons(
+  tx?: DBTransaction,
+): Promise<DBPicksLeagueSeason[]> {
+  return tx
+    ? await tx
+        .select()
+        .from(picksLeagueSeasons)
+        .where(eq(picksLeagueSeasons.active, true))
+    : db
+        .select()
+        .from(picksLeagueSeasons)
+        .where(eq(picksLeagueSeasons.active, true));
+}
+
+export interface DBPicksLeagueSeasonsAndMembersWithoutStandings {
+  season: DBPicksLeagueSeason;
+  member: DBPicksLeagueMember;
+}
+
+export async function getDBPicksLeagueSeasonsAndMembersWithoutStandings(
+  tx?: DBTransaction,
+): Promise<DBPicksLeagueSeasonsAndMembersWithoutStandings[]> {
+  return tx
+    ? await tx
+        .select({
+          season: getTableColumns(picksLeagueSeasons),
+          member: getTableColumns(picksLeagueMembers),
+        })
+        .from(picksLeagueSeasons)
+        .innerJoin(
+          picksLeagueMembers,
+          eq(picksLeagueMembers.leagueId, picksLeagueSeasons.leagueId),
+        )
+        .leftJoin(
+          picksLeagueStandings,
+          eq(picksLeagueStandings.seasonId, picksLeagueSeasons.id),
+        )
+        .where(isNull(picksLeagueStandings.id))
+    : await db
+        .select({
+          season: getTableColumns(picksLeagueSeasons),
+          member: getTableColumns(picksLeagueMembers),
+        })
+        .from(picksLeagueSeasons)
+        .innerJoin(
+          picksLeagueMembers,
+          eq(picksLeagueMembers.leagueId, picksLeagueSeasons.leagueId),
+        )
+        .leftJoin(
+          picksLeagueStandings,
+          eq(picksLeagueStandings.seasonId, picksLeagueSeasons.id),
+        );
 }

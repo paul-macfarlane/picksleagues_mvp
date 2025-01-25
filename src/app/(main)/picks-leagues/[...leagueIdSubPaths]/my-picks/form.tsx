@@ -41,6 +41,7 @@ export function PicksLeagueMyPicksForm({
   >([]);
   const router = useRouter();
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
 
   const handlePickClicked = (clickedPick: SelectedPickDetail) => {
     let picksCopy = [...selectedPickDetails];
@@ -77,6 +78,7 @@ export function PicksLeagueMyPicksForm({
 
   const onSubmitPicks = async () => {
     try {
+      setSubmitting(true);
       await axios.post(
         `${process.env.NEXT_PUBLIC_HOST!}/api/picks-leagues/${picksLeagueId}/picks`,
         selectedPickDetails,
@@ -88,6 +90,8 @@ export function PicksLeagueMyPicksForm({
       if (e instanceof AxiosError && e.response?.data.error) {
         description = e.response.data.error;
       }
+
+      setSubmitting(false);
 
       toast({
         variant: "destructive",
@@ -208,9 +212,11 @@ export function PicksLeagueMyPicksForm({
         <Button
           onClick={onSubmitPicks}
           className="w-full"
-          disabled={selectedPickDetails.length < requiredAmountOfPicks}
+          disabled={
+            selectedPickDetails.length < requiredAmountOfPicks || submitting
+          }
         >
-          Submit Picks ({selectedPickDetails.length}/{requiredAmountOfPicks})
+          {submitting ? "Submitting..." : "Submit Picks"}
         </Button>
       </CardFooter>
     </>

@@ -183,13 +183,7 @@ export async function getUserDBWeeklyPickData(
       sportLeagueGameOdds,
       eq(sportLeagueGameOdds.gameId, sportLeagueGames.id),
     )
-    .where(
-      and(
-        eq(sportLeagueWeeks.id, sportsLeagueWeekId),
-        lte(sportLeagueWeeks.startTime, now),
-        gt(sportLeagueWeeks.endTime, now),
-      ),
-    );
+    .where(eq(sportLeagueWeeks.id, sportsLeagueWeekId));
   if (!queryRows.length) {
     return null;
   }
