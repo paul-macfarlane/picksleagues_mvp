@@ -16,7 +16,7 @@ export async function PicksLeagueMembersTab({
 
   return (
     <>
-      <Card>
+      <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
           <CardTitle>League Members</CardTitle>
         </CardHeader>
@@ -57,7 +57,7 @@ export async function PicksLeagueMembersTab({
         </CardContent>
       </Card>
 
-      <Card className="mt-2">
+      <Card className="mx-auto mt-2 w-full max-w-4xl md:mt-4">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Members</CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />

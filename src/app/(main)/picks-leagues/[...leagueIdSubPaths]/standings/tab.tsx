@@ -21,7 +21,7 @@ export async function PicksLeagueStandingsTab({
     await getDBPicksLeagueStandingsWithMembers(picksLeagueId);
 
   return (
-    <Card>
+    <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
         <CardTitle>League Standings</CardTitle>
       </CardHeader>
