@@ -11,7 +11,7 @@ import {
   verificationTokens,
 } from "./db/schema";
 
-export const { handlers, signIn, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [Discord, Google],
   adapter: DrizzleAdapter(db, {
     usersTable: users,

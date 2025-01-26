@@ -12,9 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { signOutAction } from "@/app/(main)/signOutAction";
 
 interface ProfileMenuProps {
   user: {
@@ -90,7 +90,7 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={() => signOutAction()}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sign out</span>
         </DropdownMenuItem>

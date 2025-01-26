@@ -76,7 +76,7 @@ export default async function Home() {
               </div>
               <h3 className="mb-2 text-xl font-semibold">Sign In</h3>
               <p className="text-muted-foreground">
-                Sign in using same sign on with Google or Discord.
+                Sign in with Google or Discord.
               </p>
             </li>
             <li className="flex flex-col items-center">
