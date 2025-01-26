@@ -9,6 +9,7 @@ import UpdateProfileForm from "@/app/(main)/profile/form";
 import { redirect } from "next/navigation";
 import { getDBUserById } from "@/db/users";
 import { z } from "zod";
+import { AUTH_URL } from "@/models/auth";
 
 export default async function Profile(props: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
@@ -16,7 +17,7 @@ export default async function Profile(props: {
   const searchParams = await props.searchParams;
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const updateMode = searchParams["mode"] === "signup" ? "signup" : "update";

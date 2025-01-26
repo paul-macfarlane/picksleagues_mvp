@@ -106,5 +106,6 @@ export async function getDBPicksLeagueStandingsWithMembers(
         eq(picksLeagueSeasons.active, true),
         eq(picksLeagueSeasons.leagueId, picksLeagueId),
       ),
-    );
+    )
+    .orderBy(picksLeagueStandings.rank);
 }

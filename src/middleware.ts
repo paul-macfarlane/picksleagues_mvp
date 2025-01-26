@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "./auth";
 
-export function middleware(request: NextRequest) {
-  auth(); // call auth so user session is loaded for every route
+export async function middleware(request: NextRequest) {
+  await auth(); // call auth so user session is loaded for every route, recommended by auth js
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-current-path", request.nextUrl.pathname.toString());

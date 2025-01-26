@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { getDBUserById, dbUsernameAvailable, updateDBUser } from "@/db/users";
 import { UpdateProfileFormSchema } from "@/models/users";
 import { redirect } from "next/navigation";
+import { AUTH_URL } from "@/models/auth";
 
 export interface UpdateProfileFormState {
   errors?: {
@@ -21,7 +22,7 @@ export async function updateProfileAction(
 ): Promise<UpdateProfileFormState> {
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const formDataObject = Object.fromEntries(formData);

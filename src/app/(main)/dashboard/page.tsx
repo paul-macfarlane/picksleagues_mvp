@@ -13,11 +13,12 @@ import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
 import { ChevronRight, CircleArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AUTH_URL } from "@/models/auth";
 
 export default async function Dashboard() {
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const dbPicksLeagueDetails = await getDBPicksLeagueDetailsForUser(

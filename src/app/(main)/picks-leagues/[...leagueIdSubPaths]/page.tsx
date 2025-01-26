@@ -19,6 +19,7 @@ import { PicksLeagueMyPicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSu
 import { LeaguePicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/league-picks/tab";
 import { getDBUserById } from "@/db/users";
 import { PicksLeagueStandingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/standings/tab";
+import { AUTH_URL } from "@/models/auth";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -37,7 +38,7 @@ export default async function PicksLeaguePage(props: {
 
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const dbUser = await getDBUserById(session.user.id);
@@ -46,7 +47,7 @@ export default async function PicksLeaguePage(props: {
       `Unable to find user in db for session on picks league page with user id ${session.user.id}`,
     );
 
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const parseLeagueId = z

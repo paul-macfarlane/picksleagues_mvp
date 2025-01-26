@@ -12,9 +12,9 @@ import { withDBTransaction } from "@/db/transactions";
 import { CreatePicksLeagueSchema } from "@/models/picksLeagues";
 import { redirect } from "next/navigation";
 import { createDBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
-
 import { createDBPicksLeagueMember } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
+import { AUTH_URL } from "@/models/auth";
 
 export interface CreatePicksLeagueFormState {
   errors?: {
@@ -38,7 +38,7 @@ export async function createPicksLeagueAction(
 ): Promise<CreatePicksLeagueFormState> {
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const dbUser = await getDBUserById(session.user.id);

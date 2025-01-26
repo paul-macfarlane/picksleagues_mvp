@@ -8,6 +8,7 @@ import {
   PICKS_LEAGUE_INVITE_EXPIRATION,
   PicksLeagueInviteFormSchema,
 } from "@/models/picksLeagueInvites";
+import { AUTH_URL } from "@/models/auth";
 
 export interface LeagueInviteActionState {
   errors?: {
@@ -23,7 +24,7 @@ export async function picksLeagueInviteAction(
 ): Promise<LeagueInviteActionState> {
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const parsed = PicksLeagueInviteFormSchema.safeParse(
