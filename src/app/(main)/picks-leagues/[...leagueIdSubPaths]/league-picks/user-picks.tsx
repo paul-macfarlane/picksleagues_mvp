@@ -42,7 +42,7 @@ export function UserPicks({ data, pickType }: UserPicksProps) {
       >
         <div className="flex gap-2 md:flex-row md:items-center">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={data.image ?? ""} alt={data.username!} />
+            <AvatarImage src={data.image ?? undefined} alt={data.username!} />
             <AvatarFallback>
               {data.username!.charAt(0).toLocaleUpperCase()}
             </AvatarFallback>

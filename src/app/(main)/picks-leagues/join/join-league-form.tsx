@@ -90,7 +90,7 @@ export function JoinLeagueForm({
                   src={
                     league.logoUrl && isUrl(league.logoUrl)
                       ? league.logoUrl
-                      : ""
+                      : undefined
                   }
                   alt={league.name}
                 />

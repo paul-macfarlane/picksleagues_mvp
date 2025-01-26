@@ -166,7 +166,7 @@ export async function createPicksLeagueAction(
     dbPicksLeague = await withDBTransaction(async (tx) => {
       const createDBPicksLeagueData = {
         name: parsed.data.name,
-        logoUrl: parsed.data.logoUrl,
+        logoUrl: parsed.data.logoUrl.length > 0 ? parsed.data.logoUrl : null,
         sportLeagueId: parsed.data.sportLeagueId,
         picksPerWeek: parsed.data.picksPerWeek,
         pickType: parsed.data.pickType,

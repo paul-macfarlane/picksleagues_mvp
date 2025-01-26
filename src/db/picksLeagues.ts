@@ -39,7 +39,7 @@ export interface DBPicksLeague {
 
 export interface CreateDBPicksLeague {
   name: string;
-  logoUrl?: string;
+  logoUrl: string | null;
   sportLeagueId: string;
   picksPerWeek: number;
   pickType: PicksLeaguePickTypes;
@@ -372,7 +372,7 @@ export async function getPickLeagueSettingsDetails(
 
 export interface UpdateDBPicksLeague {
   name?: string;
-  logoUrl?: string | null;
+  logoUrl: string | null;
   sportLeagueId?: string;
   picksPerWeek?: number;
   pickType?: PicksLeaguePickTypes;

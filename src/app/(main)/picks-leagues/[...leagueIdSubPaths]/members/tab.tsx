@@ -28,7 +28,7 @@ export async function PicksLeagueMembersTab({
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarImage
-                      src={member.image ?? ""}
+                      src={member.image ?? undefined}
                       alt={member.username!}
                     />
                     <AvatarFallback>

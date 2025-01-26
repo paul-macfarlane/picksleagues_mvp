@@ -82,7 +82,7 @@ export function PicksLeagueSettingsForm({
     defaultValues: {
       id: picksLeague.id,
       name: picksLeague.name,
-      logoUrl: picksLeague.logoUrl ?? undefined,
+      logoUrl: picksLeague.logoUrl ?? "", // needed because controlled inputs can't have null/undefined values
       sportLeagueId: picksLeague.sportLeagueId,
       visibility: picksLeague.visibility as PicksLeagueVisibilities,
       pickType: picksLeague.pickType as PicksLeaguePickTypes,
@@ -255,7 +255,7 @@ export function PicksLeagueSettingsForm({
                     className={`h-12 w-12 ${form.formState.errors.logoUrl ? "self-center" : ""}`}
                   >
                     <AvatarImage
-                      src={isUrl(logoUrl) ? logoUrl : ""}
+                      src={isUrl(logoUrl) ? logoUrl : undefined}
                       alt="League logo"
                     />
                     <AvatarFallback>

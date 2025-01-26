@@ -45,7 +45,7 @@ export default async function Dashboard() {
                       <div className="flex items-center gap-2">
                         <Avatar className="hidden md:block">
                           <AvatarImage
-                            src={picksLeagueDetail.logoUrl ?? ""}
+                            src={picksLeagueDetail.logoUrl ?? undefined}
                             alt={picksLeagueDetail.name}
                           />
                           <AvatarFallback>

@@ -49,7 +49,7 @@ export default function UpdateProfileForm({
       username: defaultValues.username,
       firstName: defaultValues.firstName,
       lastName: defaultValues.lastName,
-      imageUrl: defaultValues.imageUrl,
+      imageUrl: defaultValues.imageUrl ?? "", // needed because controlled inputs cannot have null default values
     },
   });
   const formRef = useRef<HTMLFormElement>(null);
@@ -133,7 +133,7 @@ export default function UpdateProfileForm({
           <div className="flex items-center space-x-4">
             <Avatar className="h-20 w-20">
               <AvatarImage
-                src={imageUrl && isUrl(imageUrl) ? imageUrl : ""}
+                src={imageUrl && isUrl(imageUrl) ? imageUrl : undefined}
                 alt={"Your Profile Avatar"}
               />
               <AvatarFallback>
