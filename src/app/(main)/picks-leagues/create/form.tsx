@@ -227,7 +227,7 @@ export function CreatePicksLeagueForm({
                     className={`h-12 w-12 ${form.formState.errors.logoUrl ? "self-center" : ""}`}
                   >
                     <AvatarImage
-                      src={isUrl(logoUrl) ? logoUrl : ""}
+                      src={isUrl(logoUrl) ? logoUrl : undefined}
                       alt="League logo"
                     />
                     <AvatarFallback>

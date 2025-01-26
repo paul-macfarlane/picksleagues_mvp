@@ -177,7 +177,7 @@ export async function updatePicksLeagueAction(
         parsed.data.id,
         {
           name: parsed.data.name,
-          logoUrl: parsed.data.logoUrl,
+          logoUrl: parsed.data.logoUrl.length > 0 ? parsed.data.logoUrl : null,
           // sportLeagueId intentionally omitted because users are not allowed to change it
           picksPerWeek: parsed.data.picksPerWeek,
           pickType: parsed.data.pickType,
@@ -199,7 +199,7 @@ export async function updatePicksLeagueAction(
   } else {
     await updateDBPicksLeague(parsed.data.id, {
       name: parsed.data.name,
-      logoUrl: parsed.data.logoUrl ?? null,
+      logoUrl: parsed.data.logoUrl.length > 0 ? parsed.data.logoUrl : null,
     });
   }
 

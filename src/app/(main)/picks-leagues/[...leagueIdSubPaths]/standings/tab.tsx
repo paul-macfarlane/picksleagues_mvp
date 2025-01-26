@@ -45,7 +45,7 @@ export async function PicksLeagueStandingsTab({
                 <TableCell className="flex items-center gap-2">
                   <Avatar>
                     <AvatarImage
-                      src={row.user.image ?? ""}
+                      src={row.user.image ?? undefined}
                       alt={row.user.username!}
                     />
                     <AvatarFallback>

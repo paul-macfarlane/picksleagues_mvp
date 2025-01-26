@@ -84,7 +84,7 @@ export async function updateProfileAction(
     username: parsed.data.username,
     firstName: parsed.data.firstName,
     lastName: parsed.data.lastName,
-    image: parsed.data.imageUrl,
+    image: parsed.data.imageUrl.length > 0 ? parsed.data.imageUrl : null,
   });
 
   return {};
