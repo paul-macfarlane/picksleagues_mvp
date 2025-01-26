@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { MAX_USERNAME_LENGTH } from "@/models/users";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
 import { redirect } from "next/navigation";
-import { generateUsername } from "unique-username-generator";
+import { generateFromEmail, generateUsername } from "unique-username-generator";
 import { z } from "zod";
 import { NextRequest } from "next/server";
 
@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
     let username = "";
     while (!username && attempts < 5) {
       attempts++;
-      const usernameCandidate = generateUsername("", 3, MAX_USERNAME_LENGTH);
+      const usernameCandidate =
+        dbUser.email && attempts === 1
+          ? generateFromEmail(dbUser.email).slice(0, MAX_USERNAME_LENGTH)
+          : generateUsername("", 3, MAX_USERNAME_LENGTH);
       if (await dbUsernameAvailable(usernameCandidate)) {
         username = usernameCandidate;
       }
