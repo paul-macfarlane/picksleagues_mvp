@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { auth } from "./auth";
 
 export function middleware(request: NextRequest) {
-  auth(); // call auth so user session is loaded for every route
+  void auth(); // call auth so user session is loaded for every route (todo is this actually needed?)
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-current-path", request.nextUrl.pathname.toString());

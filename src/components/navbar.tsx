@@ -17,6 +17,7 @@ import { DBUser } from "@/db/users";
 import { DBPicksLeagueDetails } from "@/db/picksLeagues";
 import Link from "next/link";
 import { MobileNavbar } from "@/components/mobile-navbar";
+import { AUTH_URL } from "@/models/auth";
 
 export interface NavbarProps {
   dbUser: DBUser | null;
@@ -162,7 +163,7 @@ export default function Navbar({
           ) : (
             <>
               <Button asChild>
-                <Link href={"/auth"}>Sign In</Link>
+                <Link href={AUTH_URL}>Sign In</Link>
               </Button>
               <ModeToggle />
             </>

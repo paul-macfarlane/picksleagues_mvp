@@ -8,11 +8,12 @@ import {
 } from "@/components/ui/card";
 import { getAllDBSportLeaguesWithActiveSeason } from "@/db/sportLeagues";
 import { redirect } from "next/navigation";
+import { AUTH_URL } from "@/models/auth";
 
 export default async function CreatePicksLeague() {
   const session = await auth();
   if (!session?.user) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const dbSportLeagueDetails = await getAllDBSportLeaguesWithActiveSeason();

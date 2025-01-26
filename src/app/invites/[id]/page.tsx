@@ -14,6 +14,7 @@ import {
   getDBPicksLeagueDetailsForInvite,
 } from "@/db/picksLeagueInvite";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
+import { AUTH_URL } from "@/models/auth";
 
 export default async function InvitesPage(props: {
   params: Promise<{ id: unknown }>;
@@ -54,7 +55,7 @@ export default async function InvitesPage(props: {
           </div>
         }
         buttonProps={{
-          link: `/auth?inviteId=${parseInviteId.data}`,
+          link: `${AUTH_URL}?inviteId=${parseInviteId.data}`,
           text: "Sign in",
         }}
       />

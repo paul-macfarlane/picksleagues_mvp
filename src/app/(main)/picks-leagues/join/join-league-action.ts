@@ -5,10 +5,10 @@ import { getDBPicksLeagueByIdWithMemberCount } from "@/db/picksLeagues";
 import { getDBUserById } from "@/db/users";
 import { PicksLeagueVisibilities } from "@/models/picksLeagues";
 import { redirect } from "next/navigation";
-
 import { createDBPicksLeagueMember } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { JoinPicksLeagueSchema } from "@/models/picksLeagueInvites";
+import { AUTH_URL } from "@/models/auth";
 
 interface JoinLeagueActionFormState {
   errors?: {
@@ -23,7 +23,7 @@ export async function joinLeagueAction(
 ): Promise<JoinLeagueActionFormState> {
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const dbUser = await getDBUserById(session.user.id);

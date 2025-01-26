@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Trophy, Users, TrendingUp } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
@@ -27,10 +25,6 @@ export default async function Home() {
           Join Picks Leagues to put your sports knowledge to the test. Create or
           join leagues, make your picks, and see who comes out on top!
         </p>
-
-        <Button asChild size="lg" className="mb-16">
-          <Link href={"/auth?defaultTab=signup"}>Sign Up</Link>
-        </Button>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <Card>
@@ -80,9 +74,9 @@ export default async function Home() {
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 1
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Sign Up</h3>
+              <h3 className="mb-2 text-xl font-semibold">Sign In</h3>
               <p className="text-muted-foreground">
-                Create your account using your email or social media.
+                Sign in using same sign on with Google or Discord.
               </p>
             </li>
             <li className="flex flex-col items-center">
@@ -106,10 +100,6 @@ export default async function Home() {
           </ol>
         </div>
       </section>
-
-      <footer className="container mx-auto mt-16 p-4 text-center text-muted-foreground">
-        <p>&copy; 2024 Picks Leagues. All rights reserved.</p>
-      </footer>
     </div>
   );
 }

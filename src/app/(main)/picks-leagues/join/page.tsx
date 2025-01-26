@@ -27,6 +27,7 @@ import {
   PicksLeaguePickTypes,
 } from "@/models/picksLeagues";
 import { JoinLeagueForm } from "@/app/(main)/picks-leagues/join/join-league-form";
+import { AUTH_URL } from "@/models/auth";
 
 const MAX_VISIBLE_PAGES = 5;
 const PAGE_SIZE = 6;
@@ -84,7 +85,7 @@ export default async function JoinLeagues(props: {
   const searchParams = await props.searchParams;
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   if (!searchParams["page"]) {

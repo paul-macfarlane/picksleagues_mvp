@@ -16,6 +16,7 @@ import {
   updateDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
 import { canEditPicksLeagueSeasonSettings } from "@/shared/picksLeagues";
+import { AUTH_URL } from "@/models/auth";
 
 interface UpdatePicksLeagueActionState {
   errors?: {
@@ -39,7 +40,7 @@ export async function updatePicksLeagueAction(
 ): Promise<UpdatePicksLeagueActionState> {
   const session = await auth();
   if (!session?.user?.id) {
-    return redirect("/auth");
+    return redirect(AUTH_URL);
   }
 
   const parsed = UpdatePicksLeagueSchema.safeParse(
