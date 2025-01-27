@@ -2,13 +2,13 @@ import { DBTransaction } from "@/db/transactions";
 import { sportLeagueGameOdds, sportLeagueGames } from "@/db/schema";
 import { eq, getTableColumns, inArray, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-
 import { DBSportLeagueGameOdds } from "@/db/sportLeagueGameOdds";
+import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 
 export interface UpsertDBSportLeagueGame {
   weekId: string;
   startTime: Date;
-  status: string;
+  status: SportLeagueGameStatuses;
   clock: string;
   period: number;
   awayTeamId: string;
@@ -22,7 +22,7 @@ export interface DBSportLeagueGame {
   id: string;
   weekId: string;
   startTime: Date;
-  status: string;
+  status: SportLeagueGameStatuses;
   clock: string;
   period: number;
   awayTeamId: string;

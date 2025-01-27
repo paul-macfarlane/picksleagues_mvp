@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
               : awayDBSportTeam.id;
             oddsUpserts.push({
               gameId: dbSportsGame.id,
-              providerId: dbOddsProvider.id!,
+              providerId: dbOddsProvider.id,
               favoriteTeamId: favoriteDBTeamId,
               underDogTeamId: underDogDBTeamId,
               spread: Math.abs(oddsData.spread),

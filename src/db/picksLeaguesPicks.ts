@@ -6,10 +6,11 @@ import {
   sportLeagueWeeks,
 } from "@/db/schema";
 import { db } from "@/db/client";
-import { and, eq, getTableColumns, gt, lte, sql } from "drizzle-orm";
+import { and, eq, getTableColumns, gte, lte, sql } from "drizzle-orm";
 import { DBSportLeagueGame } from "@/db/sportLeagueGames";
 import { GamePickStatuses } from "@/shared/picksLeaguePicks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
+import { PicksLeaguePickTypes } from "@/models/picksLeagues";
 
 export interface DBPicksLeaguePick {
   id: string;
@@ -18,23 +19,24 @@ export interface DBPicksLeaguePick {
   leagueId: string;
   spread: number | null;
   userId: string;
-  type: string;
+  type: PicksLeaguePickTypes;
   sportLeagueWeekId: string;
   sportLeagueGameId: string;
   teamId: string;
   favorite: boolean | null;
-  status: string;
+  status: GamePickStatuses;
 }
 
 export interface CreateDBPicksLeaguePick {
   leagueId: string;
   spread: number | null;
   userId: string;
-  type: string;
+  type: PicksLeaguePickTypes;
   sportLeagueWeekId: string;
   sportLeagueGameId: string;
   teamId: string;
   favorite: boolean | null;
+  // status omitted because it defaults to GamePickStatuses.Picked
 }
 
 export async function createDBPicksLeaguePicks(
@@ -67,7 +69,7 @@ export async function getUserDBPicksLeaguePicksForCurrentWeek(
     .where(
       and(
         lte(sportLeagueWeeks.startTime, now),
-        gt(sportLeagueWeeks.endTime, now),
+        gte(sportLeagueWeeks.endTime, now),
         eq(sportLeagueSeasons.leagueId, sportLeagueId),
         eq(picksLeaguePicks.userId, userId),
         eq(picksLeaguePicks.leagueId, picksLeagueId),
@@ -128,12 +130,12 @@ export interface UpsertDBPicksLeaguePick {
   leagueId: string;
   spread: number | null;
   userId: string;
-  type: string;
+  type: PicksLeaguePickTypes;
   sportLeagueWeekId: string;
   sportLeagueGameId: string;
   teamId: string;
   favorite: boolean | null;
-  status: string;
+  status: GamePickStatuses;
 }
 
 export async function upsertDBPicksLeaguePicks(

@@ -1,4 +1,5 @@
 import {
+  ESPNLeagueSlug,
   ESPNLink,
   ESPNLogo,
   ESPNRef,
@@ -16,7 +17,7 @@ interface League {
   abbreviation: string;
   shortName: string;
   midsizeName: string;
-  slug: string;
+  slug: ESPNLeagueSlug;
   isTournament: boolean;
   season: Season;
   seasons: ESPNRef;

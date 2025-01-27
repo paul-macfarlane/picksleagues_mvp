@@ -15,9 +15,7 @@ import { DBSportLeagueWithActiveSeasonDetail } from "@/db/sportLeagues";
 import { useFormStatus } from "react-dom";
 import {
   PICKS_LEAGUE_VISIBILITY_VALUES,
-  PicksLeagueVisibilities,
   PICKS_LEAGUE_PICK_TYPE_VALUES,
-  PicksLeaguePickTypes,
   UpdatePicksLeagueSchema,
 } from "@/models/picksLeagues";
 import { z } from "zod";
@@ -84,8 +82,8 @@ export function PicksLeagueSettingsForm({
       name: picksLeague.name,
       logoUrl: picksLeague.logoUrl ?? "", // needed because controlled inputs can't have null/undefined values
       sportLeagueId: picksLeague.sportLeagueId,
-      visibility: picksLeague.visibility as PicksLeagueVisibilities,
-      pickType: picksLeague.pickType as PicksLeaguePickTypes,
+      visibility: picksLeague.visibility,
+      pickType: picksLeague.pickType,
       picksPerWeek: picksLeague.picksPerWeek,
       startSportLeagueWeekId: picksLeague.startSportLeagueWeek.id,
       endSportLeagueWeekId: picksLeague.endSportLeagueWeek.id,

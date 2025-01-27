@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         ESPNSportSlug.FOOTBALL,
       );
 
-      const espnSportLeagueIdToSlugMap = new Map<string, string>();
+      const espnSportLeagueIdToSlugMap = new Map<string, ESPNLeagueSlug>();
       for (const espnSportLeague of espnSportLeagues) {
         espnSportLeagueIdToSlugMap.set(
           espnSportLeague.id,
@@ -53,12 +53,18 @@ export async function GET(request: NextRequest) {
 
       const espnSeasonNameToSportLeagueIdMap = new Map<string, string>();
       const espnLeagueIdToSeasonDisplayNameMap = new Map<string, string>();
-      const sportLeagueIdToESPNSlugMap = new Map<string, string>();
+      const sportLeagueIdToESPNSlugMap = new Map<string, ESPNLeagueSlug>();
       let espnSportLeagueSeasons = [];
       for (const dbSportLeague of dbSportLeagues) {
         const espnSportLeagueSlug = espnSportLeagueIdToSlugMap.get(
           dbSportLeague.espnId!,
-        ) as ESPNLeagueSlug;
+        );
+        if (!espnSportLeagueSlug) {
+          console.warn(
+            `unable to find sport league slug with espn id ${dbSportLeague.espnId}`,
+          );
+          continue;
+        }
         const espnSportLeagueSeason = await getActiveESPNSportLeagueSeason(
           ESPNSportSlug.FOOTBALL,
           espnSportLeagueSlug,
@@ -120,20 +126,26 @@ export async function GET(request: NextRequest) {
       );
 
       for (const dbSportLeagueSeason of dbSportLeagueSeasons) {
+        const leagueSlug = sportLeagueIdToESPNSlugMap.get(
+          dbSportLeagueSeason.leagueId,
+        );
+        if (!leagueSlug) {
+          console.warn(
+            `unable to find espn league slug for league id ${dbSportLeagueSeason.leagueId}`,
+          );
+          continue;
+        }
+
         const regularSeasonESPNWeeks = await getESPNSportLeagueSeasonWeeks(
           ESPNSportSlug.FOOTBALL,
-          sportLeagueIdToESPNSlugMap.get(
-            dbSportLeagueSeason.leagueId,
-          )! as ESPNLeagueSlug,
+          leagueSlug,
           dbSportLeagueSeason.name,
           ESPNSeasonType.REGULAR_SEASON,
         );
         const postSeasonESPNWeeks = (
           await getESPNSportLeagueSeasonWeeks(
             ESPNSportSlug.FOOTBALL,
-            sportLeagueIdToESPNSlugMap.get(
-              dbSportLeagueSeason.leagueId,
-            )! as ESPNLeagueSlug,
+            leagueSlug,
             dbSportLeagueSeason.name,
             ESPNSeasonType.POST_SEASON,
           )

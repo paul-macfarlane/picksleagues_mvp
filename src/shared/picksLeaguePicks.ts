@@ -21,7 +21,7 @@ export function getGamePickStatus(
 
   if (pick.status !== GamePickStatuses.PICKED) {
     // status was already calculated via standings calculator
-    return pick.status as GamePickStatuses;
+    return pick.status;
   }
 
   if (game.status !== SportLeagueGameStatuses.FINAL) {

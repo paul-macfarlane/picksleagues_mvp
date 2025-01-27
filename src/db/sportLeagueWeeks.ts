@@ -55,7 +55,7 @@ export async function getCurrentDBSportLeagueWeeks(
       .where(
         and(
           lte(sportLeagueWeeks.startTime, now),
-          gt(sportLeagueWeeks.endTime, now),
+          gte(sportLeagueWeeks.endTime, now),
         ),
       );
     return queryRows;
@@ -66,7 +66,7 @@ export async function getCurrentDBSportLeagueWeeks(
       .where(
         and(
           lte(sportLeagueWeeks.startTime, now),
-          gt(sportLeagueWeeks.endTime, now),
+          gte(sportLeagueWeeks.endTime, now),
         ),
       );
     return queryRows;
@@ -87,7 +87,7 @@ export async function getCurrentDBSportLeagueWeek(
     .where(
       and(
         lte(sportLeagueWeeks.startTime, now),
-        gt(sportLeagueWeeks.endTime, now),
+        gte(sportLeagueWeeks.endTime, now),
         eq(sportLeagueSeasons.leagueId, sportLeagueId),
       ),
     );
@@ -160,7 +160,6 @@ export async function getUserDBWeeklyPickData(
   sportsLeagueWeekId: string,
   userId: string,
 ): Promise<DBWeeklyPickData | null> {
-  const now = new Date();
   const awayTeamAlias = aliasedTable(sportLeagueTeams, "awaitTeamAlias");
   const homeTeamAlias = aliasedTable(sportLeagueTeams, "homeTeamAlias");
 
