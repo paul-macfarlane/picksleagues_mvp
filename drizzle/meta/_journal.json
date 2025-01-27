@@ -71,6 +71,20 @@
       "when": 1737820208501,
       "tag": "0009_noisy_norrin_radd",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1737934629491,
+      "tag": "0010_petite_rachel_grey",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1737934652784,
+      "tag": "0011_naive_tarantula",
+      "breakpoints": true
     }
   ]
 }

@@ -28,6 +28,7 @@ import { DBSportLeagueGameOdds } from "@/db/sportLeagueGameOdds";
 import { DBPicksLeaguePick } from "@/db/picksLeaguesPicks";
 import { DBSportLeagueTeam } from "@/db/sportLeagueTeams";
 import { DBUser } from "@/db/users";
+import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
 
 export interface DBSportLeagueWeek {
   id: string;
@@ -36,6 +37,7 @@ export interface DBSportLeagueWeek {
   endTime: Date;
   seasonId: string;
   espnEventsRef: string | null;
+  type: SportLeagueWeekTypes;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -70,17 +72,6 @@ export async function getCurrentDBSportLeagueWeeks(
   }
 }
 
-export interface DBSportLeagueWeek {
-  id: string;
-  name: string;
-  startTime: Date;
-  endTime: Date;
-  seasonId: string;
-  espnEventsRef: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export async function getCurrentDBSportLeagueWeek(
   sportLeagueId: string,
 ): Promise<DBSportLeagueWeek | null> {
@@ -109,6 +100,7 @@ export interface UpsertDBSportLeagueWeek {
   startTime: Date;
   endTime: Date;
   espnEventsRef?: string;
+  type: SportLeagueWeekTypes;
 }
 
 export async function upsertDBSportLeagueWeeks(
@@ -125,6 +117,7 @@ export async function upsertDBSportLeagueWeeks(
           startTime: sql`excluded.start_time`,
           endTime: sql`excluded.end_time`,
           espnEventsRef: sql`excluded.espn_events_ref`,
+          type: sql`excluded.type`,
         },
       })
       .returning();
@@ -138,6 +131,7 @@ export async function upsertDBSportLeagueWeeks(
           startTime: sql`excluded.start_time`,
           endTime: sql`excluded.end_time`,
           espnEventsRef: sql`excluded.espn_events_ref`,
+          type: sql`excluded.type`,
         },
       })
       .returning();

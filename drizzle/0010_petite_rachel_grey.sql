@@ -1,0 +1,1 @@
+ALTER TABLE `sport_league_weeks` ADD `type` text DEFAULT 'Regular Season' NOT NULL;

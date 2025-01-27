@@ -12,6 +12,7 @@ import {
 } from "@/integrations/espn/sportLeagueWeeks";
 import { upsertDBSportLeagueWeeks } from "@/db/sportLeagueWeeks";
 import { withDBTransaction } from "@/db/transactions";
+import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -127,26 +128,36 @@ export async function GET(request: NextRequest) {
           dbSportLeagueSeason.name,
           ESPNSeasonType.REGULAR_SEASON,
         );
-        const postSeasonESPNWeeks = await getESPNSportLeagueSeasonWeeks(
-          ESPNSportSlug.FOOTBALL,
-          sportLeagueIdToESPNSlugMap.get(
-            dbSportLeagueSeason.leagueId,
-          )! as ESPNLeagueSlug,
-          dbSportLeagueSeason.name,
-          ESPNSeasonType.POST_SEASON,
-        );
-        const allESPNWeeks = [
-          ...regularSeasonESPNWeeks,
-          ...postSeasonESPNWeeks,
-        ];
+        const postSeasonESPNWeeks = (
+          await getESPNSportLeagueSeasonWeeks(
+            ESPNSportSlug.FOOTBALL,
+            sportLeagueIdToESPNSlugMap.get(
+              dbSportLeagueSeason.leagueId,
+            )! as ESPNLeagueSlug,
+            dbSportLeagueSeason.name,
+            ESPNSeasonType.POST_SEASON,
+          )
+        ).filter((week) => week.text.toLowerCase() !== "pro bowl");
 
         await upsertDBSportLeagueWeeks(
-          allESPNWeeks.map((espnWeek) => ({
+          regularSeasonESPNWeeks.map((espnWeek) => ({
             seasonId: dbSportLeagueSeason.id,
             name: espnWeek.text,
             startTime: new Date(espnWeek.startDate),
             endTime: new Date(espnWeek.endDate),
             espnEventsRef: espnWeek.events.$ref,
+            type: SportLeagueWeekTypes.REGULAR_SEASON,
+          })),
+          tx,
+        );
+        await upsertDBSportLeagueWeeks(
+          postSeasonESPNWeeks.map((espnWeek) => ({
+            seasonId: dbSportLeagueSeason.id,
+            name: espnWeek.text,
+            startTime: new Date(espnWeek.startDate),
+            endTime: new Date(espnWeek.endDate),
+            espnEventsRef: espnWeek.events.$ref,
+            type: SportLeagueWeekTypes.PLAYOFFS,
           })),
           tx,
         );
