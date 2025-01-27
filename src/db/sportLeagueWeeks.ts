@@ -38,6 +38,7 @@ export interface DBSportLeagueWeek {
   seasonId: string;
   espnEventsRef: string | null;
   type: SportLeagueWeekTypes;
+  manual: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -105,8 +106,11 @@ export interface UpsertDBSportLeagueWeek {
 
 export async function upsertDBSportLeagueWeeks(
   upserts: UpsertDBSportLeagueWeek[],
+  ignoreManual: boolean,
   tx: DBTransaction,
 ): Promise<DBSportLeagueWeek[]> {
+  const setWhere = ignoreManual ? sql`manual = false` : undefined;
+
   if (tx) {
     return tx
       .insert(sportLeagueWeeks)
@@ -119,6 +123,7 @@ export async function upsertDBSportLeagueWeeks(
           espnEventsRef: sql`excluded.espn_events_ref`,
           type: sql`excluded.type`,
         },
+        setWhere,
       })
       .returning();
   } else {
@@ -133,6 +138,7 @@ export async function upsertDBSportLeagueWeeks(
           espnEventsRef: sql`excluded.espn_events_ref`,
           type: sql`excluded.type`,
         },
+        setWhere,
       })
       .returning();
   }

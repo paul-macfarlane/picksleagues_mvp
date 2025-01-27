@@ -138,7 +138,6 @@ export async function GET(request: NextRequest) {
             ESPNSeasonType.POST_SEASON,
           )
         ).filter((week) => week.text.toLowerCase() !== "pro bowl");
-
         await upsertDBSportLeagueWeeks(
           regularSeasonESPNWeeks.map((espnWeek) => ({
             seasonId: dbSportLeagueSeason.id,
@@ -148,6 +147,7 @@ export async function GET(request: NextRequest) {
             espnEventsRef: espnWeek.events.$ref,
             type: SportLeagueWeekTypes.REGULAR_SEASON,
           })),
+          true,
           tx,
         );
         await upsertDBSportLeagueWeeks(
@@ -159,6 +159,7 @@ export async function GET(request: NextRequest) {
             espnEventsRef: espnWeek.events.$ref,
             type: SportLeagueWeekTypes.PLAYOFFS,
           })),
+          true,
           tx,
         );
       }

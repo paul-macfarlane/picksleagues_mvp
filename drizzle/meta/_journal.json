@@ -85,6 +85,13 @@
       "when": 1737934652784,
       "tag": "0011_naive_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1737951112532,
+      "tag": "0012_superb_king_cobra",
+      "breakpoints": true
     }
   ]
 }

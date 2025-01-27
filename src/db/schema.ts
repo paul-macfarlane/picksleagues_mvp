@@ -232,6 +232,7 @@ export const sportLeagueWeeks = sqliteTable(
         SportLeagueWeekTypes.REGULAR_SEASON,
       ],
     }).notNull(),
+    manual: integer("manual", { mode: "boolean" }).notNull().default(false),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
