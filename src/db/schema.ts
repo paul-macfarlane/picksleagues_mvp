@@ -233,6 +233,7 @@ export const sportLeagueWeeks = sqliteTable(
       ],
     }).notNull(),
     manual: integer("manual", { mode: "boolean" }).notNull().default(false),
+    pickLockTime: integer("pick_lock_time", { mode: "timestamp" }).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),

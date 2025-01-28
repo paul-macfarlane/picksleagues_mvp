@@ -16,7 +16,6 @@ import {
   and,
   eq,
   getTableColumns,
-  gt,
   gte,
   lte,
   sql,
@@ -39,6 +38,7 @@ export interface DBSportLeagueWeek {
   espnEventsRef: string | null;
   type: SportLeagueWeekTypes;
   manual: boolean;
+  pickLockTime: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -100,17 +100,21 @@ export interface UpsertDBSportLeagueWeek {
   name: string;
   startTime: Date;
   endTime: Date;
-  espnEventsRef?: string;
+  espnEventsRef?: string | null;
   type: SportLeagueWeekTypes;
+  pickLockTime: Date;
 }
 
 export async function upsertDBSportLeagueWeeks(
   upserts: UpsertDBSportLeagueWeek[],
   ignoreManual: boolean,
+  ignorePickLockTimeUpdate: boolean,
   tx: DBTransaction,
 ): Promise<DBSportLeagueWeek[]> {
   const setWhere = ignoreManual ? sql`manual = false` : undefined;
-
+  const pickLockTime = ignorePickLockTimeUpdate
+    ? undefined
+    : sql`excluded.pick_lock_time`;
   if (tx) {
     return tx
       .insert(sportLeagueWeeks)
@@ -122,6 +126,7 @@ export async function upsertDBSportLeagueWeeks(
           endTime: sql`excluded.end_time`,
           espnEventsRef: sql`excluded.espn_events_ref`,
           type: sql`excluded.type`,
+          pickLockTime,
         },
         setWhere,
       })
@@ -137,6 +142,7 @@ export async function upsertDBSportLeagueWeeks(
           endTime: sql`excluded.end_time`,
           espnEventsRef: sql`excluded.espn_events_ref`,
           type: sql`excluded.type`,
+          pickLockTime,
         },
         setWhere,
       })

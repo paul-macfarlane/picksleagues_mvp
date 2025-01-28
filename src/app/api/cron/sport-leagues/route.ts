@@ -13,6 +13,24 @@ import {
 import { upsertDBSportLeagueWeeks } from "@/db/sportLeagueWeeks";
 import { withDBTransaction } from "@/db/transactions";
 import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
+import { DateTime } from "luxon";
+
+function findFirstSundayAt1PMET(startDate: Date, endDate: Date): Date | null {
+  const start = DateTime.fromJSDate(startDate, { zone: "utc" });
+  const end = DateTime.fromJSDate(endDate, { zone: "utc" });
+
+  let current = start.setZone("America/New_York");
+  if (current.weekday !== 7) {
+    current = current.plus({ days: 7 - current.weekday });
+  }
+
+  current = current.set({ hour: 13, minute: 0, second: 0, millisecond: 0 });
+  if (current.toUTC() >= start && current.toUTC() <= end) {
+    return current.toJSDate();
+  }
+
+  return null;
+}
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -136,12 +154,23 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
-        const regularSeasonESPNWeeks = await getESPNSportLeagueSeasonWeeks(
-          ESPNSportSlug.FOOTBALL,
-          leagueSlug,
-          dbSportLeagueSeason.name,
-          ESPNSeasonType.REGULAR_SEASON,
-        );
+        const regularSeasonESPNWeeks = (
+          await getESPNSportLeagueSeasonWeeks(
+            ESPNSportSlug.FOOTBALL,
+            leagueSlug,
+            dbSportLeagueSeason.name,
+            ESPNSeasonType.REGULAR_SEASON,
+          )
+        ).map((week) => {
+          return {
+            ...week,
+            pickLockTime:
+              findFirstSundayAt1PMET(
+                new Date(week.startDate),
+                new Date(new Date(week.endDate)),
+              ) ?? new Date(week.startDate),
+          };
+        });
         const postSeasonESPNWeeks = (
           await getESPNSportLeagueSeasonWeeks(
             ESPNSportSlug.FOOTBALL,
@@ -158,8 +187,10 @@ export async function GET(request: NextRequest) {
             endTime: new Date(espnWeek.endDate),
             espnEventsRef: espnWeek.events.$ref,
             type: SportLeagueWeekTypes.REGULAR_SEASON,
+            pickLockTime: espnWeek.pickLockTime,
           })),
           true,
+          false,
           tx,
         );
         await upsertDBSportLeagueWeeks(
@@ -170,8 +201,10 @@ export async function GET(request: NextRequest) {
             endTime: new Date(espnWeek.endDate),
             espnEventsRef: espnWeek.events.$ref,
             type: SportLeagueWeekTypes.PLAYOFFS,
+            pickLockTime: new Date(espnWeek.endDate), // once initially set on week creation, pickLockTime won't change until the postseason starts and games are known
           })),
           true,
+          true, // ignore update of pick lock time for post season, games cron will set this
           tx,
         );
       }
