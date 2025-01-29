@@ -10,13 +10,11 @@ import { Trash2 } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import {
-  getGamePickSpreadDisplay,
-  getGamePickTimeDisplay,
-} from "@/shared/picksLeaguePicks";
+import { getGamePickSpreadDisplay } from "@/shared/picksLeaguePicks";
 import { DbWeeklyPickGameData } from "@/db/sportLeagueWeeks";
 import Image from "next/image";
 import { PicksLeaguePickTypes } from "@/models/picksLeagues";
+import { GamePickTimeDisplay } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GamePickTimeDisplay";
 
 interface SelectedPickDetail {
   sportLeagueGameId: string;
@@ -137,7 +135,7 @@ export function PicksLeagueMyPicksForm({
                   {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  {getGamePickTimeDisplay(game)}
+                  <GamePickTimeDisplay game={game} />
                 </span>
               </div>
 

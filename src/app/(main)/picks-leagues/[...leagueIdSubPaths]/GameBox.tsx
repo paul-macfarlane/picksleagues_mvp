@@ -1,12 +1,9 @@
 import { DBWeeklyPickDataByUserGame } from "@/db/sportLeagueWeeks";
-import {
-  GamePickStatuses,
-  getGamePickStatus,
-  getGamePickTimeDisplay,
-} from "@/shared/picksLeaguePicks";
+import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { PicksLeaguePickTypes } from "@/models/picksLeagues";
+import { GamePickTimeDisplay } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GamePickTimeDisplay";
 
 export interface PicksLeagueGameBoxProps {
   game: DBWeeklyPickDataByUserGame;
@@ -57,14 +54,18 @@ export function PicksLeagueGameBox({
   return (
     <>
       <div className={`hidden rounded border p-2 md:flex md:flex-col`}>
-        <div className={"flex items-center justify-between p-2"}>
-          <Badge variant={indicatorVariant}>{indicatorText}</Badge>
+        <div className="relative flex items-center justify-between p-2">
+          <div className="flex-shrink-0">
+            <Badge variant={indicatorVariant}>{indicatorText}</Badge>
+          </div>
 
-          <span className="font-bold">
+          <span className="absolute left-1/2 -translate-x-1/2 transform font-bold">
             {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
           </span>
 
-          <span>{getGamePickTimeDisplay(game)}</span>
+          <div className="flex-shrink-0">
+            <GamePickTimeDisplay game={game} />
+          </div>
         </div>
 
         <div className={"flex items-center justify-between gap-4 p-2"}>
@@ -117,14 +118,16 @@ export function PicksLeagueGameBox({
       </div>
 
       <div className="flex flex-col gap-2 rounded border p-2 md:hidden">
-        <div className={"flex items-center justify-between p-2"}>
+        <div className={"flex items-center justify-between p-2 text-sm"}>
           <Badge variant={indicatorVariant}>{indicatorText}</Badge>
 
-          <span>
+          <span className="font-bold">
             {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
           </span>
 
-          <span className="text-sm">{getGamePickTimeDisplay(game)}</span>
+          <span>
+            <GamePickTimeDisplay game={game} />
+          </span>
         </div>
 
         <div

@@ -8,6 +8,7 @@ import {
 } from "@/db/picksLeaguesPicks";
 import { getDBUserById } from "@/db/users";
 import { PicksLeaguePickTypes } from "@/models/picksLeagues";
+import { getCurrentDBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 
 export async function POST(
   request: Request,
@@ -110,6 +111,42 @@ export async function POST(
         },
       );
     }
+  }
+
+  const currentWeek = await getCurrentDBSportLeagueWeek(
+    dbPicksLeagueWithMember.sportLeagueId,
+  );
+  if (!currentWeek) {
+    return Response.json(
+      {
+        error: "No current week found for sports league",
+      },
+      {
+        status: 404,
+      },
+    );
+  }
+
+  if (currentWeek.id !== weekIds[0]) {
+    return Response.json(
+      {
+        error: "Must make picks for the current week only",
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+
+  if (now > currentWeek.pickLockTime) {
+    return Response.json(
+      {
+        error: "Cannot submit picks after pick lock time",
+      },
+      {
+        status: 403,
+      },
+    );
   }
 
   await createDBPicksLeaguePicks(
