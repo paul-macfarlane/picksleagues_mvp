@@ -36,7 +36,7 @@ export interface CreateDBPicksLeaguePick {
   sportLeagueGameId: string;
   teamId: string;
   favorite: boolean | null;
-  // status omitted because it defaults to GamePickStatuses.Picked
+  // status omitted because it defaults to PicksLeaguePickStatuses.Picked
 }
 
 export async function createDBPicksLeaguePicks(
