@@ -8,7 +8,7 @@ import {
 import { db } from "@/db/client";
 import { and, eq, getTableColumns, gte, lte, sql } from "drizzle-orm";
 import { DBSportLeagueGame } from "@/db/sportLeagueGames";
-import { GamePickStatuses } from "@/shared/picksLeaguePicks";
+import { PicksLeaguePickStatuses } from "@/shared/picksLeaguePicks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { PicksLeaguePickTypes } from "@/models/picksLeagues";
 
@@ -24,7 +24,7 @@ export interface DBPicksLeaguePick {
   sportLeagueGameId: string;
   teamId: string;
   favorite: boolean | null;
-  status: GamePickStatuses;
+  status: PicksLeaguePickStatuses;
 }
 
 export interface CreateDBPicksLeaguePick {
@@ -101,7 +101,7 @@ export async function getDBPicksFinalizedWithoutStatusForLeague(
         )
         .where(
           and(
-            eq(picksLeaguePicks.status, GamePickStatuses.PICKED),
+            eq(picksLeaguePicks.status, PicksLeaguePickStatuses.PICKED),
             eq(picksLeaguePicks.leagueId, picksLeagueId),
             eq(sportLeagueGames.status, SportLeagueGameStatuses.FINAL),
           ),
@@ -118,7 +118,7 @@ export async function getDBPicksFinalizedWithoutStatusForLeague(
         )
         .where(
           and(
-            eq(picksLeaguePicks.status, GamePickStatuses.PICKED),
+            eq(picksLeaguePicks.status, PicksLeaguePickStatuses.PICKED),
             eq(picksLeaguePicks.leagueId, picksLeagueId),
             eq(sportLeagueGames.status, SportLeagueGameStatuses.FINAL),
           ),
@@ -135,7 +135,7 @@ export interface UpsertDBPicksLeaguePick {
   sportLeagueGameId: string;
   teamId: string;
   favorite: boolean | null;
-  status: GamePickStatuses;
+  status: PicksLeaguePickStatuses;
 }
 
 export async function upsertDBPicksLeaguePicks(

@@ -1,6 +1,9 @@
 "use client";
 
-import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
+import {
+  PicksLeaguePickStatuses,
+  getGamePickStatus,
+} from "@/shared/picksLeaguePicks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -23,7 +26,8 @@ export function UserPicks({ data, pickType }: UserPicksProps) {
   const [picksOpen, setPicksOpen] = useState(false);
 
   const gamesCorrect = data.games.filter(
-    (game) => getGamePickStatus(game, game.userPick) === GamePickStatuses.WIN,
+    (game) =>
+      getGamePickStatus(game, game.userPick) === PicksLeaguePickStatuses.WIN,
   ).length;
   const gamesInProgress = data.games.filter(
     (game) => game.status !== SportLeagueGameStatuses.FINAL && game.period > 0,

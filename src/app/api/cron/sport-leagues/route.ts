@@ -161,16 +161,14 @@ export async function GET(request: NextRequest) {
             dbSportLeagueSeason.name,
             ESPNSeasonType.REGULAR_SEASON,
           )
-        ).map((week) => {
-          return {
-            ...week,
-            pickLockTime:
-              findFirstSundayAt1PMET(
-                new Date(week.startDate),
-                new Date(new Date(week.endDate)),
-              ) ?? new Date(week.startDate),
-          };
-        });
+        ).map((week) => ({
+          ...week,
+          pickLockTime:
+            findFirstSundayAt1PMET(
+              new Date(week.startDate),
+              new Date(new Date(week.endDate)),
+            ) ?? new Date(week.startDate),
+        }));
         const postSeasonESPNWeeks = (
           await getESPNSportLeagueSeasonWeeks(
             ESPNSportSlug.FOOTBALL,

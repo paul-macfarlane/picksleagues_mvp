@@ -1,5 +1,8 @@
 import { DBWeeklyPickDataByUserGame } from "@/db/sportLeagueWeeks";
-import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
+import {
+  PicksLeaguePickStatuses,
+  getGamePickStatus,
+} from "@/shared/picksLeaguePicks";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { PicksLeaguePickTypes } from "@/models/picksLeagues";
@@ -24,24 +27,24 @@ export function PicksLeagueGameBox({
     | "neutral-blue"
     | undefined;
   switch (gamePickStatus) {
-    case GamePickStatuses.WIN:
+    case PicksLeaguePickStatuses.WIN:
       gameBorder = "border-success";
-      indicatorText = GamePickStatuses.WIN;
+      indicatorText = PicksLeaguePickStatuses.WIN;
       indicatorVariant = "success";
       break;
-    case GamePickStatuses.LOSS:
+    case PicksLeaguePickStatuses.LOSS:
       gameBorder = "border-destructive";
-      indicatorText = GamePickStatuses.LOSS;
+      indicatorText = PicksLeaguePickStatuses.LOSS;
       indicatorVariant = "destructive";
       break;
-    case GamePickStatuses.PUSH:
+    case PicksLeaguePickStatuses.PUSH:
       gameBorder = "border-warning";
-      indicatorText = GamePickStatuses.PUSH;
+      indicatorText = PicksLeaguePickStatuses.PUSH;
       indicatorVariant = "warning";
       break;
-    case GamePickStatuses.PICKED:
+    case PicksLeaguePickStatuses.PICKED:
       gameBorder = "border-neutral-blue";
-      indicatorText = GamePickStatuses.PICKED;
+      indicatorText = PicksLeaguePickStatuses.PICKED;
       indicatorVariant = "neutral-blue";
       break;
     default:

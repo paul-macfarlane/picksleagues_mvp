@@ -30,7 +30,7 @@ import {
   PICKS_LEAGUE_ROLE_MAX_LENGTH,
   PicksLeagueMemberRoles,
 } from "@/models/picksLeagueMembers";
-import { GamePickStatuses } from "@/shared/picksLeaguePicks";
+import { PicksLeaguePickStatuses } from "@/shared/picksLeaguePicks";
 import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 
@@ -494,15 +494,15 @@ export const picksLeaguePicks = sqliteTable("picks_league_picks", {
   status: text("status", {
     length: 32,
     enum: [
-      GamePickStatuses.WIN,
-      GamePickStatuses.PICKED,
-      GamePickStatuses.LOSS,
-      GamePickStatuses.PUSH,
-      GamePickStatuses.UNPICKED,
+      PicksLeaguePickStatuses.WIN,
+      PicksLeaguePickStatuses.PICKED,
+      PicksLeaguePickStatuses.LOSS,
+      PicksLeaguePickStatuses.PUSH,
+      PicksLeaguePickStatuses.UNPICKED,
     ],
   })
     .notNull()
-    .default(GamePickStatuses.PICKED),
+    .default(PicksLeaguePickStatuses.PICKED),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

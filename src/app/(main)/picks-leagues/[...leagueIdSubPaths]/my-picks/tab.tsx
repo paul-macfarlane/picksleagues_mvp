@@ -6,7 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
+import {
+  PicksLeaguePickStatuses,
+  getGamePickStatus,
+} from "@/shared/picksLeaguePicks";
 import {
   DBSportLeagueWeek,
   DBWeeklyPickDataByUserGame,
@@ -79,7 +82,8 @@ export async function PicksLeagueMyPicksTab({
 
   const correctPickCount =
     picksData?.games.filter(
-      (game) => getGamePickStatus(game, game.userPick) === GamePickStatuses.WIN,
+      (game) =>
+        getGamePickStatus(game, game.userPick) === PicksLeaguePickStatuses.WIN,
     ).length ?? 0;
   const gamesComplete =
     picksData?.games.filter(
