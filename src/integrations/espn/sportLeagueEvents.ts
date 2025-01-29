@@ -1,6 +1,7 @@
 import { ESPNRef } from "@/integrations/espn/shared";
 import { getAllRefUrlsFromESPNListUrl } from "@/integrations/espn/lists";
 import axios from "axios";
+import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 
 interface Event {
   $ref: string;
@@ -166,7 +167,7 @@ interface Status {
   period: number;
   type: {
     id: string;
-    name: string;
+    name: SportLeagueGameStatuses;
     state: string;
     completed: boolean;
     description: string;

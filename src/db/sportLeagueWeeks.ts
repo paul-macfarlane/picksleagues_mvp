@@ -16,7 +16,6 @@ import {
   and,
   eq,
   getTableColumns,
-  gt,
   gte,
   lte,
   sql,
@@ -28,6 +27,7 @@ import { DBSportLeagueGameOdds } from "@/db/sportLeagueGameOdds";
 import { DBPicksLeaguePick } from "@/db/picksLeaguesPicks";
 import { DBSportLeagueTeam } from "@/db/sportLeagueTeams";
 import { DBUser } from "@/db/users";
+import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
 
 export interface DBSportLeagueWeek {
   id: string;
@@ -36,6 +36,9 @@ export interface DBSportLeagueWeek {
   endTime: Date;
   seasonId: string;
   espnEventsRef: string | null;
+  type: SportLeagueWeekTypes;
+  manual: boolean;
+  pickLockTime: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,7 +55,7 @@ export async function getCurrentDBSportLeagueWeeks(
       .where(
         and(
           lte(sportLeagueWeeks.startTime, now),
-          gt(sportLeagueWeeks.endTime, now),
+          gte(sportLeagueWeeks.endTime, now),
         ),
       );
     return queryRows;
@@ -63,22 +66,11 @@ export async function getCurrentDBSportLeagueWeeks(
       .where(
         and(
           lte(sportLeagueWeeks.startTime, now),
-          gt(sportLeagueWeeks.endTime, now),
+          gte(sportLeagueWeeks.endTime, now),
         ),
       );
     return queryRows;
   }
-}
-
-export interface DBSportLeagueWeek {
-  id: string;
-  name: string;
-  startTime: Date;
-  endTime: Date;
-  seasonId: string;
-  espnEventsRef: string | null;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export async function getCurrentDBSportLeagueWeek(
@@ -95,7 +87,7 @@ export async function getCurrentDBSportLeagueWeek(
     .where(
       and(
         lte(sportLeagueWeeks.startTime, now),
-        gt(sportLeagueWeeks.endTime, now),
+        gte(sportLeagueWeeks.endTime, now),
         eq(sportLeagueSeasons.leagueId, sportLeagueId),
       ),
     );
@@ -108,13 +100,21 @@ export interface UpsertDBSportLeagueWeek {
   name: string;
   startTime: Date;
   endTime: Date;
-  espnEventsRef?: string;
+  espnEventsRef?: string | null;
+  type: SportLeagueWeekTypes;
+  pickLockTime: Date;
 }
 
 export async function upsertDBSportLeagueWeeks(
   upserts: UpsertDBSportLeagueWeek[],
+  ignoreManual: boolean,
+  ignorePickLockTimeUpdate: boolean,
   tx: DBTransaction,
 ): Promise<DBSportLeagueWeek[]> {
+  const setWhere = ignoreManual ? sql`manual = false` : undefined;
+  const pickLockTime = ignorePickLockTimeUpdate
+    ? undefined
+    : sql`excluded.pick_lock_time`;
   if (tx) {
     return tx
       .insert(sportLeagueWeeks)
@@ -125,7 +125,10 @@ export async function upsertDBSportLeagueWeeks(
           startTime: sql`excluded.start_time`,
           endTime: sql`excluded.end_time`,
           espnEventsRef: sql`excluded.espn_events_ref`,
+          type: sql`excluded.type`,
+          pickLockTime,
         },
+        setWhere,
       })
       .returning();
   } else {
@@ -138,7 +141,10 @@ export async function upsertDBSportLeagueWeeks(
           startTime: sql`excluded.start_time`,
           endTime: sql`excluded.end_time`,
           espnEventsRef: sql`excluded.espn_events_ref`,
+          type: sql`excluded.type`,
+          pickLockTime,
         },
+        setWhere,
       })
       .returning();
   }
@@ -160,7 +166,6 @@ export async function getUserDBWeeklyPickData(
   sportsLeagueWeekId: string,
   userId: string,
 ): Promise<DBWeeklyPickData | null> {
-  const now = new Date();
   const awayTeamAlias = aliasedTable(sportLeagueTeams, "awaitTeamAlias");
   const homeTeamAlias = aliasedTable(sportLeagueTeams, "homeTeamAlias");
 

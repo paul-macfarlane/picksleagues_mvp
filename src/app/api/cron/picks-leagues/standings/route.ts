@@ -1,6 +1,9 @@
 import { NextRequest } from "next/server";
 import { db } from "@/db/client";
-import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
+import {
+  PicksLeaguePickStatuses,
+  getGamePickStatus,
+} from "@/shared/picksLeaguePicks";
 import {
   getActiveDBPicksLeagueSeasons,
   getDBPicksLeagueSeasonsAndMembersWithoutStandings,
@@ -104,15 +107,15 @@ export async function GET(request: NextRequest) {
           });
           if (indexOfStandings >= 0) {
             switch (status) {
-              case GamePickStatuses.WIN:
+              case PicksLeaguePickStatuses.WIN:
                 dbPicksLeagueStandingsForSeason[indexOfStandings].wins =
                   dbPicksLeagueStandingsForSeason[indexOfStandings].wins + 1;
                 break;
-              case GamePickStatuses.LOSS:
+              case PicksLeaguePickStatuses.LOSS:
                 dbPicksLeagueStandingsForSeason[indexOfStandings].losses =
                   dbPicksLeagueStandingsForSeason[indexOfStandings].losses + 1;
                 break;
-              case GamePickStatuses.PUSH:
+              case PicksLeaguePickStatuses.PUSH:
                 dbPicksLeagueStandingsForSeason[indexOfStandings].pushes =
                   dbPicksLeagueStandingsForSeason[indexOfStandings].pushes + 1;
                 break;

@@ -7,7 +7,6 @@ import {
   COMMISSIONER_PICKS_LEAGUE_TABS,
   PicksLeagueTabIds,
   MEMBER_PICKS_LEAGUE_TABS,
-  PicksLeaguePickTypes,
 } from "@/models/picksLeagues";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -118,7 +117,7 @@ export default async function PicksLeaguePage(props: {
         sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
         picksPerWeek={dbPicksLeagueWithUserRole.picksPerWeek}
         userId={session.user.id}
-        pickType={dbPicksLeagueWithUserRole.pickType as PicksLeaguePickTypes}
+        pickType={dbPicksLeagueWithUserRole.pickType}
         weekId={weekId}
       />
     );

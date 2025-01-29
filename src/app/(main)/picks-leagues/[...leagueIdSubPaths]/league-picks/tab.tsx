@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import {
   DBSportLeagueWeek,
+  DBWeeklyPickDataByUser,
   getCurrentDBSportLeagueWeek,
   getLeagueDBWeeklyPickDataByUser,
 } from "@/db/sportLeagueWeeks";
@@ -15,6 +16,7 @@ import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 import { getPrevAndNextDBWeekForPicksLeague } from "@/services/sportLeagueWeeks";
 import { UserPicks } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/league-picks/user-picks";
 import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/WeekSwitcher";
+import { DateDisplay } from "@/components/date-display";
 
 export interface LeaguePicksTabProps {
   picksLeagueId: string;
@@ -30,12 +32,13 @@ export async function LeaguePicksTab({
   weekId,
 }: LeaguePicksTabProps) {
   let selectedDBWeek: DBSportLeagueWeek | null;
+  const currentDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
   if (weekId) {
     selectedDBWeek = await getDBSportLeagueWeekById(weekId);
   } else {
-    selectedDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
+    selectedDBWeek = currentDBWeek;
   }
-  if (!selectedDBWeek) {
+  if (!selectedDBWeek || !currentDBWeek) {
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
@@ -48,17 +51,23 @@ export async function LeaguePicksTab({
     );
   }
 
-  let pickData = await getLeagueDBWeeklyPickDataByUser(
-    picksLeagueId,
-    selectedDBWeek.id,
-  );
+  const now = new Date();
+  const picksLocked =
+    selectedDBWeek.id === currentDBWeek.id && now < currentDBWeek.pickLockTime;
+  let pickData: DBWeeklyPickDataByUser[] = [];
+  if (!picksLocked) {
+    pickData = await getLeagueDBWeeklyPickDataByUser(
+      picksLeagueId,
+      selectedDBWeek.id,
+    );
 
-  // move the current user's pick to the front
-  const indexOfUser = pickData.findIndex((data) => data.id === userId);
-  if (indexOfUser > -1) {
-    const userPickData = pickData[indexOfUser];
-    pickData.splice(indexOfUser, 1);
-    pickData.unshift(userPickData);
+    // move the current user's pick to the front
+    const indexOfUser = pickData.findIndex((data) => data.id === userId);
+    if (indexOfUser > -1) {
+      const userPickData = pickData[indexOfUser];
+      pickData.splice(indexOfUser, 1);
+      pickData.unshift(userPickData);
+    }
   }
 
   const { previousWeek, nextWeek } = await getPrevAndNextDBWeekForPicksLeague(
@@ -83,15 +92,25 @@ export async function LeaguePicksTab({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4">
-          {pickData.length === 0 && <span>No picks for this week.</span>}
+          {picksLocked && (
+            <span>
+              League Picks cannot be viewed until after pick lock time{" "}
+              <DateDisplay timestampMS={currentDBWeek.pickLockTime.getTime()} />
+            </span>
+          )}
 
-          {pickData.map((data) => (
-            <UserPicks
-              key={data.id}
-              data={data}
-              pickType={PicksLeaguePickTypes.AGAINST_THE_SPREAD}
-            />
-          ))}
+          {!picksLocked && pickData.length === 0 && (
+            <span>No picks for this week.</span>
+          )}
+
+          {!picksLocked &&
+            pickData.map((data) => (
+              <UserPicks
+                key={data.id}
+                data={data}
+                pickType={PicksLeaguePickTypes.AGAINST_THE_SPREAD}
+              />
+            ))}
         </CardContent>
       </Card>
     </div>

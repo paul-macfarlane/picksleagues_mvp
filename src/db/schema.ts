@@ -3,6 +3,8 @@ import {
   PICKS_LEAGUE_VISIBILITY_MAX_LENGTH,
   PICKS_LEAGUE_MAX_NAME_LENGTH,
   PICKS_LEAGUE_PICK_TYPE_MAX_LENGTH,
+  PicksLeaguePickTypes,
+  PicksLeagueVisibilities,
 } from "@/models/picksLeagues";
 import {
   SPORT_LEAGUE_NAME_MAX_LENGTH,
@@ -24,8 +26,13 @@ import {
   real,
 } from "drizzle-orm/sqlite-core";
 import type { AdapterAccountType } from "next-auth/adapters";
-import { PICKS_LEAGUE_ROLE_MAX_LENGTH } from "@/models/picksLeagueMembers";
-import { GamePickStatuses } from "@/shared/picksLeaguePicks";
+import {
+  PICKS_LEAGUE_ROLE_MAX_LENGTH,
+  PicksLeagueMemberRoles,
+} from "@/models/picksLeagueMembers";
+import { PicksLeaguePickStatuses } from "@/shared/picksLeaguePicks";
+import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
+import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 
 /**
  * table used by auth.js to store users, some custom fields added on top
@@ -123,11 +130,11 @@ export const verificationTokens = sqliteTable(
       .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date()),
   },
-  (verificationToken) => ({
-    compositePk: primaryKey({
-      columns: [verificationToken.identifier, verificationToken.token],
+  (t) => [
+    primaryKey({
+      columns: [t.identifier, t.token],
     }),
-  }),
+  ],
 );
 
 /**
@@ -156,11 +163,11 @@ export const authenticators = sqliteTable(
       .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date()),
   },
-  (authenticator) => ({
-    compositePK: primaryKey({
-      columns: [authenticator.userId, authenticator.credentialID],
+  (t) => [
+    primaryKey({
+      columns: [t.userId, t.credentialID],
     }),
-  }),
+  ],
 );
 
 export const sportLeagues = sqliteTable("sports_leagues", {
@@ -203,9 +210,7 @@ export const sportLeagueSeasons = sqliteTable(
       .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date()),
   },
-  (t) => ({
-    leagueIdNameUnique: unique("league_id_name_unique").on(t.leagueId, t.name),
-  }),
+  (t) => [unique("league_id_name_unique").on(t.leagueId, t.name)],
 );
 
 export const sportLeagueWeeks = sqliteTable(
@@ -221,6 +226,14 @@ export const sportLeagueWeeks = sqliteTable(
     startTime: integer("start_time", { mode: "timestamp" }).notNull(),
     endTime: integer("end_time", { mode: "timestamp" }).notNull(),
     espnEventsRef: text("espn_events_ref"),
+    type: text("type", {
+      enum: [
+        SportLeagueWeekTypes.PLAYOFFS,
+        SportLeagueWeekTypes.REGULAR_SEASON,
+      ],
+    }).notNull(),
+    manual: integer("manual", { mode: "boolean" }).notNull().default(false),
+    pickLockTime: integer("pick_lock_time", { mode: "timestamp" }).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
@@ -229,12 +242,7 @@ export const sportLeagueWeeks = sqliteTable(
       .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date()),
   },
-  (t) => ({
-    seasonIdNameUnique: unique("season_id_espn_number_unique").on(
-      t.seasonId,
-      t.name,
-    ),
-  }),
+  (t) => [unique("season_id_espn_number_unique").on(t.seasonId, t.name)],
 );
 
 export const sportLeagueGames = sqliteTable("sport_league_games", {
@@ -245,7 +253,14 @@ export const sportLeagueGames = sqliteTable("sport_league_games", {
     .notNull()
     .references(() => sportLeagueWeeks.id, { onDelete: "cascade" }),
   startTime: integer("start_time", { mode: "timestamp" }).notNull(),
-  status: text("status", { length: 32 }).notNull(),
+  status: text("status", {
+    length: 32,
+    enum: [
+      SportLeagueGameStatuses.FINAL,
+      SportLeagueGameStatuses.IN_PROGRESS,
+      SportLeagueGameStatuses.SCHEDULED,
+    ],
+  }).notNull(),
   clock: text("clock", { length: 16 }).notNull(),
   period: integer("period").notNull(),
   awayTeamId: text("away_team_id", { length: UUID_LENGTH })
@@ -338,12 +353,7 @@ export const sportLeagueTeams = sqliteTable(
       .default(sql`(unixepoch())`)
       .$onUpdate(() => new Date()),
   },
-  (t) => ({
-    leagueIdEspnIdUnique: unique("league_id_espn_id_unique").on(
-      t.leagueId,
-      t.espnId,
-    ),
-  }),
+  (t) => [unique("league_id_espn_id_unique").on(t.leagueId, t.espnId)],
 );
 
 export const picksLeagues = sqliteTable("picks_leagues", {
@@ -358,9 +368,14 @@ export const picksLeagues = sqliteTable("picks_leagues", {
   picksPerWeek: integer("picks_per_week").notNull(),
   pickType: text("pick_type", {
     length: PICKS_LEAGUE_PICK_TYPE_MAX_LENGTH,
+    enum: [
+      PicksLeaguePickTypes.STRAIGHT_UP,
+      PicksLeaguePickTypes.AGAINST_THE_SPREAD,
+    ],
   }).notNull(),
   visibility: text("visibility", {
     length: PICKS_LEAGUE_VISIBILITY_MAX_LENGTH,
+    enum: [PicksLeagueVisibilities.PRIVATE, PicksLeagueVisibilities.PUBLIC],
   }).notNull(),
   size: integer("size").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
@@ -409,7 +424,14 @@ export const picksLeagueMembers = sqliteTable("picks_league_members", {
   leagueId: text("league_id", { length: UUID_LENGTH })
     .notNull()
     .references(() => picksLeagues.id, { onDelete: "cascade" }),
-  role: text("role", { length: PICKS_LEAGUE_ROLE_MAX_LENGTH }).notNull(),
+  role: text("role", {
+    length: PICKS_LEAGUE_ROLE_MAX_LENGTH,
+    enum: [
+      PicksLeagueMemberRoles.MEMBER,
+      PicksLeagueMemberRoles.COMMISSIONER,
+      PicksLeagueMemberRoles.NONE,
+    ],
+  }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -455,7 +477,13 @@ export const picksLeaguePicks = sqliteTable("picks_league_picks", {
   sportLeagueGameId: text("sport_league_game_id", { length: UUID_LENGTH })
     .notNull()
     .references(() => sportLeagueGames.id, { onDelete: "cascade" }),
-  type: text("type", { length: 32 }).notNull(),
+  type: text("type", {
+    length: 32,
+    enum: [
+      PicksLeaguePickTypes.AGAINST_THE_SPREAD,
+      PicksLeaguePickTypes.STRAIGHT_UP,
+    ],
+  }).notNull(),
   teamId: text("team_id", { length: UUID_LENGTH })
     .notNull()
     .references(() => sportLeagueTeams.id, { onDelete: "cascade" }),
@@ -463,9 +491,18 @@ export const picksLeaguePicks = sqliteTable("picks_league_picks", {
   favorite: integer("favorite", {
     mode: "boolean",
   }),
-  status: text("status", { length: 32 })
+  status: text("status", {
+    length: 32,
+    enum: [
+      PicksLeaguePickStatuses.WIN,
+      PicksLeaguePickStatuses.PICKED,
+      PicksLeaguePickStatuses.LOSS,
+      PicksLeaguePickStatuses.PUSH,
+      PicksLeaguePickStatuses.UNPICKED,
+    ],
+  })
     .notNull()
-    .default(GamePickStatuses.PICKED),
+    .default(PicksLeaguePickStatuses.PICKED),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

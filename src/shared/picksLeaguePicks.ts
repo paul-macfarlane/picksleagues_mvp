@@ -3,7 +3,7 @@ import { DbWeeklyPickGameData } from "@/db/sportLeagueWeeks";
 import { DBSportLeagueGame } from "@/db/sportLeagueGames";
 import { DBPicksLeaguePick } from "@/db/picksLeaguesPicks";
 
-export enum GamePickStatuses {
+export enum PicksLeaguePickStatuses {
   WIN = "Win",
   PUSH = "Push",
   LOSS = "Loss",
@@ -14,18 +14,18 @@ export enum GamePickStatuses {
 export function getGamePickStatus(
   game: DBSportLeagueGame,
   pick: DBPicksLeaguePick | null,
-): GamePickStatuses {
+): PicksLeaguePickStatuses {
   if (!pick) {
-    return GamePickStatuses.UNPICKED;
+    return PicksLeaguePickStatuses.UNPICKED;
   }
 
-  if (pick.status !== GamePickStatuses.PICKED) {
+  if (pick.status !== PicksLeaguePickStatuses.PICKED) {
     // status was already calculated via standings calculator
-    return pick.status as GamePickStatuses;
+    return pick.status;
   }
 
   if (game.status !== SportLeagueGameStatuses.FINAL) {
-    return GamePickStatuses.PICKED;
+    return PicksLeaguePickStatuses.PICKED;
   }
 
   const pointDifferential =
@@ -39,11 +39,11 @@ export function getGamePickStatus(
     : 0;
 
   if (pointDifferential - spreadAdjustment > 0) {
-    return GamePickStatuses.WIN;
+    return PicksLeaguePickStatuses.WIN;
   } else if (pointDifferential - spreadAdjustment === 0) {
-    return GamePickStatuses.PUSH;
+    return PicksLeaguePickStatuses.PUSH;
   } else {
-    return GamePickStatuses.LOSS;
+    return PicksLeaguePickStatuses.LOSS;
   }
 }
 
@@ -71,27 +71,4 @@ export function getGamePickSpreadDisplay(
   }
 
   return `${sign}${game.odds[0].spread}`;
-}
-
-export function getGamePickTimeDisplay(game: DBSportLeagueGame): string {
-  if (game.status === SportLeagueGameStatuses.FINAL) {
-    return "Final";
-  } else if (game.period > 0) {
-    switch (game.period) {
-      case 1:
-        return `${game.clock} ${game.period}st`;
-      case 2:
-        return `${game.clock} ${game.period}nd`;
-      case 3:
-        return `${game.clock} ${game.period}rd`;
-      case 4:
-        return `${game.clock} ${game.period}th`;
-      case 5:
-        return `${game.clock} OT`;
-      default:
-        return `${game.clock} Unknown`;
-    }
-  } else {
-    return `${game.startTime.toLocaleDateString()} ${game.startTime.toLocaleTimeString()}`;
-  }
 }

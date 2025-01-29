@@ -1,0 +1,1 @@
+ALTER TABLE `sport_league_weeks` ADD `manual` integer DEFAULT false NOT NULL;

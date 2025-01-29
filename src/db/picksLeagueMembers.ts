@@ -8,7 +8,7 @@ import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 export interface CreateDBPicksLeagueMember {
   userId: string;
   leagueId: string;
-  role: string;
+  role: PicksLeagueMemberRoles;
 }
 
 export interface DBPicksLeagueMember {
@@ -16,7 +16,7 @@ export interface DBPicksLeagueMember {
   updatedAt: Date;
   leagueId: string;
   userId: string;
-  role: string;
+  role: PicksLeagueMemberRoles;
 }
 
 export async function createDBPicksLeagueMember(
@@ -33,7 +33,7 @@ export async function createDBPicksLeagueMember(
   return queryRows[0];
 }
 
-interface DBPicksLeagueMemberDetails extends DBUser {
+export interface DBPicksLeagueMemberDetails extends DBUser {
   role: PicksLeagueMemberRoles;
 }
 
@@ -48,7 +48,7 @@ export async function getDBPicksLeagueMemberDetails(
 
   return queryRows.map((row) => ({
     ...row.users,
-    role: row.picks_league_members.role as PicksLeagueMemberRoles,
+    role: row.picks_league_members.role,
   }));
 }
 

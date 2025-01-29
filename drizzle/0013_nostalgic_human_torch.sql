@@ -1,0 +1,1 @@
+ALTER TABLE `sport_league_weeks` ADD `pick_lock_time` integer DEFAULT '"1970-01-21T02:47:08.945Z"' NOT NULL;

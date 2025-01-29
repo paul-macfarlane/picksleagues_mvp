@@ -6,7 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GamePickStatuses, getGamePickStatus } from "@/shared/picksLeaguePicks";
+import {
+  PicksLeaguePickStatuses,
+  getGamePickStatus,
+} from "@/shared/picksLeaguePicks";
 import {
   DBSportLeagueWeek,
   DBWeeklyPickDataByUserGame,
@@ -19,6 +22,7 @@ import { PicksLeaguePickTypes, PicksLeagueTabIds } from "@/models/picksLeagues";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 import { getPrevAndNextDBWeekForPicksLeague } from "@/services/sportLeagueWeeks";
 import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/WeekSwitcher";
+import { DateDisplay } from "@/components/date-display";
 
 export interface PicksLeagueMyPicksTabProps {
   picksLeagueId: string;
@@ -78,7 +82,8 @@ export async function PicksLeagueMyPicksTab({
 
   const correctPickCount =
     picksData?.games.filter(
-      (game) => getGamePickStatus(game, game.userPick) === GamePickStatuses.WIN,
+      (game) =>
+        getGamePickStatus(game, game.userPick) === PicksLeaguePickStatuses.WIN,
     ).length ?? 0;
   const gamesComplete =
     picksData?.games.filter(
@@ -126,7 +131,13 @@ export async function PicksLeagueMyPicksTab({
               <span>Make your picks for this week&#39;s games.</span>
 
               <ul className={"list-inside list-disc space-y-1 text-sm"}>
-                <li>You can make picks for games that have not started yet.</li>
+                <li>
+                  You can make picks for games that have not started yet up
+                  until the pick lock time of{" "}
+                  <DateDisplay
+                    timestampMS={selectedDBWeek.pickLockTime.getTime()}
+                  />
+                </li>
                 <li>
                   You can only make picks for games that have not started yet.
                 </li>

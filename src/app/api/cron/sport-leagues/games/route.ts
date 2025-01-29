@@ -3,7 +3,10 @@ import {
   getESPNEventsFromRefUrl,
   getESPNEventStatusFromRefUrl,
 } from "@/integrations/espn/sportLeagueEvents";
-import { getCurrentDBSportLeagueWeeks } from "@/db/sportLeagueWeeks";
+import {
+  getCurrentDBSportLeagueWeeks,
+  upsertDBSportLeagueWeeks,
+} from "@/db/sportLeagueWeeks";
 import { upsertDBSportGames } from "@/db/sportLeagueGames";
 import { getDBSportLeagueTeamByEspnId } from "@/db/sportLeagueTeams";
 import {
@@ -16,6 +19,7 @@ import {
 import { getESPNEventOddsFromRefUrl } from "@/integrations/espn/sportLeagueEventOdds";
 import { NextRequest } from "next/server";
 import { withDBTransaction } from "@/db/transactions";
+import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -41,6 +45,8 @@ export async function GET(request: NextRequest) {
           console.warn(`No ESPN event ref found for week ${dbSportWeek.id}`);
           continue;
         }
+
+        let earliestGameTimeOfWeek: Date | null = null;
 
         const espnEventsForWeek = await getESPNEventsFromRefUrl(
           dbSportWeek.espnEventsRef,
@@ -123,6 +129,13 @@ export async function GET(request: NextRequest) {
             ],
             tx,
           );
+          if (
+            !earliestGameTimeOfWeek ||
+            earliestGameTimeOfWeek > dbSportsGame.startTime
+          ) {
+            earliestGameTimeOfWeek = dbSportsGame.startTime;
+          }
+
           if (espnEventStatus.period > 0) {
             console.log(
               `Game ${dbSportsGame.id} for event ${espnEvent.id} has started, no longer updating odds.`,
@@ -160,7 +173,7 @@ export async function GET(request: NextRequest) {
               : awayDBSportTeam.id;
             oddsUpserts.push({
               gameId: dbSportsGame.id,
-              providerId: dbOddsProvider.id!,
+              providerId: dbOddsProvider.id,
               favoriteTeamId: favoriteDBTeamId,
               underDogTeamId: underDogDBTeamId,
               spread: Math.abs(oddsData.spread),
@@ -168,6 +181,14 @@ export async function GET(request: NextRequest) {
           }
 
           await upsertDBSportLeagueGameOdds(oddsUpserts, tx);
+        }
+
+        if (
+          dbSportWeek.type === SportLeagueWeekTypes.PLAYOFFS &&
+          earliestGameTimeOfWeek
+        ) {
+          dbSportWeek.pickLockTime = earliestGameTimeOfWeek;
+          await upsertDBSportLeagueWeeks([dbSportWeek], true, false, tx);
         }
       }
     });

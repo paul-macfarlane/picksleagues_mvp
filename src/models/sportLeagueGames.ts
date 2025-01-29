@@ -1,3 +1,5 @@
 export enum SportLeagueGameStatuses {
   FINAL = "STATUS_FINAL",
+  SCHEDULED = "STATUS_SCHEDULED",
+  IN_PROGRESS = "STATUS_IN_PROGRESS",
 }

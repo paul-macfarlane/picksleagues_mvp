@@ -30,8 +30,8 @@ export interface DBPicksLeague {
   logoUrl: string | null;
   sportLeagueId: string;
   picksPerWeek: number;
-  pickType: string;
-  visibility: string;
+  pickType: PicksLeaguePickTypes;
+  visibility: PicksLeagueVisibilities;
   size: number;
   createdAt: Date;
   updatedAt: Date;
@@ -85,7 +85,7 @@ export async function getDBPicksLeagueDetailsForUser(
 
 export interface filterDBPicksLeaguesParams {
   sportLeagueId?: string;
-  pickType?: string;
+  pickType?: PicksLeaguePickTypes;
   picksPerWeek?: number;
   startSportLeagueWeekId?: string;
   endSportLeagueWeekId?: string;
@@ -313,9 +313,7 @@ export async function getDBPicksLeagueByIdWithUserRole(
   return {
     ...queryRows[0].picksLeague,
     sportLeagueAbbreviation: queryRows[0].sportLeagueAbbreviation,
-    role:
-      (queryRows[0].role as PicksLeagueMemberRoles) ??
-      PicksLeagueMemberRoles.NONE,
+    role: queryRows[0].role ?? PicksLeagueMemberRoles.NONE,
   };
 }
 
