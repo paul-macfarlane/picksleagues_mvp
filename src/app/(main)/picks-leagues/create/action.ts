@@ -15,6 +15,7 @@ import { createDBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { createDBPicksLeagueMember } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { AUTH_URL } from "@/models/auth";
+import { upsertDBPicksLeagueStandings } from "@/db/picksLeagueStandings";
 
 export interface CreatePicksLeagueFormState {
   errors?: {
@@ -224,6 +225,21 @@ export async function createPicksLeagueAction(
         throw new Error("Unable to create league member");
       }
 
+      await upsertDBPicksLeagueStandings(
+        [
+          {
+            userId: dbUser.id,
+            seasonId: dbPicksLeagueSeason.id,
+            wins: 0,
+            losses: 0,
+            pushes: 0,
+            points: 0,
+            rank: 1,
+          },
+        ],
+        tx,
+      );
+
       return dbPicksLeague;
     });
   } catch (e: unknown) {
@@ -239,6 +255,6 @@ export async function createPicksLeagueAction(
   }
 
   return {
-    leagueId: dbPicksLeague?.id,
+    leagueId: dbPicksLeague.id,
   };
 }

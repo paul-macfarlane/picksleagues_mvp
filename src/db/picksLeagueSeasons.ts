@@ -3,10 +3,12 @@ import {
   picksLeagueMembers,
   picksLeagueSeasons,
   picksLeagueStandings,
+  sportLeagueWeeks,
 } from "@/db/schema";
 import { db } from "@/db/client";
-import { and, eq, getTableColumns, isNull } from "drizzle-orm";
+import { aliasedTable, and, eq, getTableColumns, isNull } from "drizzle-orm";
 import { DBPicksLeagueMember } from "@/db/picksLeagueMembers";
+import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 
 export interface CreateDBPicksLeagueSeason {
   leagueId: string;
@@ -154,4 +156,46 @@ export async function getDBPicksLeagueSeasonsAndMembersWithoutStandings(
           picksLeagueStandings,
           eq(picksLeagueStandings.seasonId, picksLeagueSeasons.id),
         );
+}
+
+export interface DBPicksLeagueSeasonWithStartAndEndWeeks
+  extends DBPicksLeagueSeason {
+  startWeek: DBSportLeagueWeek;
+  endWeek: DBSportLeagueWeek;
+}
+
+export async function getActiveDBPicksLeagueSeasonWithStartAndEndWeeks(
+  picksLeagueId: string,
+): Promise<DBPicksLeagueSeasonWithStartAndEndWeeks | null> {
+  const startWeekAlias = aliasedTable(sportLeagueWeeks, "startWeekAlias");
+  const endWeekAlias = aliasedTable(sportLeagueWeeks, "endWeekAlias");
+  const queryRows = await db
+    .select({
+      season: getTableColumns(picksLeagueSeasons),
+      startWeek: getTableColumns(startWeekAlias),
+      endWeek: getTableColumns(endWeekAlias),
+    })
+    .from(picksLeagueSeasons)
+    .innerJoin(
+      startWeekAlias,
+      eq(startWeekAlias.id, picksLeagueSeasons.startSportLeagueWeekId),
+    )
+    .innerJoin(
+      endWeekAlias,
+      eq(endWeekAlias.id, picksLeagueSeasons.endSportLeagueWeekId),
+    )
+    .where(
+      and(
+        eq(picksLeagueSeasons.active, true),
+        eq(picksLeagueSeasons.leagueId, picksLeagueId),
+      ),
+    );
+
+  return queryRows.length > 0
+    ? {
+        ...queryRows[0].season,
+        startWeek: queryRows[0].startWeek,
+        endWeek: queryRows[0].endWeek,
+      }
+    : null;
 }

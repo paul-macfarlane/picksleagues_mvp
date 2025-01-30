@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import { db } from "@/db/client";
 import {
   PicksLeaguePickStatuses,
   getGamePickStatus,
@@ -17,6 +16,7 @@ import {
   getDBPicksFinalizedWithoutStatusForLeague,
   upsertDBPicksLeaguePicks,
 } from "@/db/picksLeaguesPicks";
+import { withDBTransaction } from "@/db/transactions";
 
 function getPointsFromStandings(standings: DBPicksLeagueStandings) {
   return standings.wins + standings.pushes * 0.5;
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    await withDBTransaction(async (tx) => {
       // upsert standings for leagues without them
       const dbPicksLeagueSeasonsWithoutStandings =
         await getDBPicksLeagueSeasonsAndMembersWithoutStandings(tx);
@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
         const dbPicksLeagueStandingsForSeason =
           await getDBPicksLeagueStandingsForSeason(
             activeDBPicksLeagueSeason.id,
+            false,
             tx,
           );
 

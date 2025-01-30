@@ -377,3 +377,37 @@ export async function getDBSportLeagueWeeksForPicksLeagueSeason(
 
   return queryRows.map((row) => row.sportLeagueWeek);
 }
+
+export interface DBStartAndEndWeek {
+  startWeek: DBSportLeagueWeek;
+  endWeek: DBSportLeagueWeek;
+}
+
+export async function getDBStartAndEndWeekForLeagueActiveSeason(
+  picksLeagueId: string,
+): Promise<DBStartAndEndWeek | null> {
+  const startWeekAlias = aliasedTable(sportLeagueWeeks, "startWeekAlias");
+  const endWeekAlias = aliasedTable(sportLeagueWeeks, "endWeekAlias");
+  const queryRows = await db
+    .select({
+      startWeek: getTableColumns(startWeekAlias),
+      endWeek: getTableColumns(endWeekAlias),
+    })
+    .from(picksLeagueSeasons)
+    .innerJoin(
+      startWeekAlias,
+      eq(startWeekAlias.id, picksLeagueSeasons.startSportLeagueWeekId),
+    )
+    .innerJoin(
+      endWeekAlias,
+      eq(endWeekAlias.id, picksLeagueSeasons.endSportLeagueWeekId),
+    )
+    .where(
+      and(
+        eq(picksLeagueSeasons.active, true),
+        eq(picksLeagueSeasons.leagueId, picksLeagueId),
+      ),
+    );
+
+  return queryRows.length > 0 ? queryRows[0] : null;
+}

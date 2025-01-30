@@ -154,6 +154,7 @@ export async function GET(request: NextRequest) {
           continue;
         }
 
+        // todo note that right now this assumes the sports league is the NFL, otherwise would have to update this to be findFirstSaturdayAt1PMET for college football
         const regularSeasonESPNWeeks = (
           await getESPNSportLeagueSeasonWeeks(
             ESPNSportSlug.FOOTBALL,

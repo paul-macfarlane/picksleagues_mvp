@@ -15,6 +15,8 @@ import {
 } from "@/db/picksLeagueInvite";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { AUTH_URL } from "@/models/auth";
+import { getActiveDBPicksLeagueSeasonWithStartAndEndWeeks } from "@/db/picksLeagueSeasons";
+import { upsertDBPicksLeagueStandings } from "@/db/picksLeagueStandings";
 
 export default async function InvitesPage(props: {
   params: Promise<{ id: unknown }>;
@@ -28,7 +30,7 @@ export default async function InvitesPage(props: {
         description={"Invalid Invite Url"}
         buttonProps={{
           link: "/dashboard",
-          text: "Back to Dashbaord",
+          text: "Back to Dashboard",
         }}
       />
     );
@@ -71,10 +73,10 @@ export default async function InvitesPage(props: {
     return (
       <ErrorPage
         title="Error"
-        description="An unexpected error occured.s"
+        description="An unexpected error occured"
         buttonProps={{
           link: "/dashboard",
-          text: "Back to Dashbaord",
+          text: "Back to Dashboard",
         }}
       />
     );
@@ -88,7 +90,7 @@ export default async function InvitesPage(props: {
         description="League not found"
         buttonProps={{
           link: "/dashboard",
-          text: "Back to Dashbaord",
+          text: "Back to Dashboard",
         }}
       />
     );
@@ -101,7 +103,7 @@ export default async function InvitesPage(props: {
         description="League cannot be joined because it is full"
         buttonProps={{
           link: "/dashboard",
-          text: "Back to Dashbaord",
+          text: "Back to Dashboard",
         }}
       />
     );
@@ -118,7 +120,43 @@ export default async function InvitesPage(props: {
         description="Invite Expired"
         buttonProps={{
           link: "/dashboard",
-          text: "Back to Dashbaord",
+          text: "Back to Dashboard",
+        }}
+      />
+    );
+  }
+
+  const dbPicksLeagueSeason =
+    await getActiveDBPicksLeagueSeasonWithStartAndEndWeeks(dbLeague.id);
+  if (!dbPicksLeagueSeason) {
+    console.error(
+      `unable to find active season for pick league ${dbLeague.id}`,
+    );
+
+    return (
+      <ErrorPage
+        title="Error"
+        description="An unexpected error occurred. Please try again later."
+        buttonProps={{
+          link: "/dashboard",
+          text: "Back to Dashboard",
+        }}
+      />
+    );
+  }
+
+  const now = new Date();
+  if (
+    now >= dbPicksLeagueSeason.startWeek.startTime &&
+    now <= dbPicksLeagueSeason.endWeek.endTime
+  ) {
+    return (
+      <ErrorPage
+        title="Error"
+        description="Cannot join league while its in season."
+        buttonProps={{
+          link: "/dashboard",
+          text: "Back to Dashboard",
         }}
       />
     );
@@ -150,6 +188,21 @@ export default async function InvitesPage(props: {
 
           throw new Error("Unable to create league member");
         }
+
+        await upsertDBPicksLeagueStandings(
+          [
+            {
+              userId: dbUser.id,
+              seasonId: dbPicksLeagueSeason.id,
+              wins: 0,
+              losses: 0,
+              pushes: 0,
+              points: 0,
+              rank: 1, // users can't join mid-season so can assume a tie for first
+            },
+          ],
+          tx,
+        );
       });
     } catch (e: unknown) {
       console.error(
@@ -164,7 +217,7 @@ export default async function InvitesPage(props: {
           description="An unexpected error occured joining the league, please try again later"
           buttonProps={{
             link: "/dashboard",
-            text: "Back to Dashbaord",
+            text: "Back to Dashboard",
           }}
         />
       );
