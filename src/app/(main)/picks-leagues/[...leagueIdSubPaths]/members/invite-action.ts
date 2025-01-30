@@ -9,6 +9,9 @@ import {
   PicksLeagueInviteFormSchema,
 } from "@/models/picksLeagueInvites";
 import { AUTH_URL } from "@/models/auth";
+import { getDBPicksLeagueMember } from "@/db/picksLeagueMembers";
+import { getDBUserById } from "@/db/users";
+import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 
 export interface LeagueInviteActionState {
   errors?: {
@@ -24,6 +27,14 @@ export async function picksLeagueInviteAction(
 ): Promise<LeagueInviteActionState> {
   const session = await auth();
   if (!session?.user?.id) {
+    return redirect(AUTH_URL);
+  }
+
+  const dbUser = await getDBUserById(session.user.id);
+  if (!dbUser) {
+    console.error(
+      `unable to find db user using id from session ${session.user.id} on invite action`,
+    );
     return redirect(AUTH_URL);
   }
 
@@ -56,6 +67,26 @@ export async function picksLeagueInviteAction(
     return {
       errors: {
         leagueId: "League cannot be joined because it is full",
+      },
+    };
+  }
+
+  const picksLeagueMember = await getDBPicksLeagueMember(
+    dbPicksLeague.id,
+    dbUser.id,
+  );
+  if (!picksLeagueMember) {
+    return {
+      errors: {
+        form: "Cannot send invite for a league you are not a part of",
+      },
+    };
+  }
+
+  if (picksLeagueMember.role !== PicksLeagueMemberRoles.COMMISSIONER) {
+    return {
+      errors: {
+        form: "Cannot send invite for a league you are not the commissioner of",
       },
     };
   }

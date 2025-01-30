@@ -103,7 +103,7 @@ export default async function PicksLeaguePage(props: {
     )
   ) {
     selectedTabContent = (
-      <PicksLeagueMembersTab dbLeague={dbPicksLeagueWithUserRole} />
+      <PicksLeagueMembersTab dbLeagueWithUserRole={dbPicksLeagueWithUserRole} />
     );
   } else if (
     pathname?.startsWith(

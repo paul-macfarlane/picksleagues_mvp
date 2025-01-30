@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { signOutAction } from "@/app/(main)/signOutAction";
+import { signOut } from "next-auth/react";
 
 interface ProfileMenuProps {
   user: {
@@ -90,7 +90,7 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => signOutAction()}>
+        <DropdownMenuItem onClick={() => signOut()}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sign out</span>
         </DropdownMenuItem>

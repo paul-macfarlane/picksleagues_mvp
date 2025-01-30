@@ -303,9 +303,17 @@ export async function getDBPicksLeagueByIdWithUserRole(
       sportLeagueAbbreviation: sportLeagues.abbreviation,
     })
     .from(picksLeagues)
-    .leftJoin(picksLeagueMembers, eq(picksLeagueMembers.userId, userId))
+    .innerJoin(
+      picksLeagueMembers,
+      eq(picksLeagueMembers.leagueId, picksLeagues.id),
+    )
     .innerJoin(sportLeagues, eq(picksLeagues.sportLeagueId, sportLeagues.id))
-    .where(eq(picksLeagues.id, picksLeagueId));
+    .where(
+      and(
+        eq(picksLeagues.id, picksLeagueId),
+        eq(picksLeagueMembers.userId, userId),
+      ),
+    );
   if (!queryRows.length) {
     return null;
   }

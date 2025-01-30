@@ -24,11 +24,15 @@ export async function getDBPicksLeagueDetailsForInvite(
           (count(${picksLeagueMembers.userId}) as int)`,
     })
     .from(picksLeagues)
-    .innerJoin(picksLeagueInvites, eq(picksLeagueInvites.id, inviteId))
+    .innerJoin(
+      picksLeagueInvites,
+      eq(picksLeagueInvites.leagueId, picksLeagues.id),
+    )
     .leftJoin(
       picksLeagueMembers,
       eq(picksLeagueMembers.leagueId, picksLeagues.id),
     )
+    .where(eq(picksLeagueInvites.id, inviteId))
     .groupBy(picksLeagues.id);
   if (!queryRows.length) {
     return null;

@@ -3,12 +3,18 @@
 import { auth } from "@/auth";
 import { getDBPicksLeagueByIdWithMemberCount } from "@/db/picksLeagues";
 import { getDBUserById } from "@/db/users";
-import { PicksLeagueVisibilities } from "@/models/picksLeagues";
+import {
+  getPicksLeagueHomeUrl,
+  PicksLeagueVisibilities,
+} from "@/models/picksLeagues";
 import { redirect } from "next/navigation";
 import { createDBPicksLeagueMember } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { JoinPicksLeagueSchema } from "@/models/picksLeagueInvites";
 import { AUTH_URL } from "@/models/auth";
+import { withDBTransaction } from "@/db/transactions";
+import { getActiveDBPicksLeagueSeasonWithStartAndEndWeeks } from "@/db/picksLeagueSeasons";
+import { upsertDBPicksLeagueStandings } from "@/db/picksLeagueStandings";
 
 interface JoinLeagueActionFormState {
   errors?: {
@@ -78,27 +84,72 @@ export async function joinLeagueAction(
     };
   }
 
-  const createDBLeagueMemberData = {
-    userId: dbUser.id,
-    leagueId: parsed.data.leagueId,
-    role: PicksLeagueMemberRoles.MEMBER,
-  };
-  const dbLeagueMember = await createDBPicksLeagueMember(
-    createDBLeagueMemberData,
-    undefined,
-  );
-  if (!dbLeagueMember) {
-    console.error(
-      "Unable to create league member with ",
-      createDBLeagueMemberData,
+  const dbPicksLeagueSeason =
+    await getActiveDBPicksLeagueSeasonWithStartAndEndWeeks(
+      parsed.data.leagueId,
     );
-
+  if (!dbPicksLeagueSeason) {
+    console.error(
+      `unable to find active season for pick league ${parsed.data.leagueId}`,
+    );
     return {
       errors: {
-        form: "An unexpected error occured. Please try again later.",
+        form: "An unexpected error occurred. Please try again later.",
       },
     };
   }
 
-  return {};
+  const now = new Date();
+  if (
+    now >= dbPicksLeagueSeason.startWeek.startTime &&
+    now <= dbPicksLeagueSeason.endWeek.endTime
+  ) {
+    return {
+      errors: {
+        form: "Cannot join league while its in season",
+      },
+    };
+  }
+
+  try {
+    await withDBTransaction(async (tx) => {
+      const createDBLeagueMemberData = {
+        userId: dbUser.id,
+        leagueId: parsed.data.leagueId,
+        role: PicksLeagueMemberRoles.MEMBER,
+      };
+      const dbLeagueMember = await createDBPicksLeagueMember(
+        createDBLeagueMemberData,
+        tx,
+      );
+      if (!dbLeagueMember) {
+        throw new Error(
+          `Unable to create league member with ${JSON.stringify(createDBLeagueMemberData)}`,
+        );
+      }
+
+      await upsertDBPicksLeagueStandings(
+        [
+          {
+            userId: dbUser.id,
+            seasonId: dbPicksLeagueSeason.id,
+            wins: 0,
+            losses: 0,
+            pushes: 0,
+            points: 0,
+            rank: 1, // users can't join mid-season so can assume a tie for first
+          },
+        ],
+        tx,
+      );
+    });
+  } catch (e) {
+    return {
+      errors: {
+        form: "An unexpected error occurred. Please try again later.",
+      },
+    };
+  }
+
+  return redirect(getPicksLeagueHomeUrl(parsed.data.leagueId));
 }

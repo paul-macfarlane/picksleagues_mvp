@@ -1,18 +1,31 @@
-import { DBPicksLeague } from "@/db/picksLeagues";
+import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PicksLeagueInviteDialog } from "./invite-dialog";
 import { Users } from "lucide-react";
 import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
+import { picksLeagueIsInSeason } from "@/services/picksLeagues";
+import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 
 export async function PicksLeagueMembersTab({
-  dbLeague,
+  dbLeagueWithUserRole,
 }: {
-  dbLeague: DBPicksLeague;
+  dbLeagueWithUserRole: DBPicksLeagueWithUserRole;
 }) {
   const dbLeagueMemberDetails = await getDBPicksLeagueMemberDetails(
-    dbLeague.id,
+    dbLeagueWithUserRole.id,
   );
+
+  let canSendInvite = false;
+  if (
+    dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
+    dbLeagueMemberDetails.length < dbLeagueWithUserRole.size
+  ) {
+    const leagueIsInSeason = await picksLeagueIsInSeason(
+      dbLeagueWithUserRole.id,
+    );
+    canSendInvite = !leagueIsInSeason;
+  }
 
   return (
     <>
@@ -51,8 +64,8 @@ export async function PicksLeagueMembersTab({
             ))}
           </ul>
 
-          {dbLeagueMemberDetails.length < dbLeague.size && (
-            <PicksLeagueInviteDialog leagueId={dbLeague.id} />
+          {canSendInvite && (
+            <PicksLeagueInviteDialog leagueId={dbLeagueWithUserRole.id} />
           )}
         </CardContent>
       </Card>
@@ -64,7 +77,7 @@ export async function PicksLeagueMembersTab({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {dbLeagueMemberDetails.length} / {dbLeague.size}
+            {dbLeagueMemberDetails.length} / {dbLeagueWithUserRole.size}
           </div>
         </CardContent>
       </Card>

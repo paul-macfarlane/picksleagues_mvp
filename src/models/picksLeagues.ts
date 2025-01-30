@@ -14,7 +14,7 @@ const PICKS_LEAGUE_PICKS_PER_WEEK_NUMBER_ERROR = `Must be a number greater than 
 const PICKS_LEAGUE_MIN_PICKS_PER_WEEK_ERROR = `Must be a number greater than or equal to ${PICKS_LEAGUE_MIN_PICKS_PER_WEEK}`;
 const PICKS_LEAGUE_MAX_PICKS_PER_WEEK_ERROR = `Must be a number less than or equal to ${PICKS_LEAGUE_MAX_PICKS_PER_WEEK}`;
 
-export const PICKS_LEAGUE_MIN_SIZE = 6;
+export const PICKS_LEAGUE_MIN_SIZE = 1;
 export const PICKS_LEAGUE_MAX_SIZE = 20;
 export const PICKS_LEAGUE_DEFAULT_SIZE = 10;
 

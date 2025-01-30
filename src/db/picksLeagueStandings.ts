@@ -19,6 +19,7 @@ export interface DBPicksLeagueStandings {
 
 export async function getDBPicksLeagueStandingsForSeason(
   seasonId: string,
+  orderByRank: boolean,
   tx?: DBTransaction,
 ): Promise<DBPicksLeagueStandings[]> {
   return tx
@@ -26,10 +27,16 @@ export async function getDBPicksLeagueStandingsForSeason(
         .select()
         .from(picksLeagueStandings)
         .where(eq(picksLeagueStandings.seasonId, seasonId))
+        .orderBy(
+          orderByRank ? picksLeagueStandings.rank : picksLeagueStandings.id,
+        )
     : await db
         .select()
         .from(picksLeagueStandings)
-        .where(eq(picksLeagueStandings.seasonId, seasonId));
+        .where(eq(picksLeagueStandings.seasonId, seasonId))
+        .orderBy(
+          orderByRank ? picksLeagueStandings.rank : picksLeagueStandings.id,
+        );
 }
 
 export interface UpsertDBPicksLeagueStandings {
