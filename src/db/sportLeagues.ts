@@ -35,7 +35,7 @@ export async function getAllDBSportLeaguesWithActiveSeason(): Promise<
         eq(sportLeagueSeasons.active, true),
       ),
     )
-    .innerJoin(
+    .leftJoin(
       sportLeagueWeeks,
       and(
         eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
@@ -59,16 +59,18 @@ export async function getAllDBSportLeaguesWithActiveSeason(): Promise<
         ...row.sports_leagues,
         season: {
           ...row.sport_league_seasons,
-          weeks: [row.sport_league_weeks],
+          weeks: row.sport_league_weeks ? [row.sport_league_weeks] : [],
         },
       });
 
       return;
     }
 
-    dbSportLeagueWithActiveSeasonDetails[
-      existingSportDetailIndex
-    ].season.weeks.push(row.sport_league_weeks);
+    if (row.sport_league_weeks) {
+      dbSportLeagueWithActiveSeasonDetails[
+        existingSportDetailIndex
+      ].season.weeks.push(row.sport_league_weeks);
+    }
   });
 
   return dbSportLeagueWithActiveSeasonDetails;
