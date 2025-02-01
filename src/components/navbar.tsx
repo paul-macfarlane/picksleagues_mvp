@@ -15,7 +15,6 @@ import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
 import { Separator } from "./ui/separator";
 import { DBUser } from "@/db/users";
 import { DBPicksLeagueDetails } from "@/db/picksLeagues";
-import Link from "next/link";
 import { MobileNavbar } from "@/components/mobile-navbar";
 import { AUTH_URL } from "@/models/auth";
 
@@ -32,6 +31,7 @@ export default function Navbar({
   maxLeaguesToDisplay,
   dbPicksLeagueDetails,
 }: NavbarProps) {
+  // lint rules ignored below because in order for the pathname to update a full refresh is needed
   return (
     <header className="sticky top-0 z-10 mx-auto w-full border-b border-primary bg-primary-foreground p-4">
       <nav className="flex items-center justify-between">
@@ -49,7 +49,8 @@ export default function Navbar({
                     <ul className="flex flex-col gap-2 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link
+                          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                          <a
                             className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname === "/dashboard" ? "bg-accent text-accent-foreground" : ""}`}
                             href="/dashboard"
                           >
@@ -59,13 +60,14 @@ export default function Navbar({
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               Go to Dashboard
                             </p>
-                          </Link>
+                          </a>
                         </NavigationMenuLink>
                       </li>
 
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link
+                          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                          <a
                             className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname === "/picks-leagues/create" ? "bg-accent text-accent-foreground" : ""}`}
                             href="/picks-leagues/create"
                           >
@@ -75,13 +77,14 @@ export default function Navbar({
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               Start a new league and invite friends
                             </p>
-                          </Link>
+                          </a>
                         </NavigationMenuLink>
                       </li>
 
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link
+                          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                          <a
                             className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname === "/picks-leagues/join" ? "bg-accent text-accent-foreground" : ""}`}
                             href="/picks-leagues/join"
                           >
@@ -91,7 +94,7 @@ export default function Navbar({
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               Join an existing league
                             </p>
-                          </Link>
+                          </a>
                         </NavigationMenuLink>
                       </li>
 
@@ -102,7 +105,8 @@ export default function Navbar({
                         .map((league) => (
                           <li key={league.id}>
                             <NavigationMenuLink asChild>
-                              <Link
+                              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                              <a
                                 className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname === getPicksLeagueHomeUrl(league.id) ? "bg-accent text-accent-foreground" : ""}`}
                                 href={getPicksLeagueHomeUrl(league.id)}
                               >
@@ -113,7 +117,7 @@ export default function Navbar({
                                   {league.sportLeagueAbbreviation} •{" "}
                                   {league.pickType}
                                 </p>
-                              </Link>
+                              </a>
                             </NavigationMenuLink>
                           </li>
                         ))}
@@ -125,10 +129,11 @@ export default function Navbar({
           </div>
         ) : (
           // for un-authed users
-          <Link className="flex items-center space-x-2" href={"/"}>
+          // eslint-disable-next-line @next/next/no-html-link-for-pages
+          <a className="flex items-center space-x-2" href={"/"}>
             <Trophy className="h-6 w-6 text-primary" />
             <span className="text-2xl font-bold">Picks Leagues</span>
-          </Link>
+          </a>
         )}
 
         {dbUser ? (
@@ -163,7 +168,8 @@ export default function Navbar({
           ) : (
             <>
               <Button asChild>
-                <Link href={AUTH_URL}>Sign In</Link>
+                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                <a href={AUTH_URL}>Sign In</a>
               </Button>
               <ModeToggle />
             </>

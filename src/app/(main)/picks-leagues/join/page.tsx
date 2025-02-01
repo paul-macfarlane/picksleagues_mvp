@@ -191,11 +191,10 @@ export default async function JoinLeagues(props: {
   const dbSportLeagues = await getAllDBSportLeaguesWithActiveSeason();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">Join Leagues</h1>
+    <div className="mx-auto w-full max-w-4xl">
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Filter Leagues</CardTitle>
+          <CardTitle>Join Leagues</CardTitle>
           <CardDescription>
             Filter leagues to join by attributes
           </CardDescription>
