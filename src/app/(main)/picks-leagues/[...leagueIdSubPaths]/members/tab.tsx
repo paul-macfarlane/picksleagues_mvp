@@ -6,12 +6,17 @@ import { Users } from "lucide-react";
 import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 import { picksLeagueIsInSeason } from "@/services/picksLeagues";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
+import { MemberRoleSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/member-role-switcher";
+
+export interface PicksLeagueMembersTabProps {
+  userId: string;
+  dbLeagueWithUserRole: DBPicksLeagueWithUserRole;
+}
 
 export async function PicksLeagueMembersTab({
+  userId,
   dbLeagueWithUserRole,
-}: {
-  dbLeagueWithUserRole: DBPicksLeagueWithUserRole;
-}) {
+}: PicksLeagueMembersTabProps) {
   const dbLeagueMemberDetails = await getDBPicksLeagueMemberDetails(
     dbLeagueWithUserRole.id,
   );
@@ -38,8 +43,8 @@ export async function PicksLeagueMembersTab({
           <ul className="space-y-4">
             {dbLeagueMemberDetails.map((member) => (
               <li key={member.id} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Avatar>
+                <div className="flex w-full items-center gap-2">
+                  <Avatar className={"hidden md:block"}>
                     <AvatarImage
                       src={member.image ?? undefined}
                       alt={member.username!}
@@ -51,14 +56,30 @@ export async function PicksLeagueMembersTab({
                         .join("")}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="font-medium">
-                      {member.username} ({member.firstName} {member.lastName})
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {member.role}
-                    </p>
-                  </div>
+
+                  {dbLeagueWithUserRole.role ===
+                  PicksLeagueMemberRoles.COMMISSIONER ? (
+                    <div className="md:text-md flex w-full items-center justify-between text-sm">
+                      <span className="font-medium">
+                        {member.username} ({member.firstName} {member.lastName})
+                      </span>
+
+                      <MemberRoleSwitcher
+                        currentUserId={userId}
+                        member={member}
+                        picksLeagueId={dbLeagueWithUserRole.id}
+                      />
+                    </div>
+                  ) : (
+                    <div className="md:text-md text-sm">
+                      <p className="font-medium">
+                        {member.username} ({member.firstName} {member.lastName})
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {member.role}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </li>
             ))}

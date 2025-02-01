@@ -71,3 +71,27 @@ export async function getDBPicksLeagueMember(
 
   return queryRows[0];
 }
+
+export interface UpdateDBPicksLeagueMember {
+  userId: string;
+  leagueId: string;
+  role: PicksLeagueMemberRoles;
+}
+
+export async function updateDBPicksLeagueMember(
+  update: UpdateDBPicksLeagueMember,
+): Promise<DBPicksLeagueMember | null> {
+  const queryRows = await db
+    .update(picksLeagueMembers)
+    .set({
+      role: update.role,
+    })
+    .where(
+      and(
+        eq(picksLeagueMembers.userId, update.userId),
+        eq(picksLeagueMembers.leagueId, update.leagueId),
+      ),
+    )
+    .returning();
+  return queryRows.length > 0 ? queryRows[0] : null;
+}
