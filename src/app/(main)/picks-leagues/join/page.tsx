@@ -194,10 +194,7 @@ export default async function JoinLeagues(props: {
     <div className="mx-auto w-full max-w-4xl">
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Join Leagues</CardTitle>
-          <CardDescription>
-            Filter leagues to join by attributes
-          </CardDescription>
+          <CardTitle>Join Picks Leagues</CardTitle>
         </CardHeader>
         <FilterLeaguesForm sportLeagues={dbSportLeagues} />
       </Card>

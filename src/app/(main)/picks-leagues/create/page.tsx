@@ -22,12 +22,7 @@ export default async function CreatePicksLeague() {
     <div className="container mx-auto flex flex-col items-center justify-center gap-4">
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            Create a new Picks League
-          </CardTitle>
-          <CardDescription>
-            Set up your Pick League&apos;s details and rules
-          </CardDescription>
+          <CardTitle>Create Picks League</CardTitle>
         </CardHeader>
 
         <CreatePicksLeagueForm sportLeagues={dbSportLeagueDetails} />

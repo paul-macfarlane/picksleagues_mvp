@@ -71,8 +71,8 @@ export default function FilterLeaguesForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField
               control={form.control}
               name="sportLeagueId"
@@ -273,7 +273,7 @@ export default function FilterLeaguesForm({
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col gap-8">
+        <CardFooter className="flex flex-col gap-4">
           <Button type="submit" className="w-full">
             Apply Filters
           </Button>
