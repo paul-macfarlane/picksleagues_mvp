@@ -39,10 +39,6 @@ export async function PicksLeagueSettingsTab({
     <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
         <CardTitle>Edit League Settings</CardTitle>
-        <CardDescription>
-          Modify your league&#39;s settings and configuration. Some settings
-          cannot be changed while the season is in progress.
-        </CardDescription>
       </CardHeader>
 
       <PicksLeagueSettingsForm

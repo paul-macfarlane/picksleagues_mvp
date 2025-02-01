@@ -37,28 +37,26 @@ export default async function Profile(props: {
   }
 
   return (
-    <div className="container mx-auto flex max-w-2xl flex-col items-center justify-center gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            {updateMode === "signup" ? "Create" : "Update"} Profile
-          </CardTitle>
-          <CardDescription>
-            {updateMode === "signup" ? "Set " : "Update "}
-            your personal information and profile picture
-          </CardDescription>
-        </CardHeader>
+    <Card className="mx-auto w-full max-w-4xl">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">
+          {updateMode === "signup" ? "Create" : "Update"} Profile
+        </CardTitle>
+        <CardDescription>
+          {updateMode === "signup" ? "Set " : "Update "}
+          your personal information and profile picture
+        </CardDescription>
+      </CardHeader>
 
-        <UpdateProfileForm
-          defaultValues={{
-            username: dbUser.username!,
-            firstName: dbUser.firstName!,
-            lastName: dbUser.lastName!,
-            imageUrl: dbUser.image ?? undefined,
-          }}
-          postSubmitUrl={updateMode === "signup" ? postSubmitUrl : undefined}
-        />
-      </Card>
-    </div>
+      <UpdateProfileForm
+        defaultValues={{
+          username: dbUser.username!,
+          firstName: dbUser.firstName!,
+          lastName: dbUser.lastName!,
+          imageUrl: dbUser.image ?? undefined,
+        }}
+        postSubmitUrl={updateMode === "signup" ? postSubmitUrl : undefined}
+      />
+    </Card>
   );
 }

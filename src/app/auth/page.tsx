@@ -27,11 +27,9 @@ export default async function AuthPage(props: {
   return (
     <div className="h-full bg-gradient-to-b from-primary/20 to-background">
       <div className="container mx-auto flex h-full flex-col items-center justify-center gap-4 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mb-4 flex justify-center">
-              <Trophy className="h-12 w-12 text-primary" />
-            </div>
+        <Card className="w-full max-w-4xl">
+          <CardHeader className="flex flex-row items-center justify-center gap-2 self-start md:gap-4">
+            <Trophy className="h-12 w-12 text-primary" />
             <CardTitle className="text-3xl font-bold">Picks Leagues</CardTitle>
           </CardHeader>
 
