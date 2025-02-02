@@ -1,1 +1,0 @@
-ALTER TABLE `picks_league_picks` ADD `favorite` integer NOT NULL;

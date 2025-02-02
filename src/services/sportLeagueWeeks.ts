@@ -1,7 +1,21 @@
 import {
   DBSportLeagueWeek,
   getDBSportLeagueWeeksForPicksLeagueSeason,
+  UpsertDBSportLeagueWeek,
+  upsertDBSportLeagueWeeks,
 } from "@/db/sportLeagueWeeks";
+import { withDBTransaction } from "@/db/transactions";
+import { getAllDBSportLeagues } from "@/db/sportLeagues";
+import {
+  getActiveDBSportLeagueSeason,
+  getNextDBSportLeagueSeason,
+} from "@/db/sportLeagueSeason";
+import {
+  ESPNSeasonType,
+  getESPNSportLeagueSeasonWeeks,
+} from "@/integrations/espn/sportLeagueWeeks";
+import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
+import { DateTime } from "luxon";
 
 export interface PrevAndNextDBWeek {
   previousWeek: DBSportLeagueWeek | null;
@@ -35,4 +49,98 @@ export async function getPrevAndNextDBWeekForPicksLeague(
     previousWeek,
     nextWeek,
   };
+}
+
+export async function upsertSportLeagueWeeksFromESPN(): Promise<
+  DBSportLeagueWeek[]
+> {
+  let dbSportLeagueWeeks: DBSportLeagueWeek[] = [];
+  await withDBTransaction(async (tx) => {
+    const dbSportLeagues = await getAllDBSportLeagues(tx);
+
+    const dbSportLeagueTeamUpserts: UpsertDBSportLeagueWeek[] = [];
+    for (const dbSportLeague of dbSportLeagues) {
+      let dbSeason = await getActiveDBSportLeagueSeason(dbSportLeague.id, tx);
+      if (!dbSeason) {
+        dbSeason = await getNextDBSportLeagueSeason(dbSportLeague.id, tx);
+      }
+      if (!dbSeason) {
+        console.warn(
+          `Could not find active or next season for sport league ${dbSportLeague.id}`,
+        );
+        continue;
+      }
+
+      const regularSeasonWeekUpserts = (
+        await getESPNSportLeagueSeasonWeeks(
+          dbSportLeague.espnSportSlug,
+          dbSportLeague.espnSlug,
+          dbSeason.name,
+          ESPNSeasonType.REGULAR_SEASON,
+        )
+      ).map((week) => ({
+        seasonId: dbSeason.id,
+        name: week.text,
+        startTime: new Date(week.startDate),
+        endTime: new Date(week.endDate),
+        espnEventsRef: week.events.$ref,
+        type: SportLeagueWeekTypes.REGULAR_SEASON,
+        pickLockTime:
+          findFirstSundayAt1PMET(
+            new Date(week.startDate),
+            new Date(new Date(week.endDate)),
+          ) ?? new Date(week.startDate),
+      }));
+
+      const postSeasonWeekUpserts = (
+        await getESPNSportLeagueSeasonWeeks(
+          dbSportLeague.espnSportSlug,
+          dbSportLeague.espnSlug,
+          dbSeason.name,
+          ESPNSeasonType.POST_SEASON,
+        )
+      )
+        .filter((week) => week.text.toLowerCase() !== "pro bowl")
+        .map((week) => ({
+          seasonId: dbSeason.id,
+          name: week.text,
+          startTime: new Date(week.startDate),
+          endTime: new Date(week.endDate),
+          espnEventsRef: week.events.$ref,
+          type: SportLeagueWeekTypes.PLAYOFFS,
+          pickLockTime: new Date(week.endDate),
+        }));
+
+      dbSportLeagueTeamUpserts.push(
+        ...regularSeasonWeekUpserts,
+        ...postSeasonWeekUpserts,
+      );
+    }
+
+    if (dbSportLeagueTeamUpserts.length > 0) {
+      dbSportLeagueWeeks = await upsertDBSportLeagueWeeks(
+        dbSportLeagueTeamUpserts,
+        tx,
+      );
+    }
+  });
+
+  return dbSportLeagueWeeks;
+}
+
+function findFirstSundayAt1PMET(startDate: Date, endDate: Date): Date | null {
+  const start = DateTime.fromJSDate(startDate, { zone: "utc" });
+  const end = DateTime.fromJSDate(endDate, { zone: "utc" });
+
+  let current = start.setZone("America/New_York");
+  if (current.weekday !== 7) {
+    current = current.plus({ days: 7 - current.weekday });
+  }
+
+  current = current.set({ hour: 13, minute: 0, second: 0, millisecond: 0 });
+  if (current.toUTC() >= start && current.toUTC() <= end) {
+    return current.toJSDate();
+  }
+
+  return null;
 }

@@ -6,7 +6,7 @@ import { db } from "@/db/client";
 export interface DBOddsProvider {
   id: string;
   name: string;
-  espnId: string | null;
+  espnId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,7 +32,7 @@ export async function getDBOddsProviderByEspnId(
 
 export interface UpsertDBOddsProvider {
   name: string;
-  espnId: string | null;
+  espnId: string;
 }
 
 export async function upsertDBOddsProviders(

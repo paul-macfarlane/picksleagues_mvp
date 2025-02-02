@@ -1,4 +1,4 @@
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "./client";
 import { sportLeagues, sportLeagueSeasons, sportLeagueWeeks } from "./schema";
 import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
@@ -7,13 +7,16 @@ import {
   DBSportLeagueSeasonDetail,
 } from "@/db/sportLeagueSeason";
 import { DBTransaction } from "@/db/transactions";
+import { ESPNLeagueSlug, ESPNSportSlug } from "@/integrations/espn/shared";
 
 export interface DBSportLeague {
   id: string;
   name: string;
   abbreviation: string;
   logoUrl: string | null;
-  espnId: string | null;
+  espnId: string;
+  espnSlug: ESPNLeagueSlug;
+  espnSportSlug: ESPNSportSlug;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +28,7 @@ export interface DBSportLeagueWithActiveSeasonDetail extends DBSportLeague {
 export async function getAllDBSportLeaguesWithActiveSeason(): Promise<
   DBSportLeagueWithActiveSeasonDetail[]
 > {
+  const now = new Date();
   const queryRows = await db
     .select()
     .from(sportLeagues)
@@ -32,7 +36,8 @@ export async function getAllDBSportLeaguesWithActiveSeason(): Promise<
       sportLeagueSeasons,
       and(
         eq(sportLeagues.id, sportLeagueSeasons.leagueId),
-        eq(sportLeagueSeasons.active, true),
+        lte(sportLeagueSeasons.startTime, now),
+        gte(sportLeagueSeasons.endTime, now),
       ),
     )
     .leftJoin(
@@ -93,13 +98,15 @@ export async function getDBSportLeagueById(
 export async function getActiveSeasonForDBSportLeague(
   sportLeagueId: string,
 ): Promise<DBSportLeagueSeason | null> {
+  const now = new Date();
   const queryRows = await db
     .select()
     .from(sportLeagueSeasons)
     .where(
       and(
         eq(sportLeagueSeasons.leagueId, sportLeagueId),
-        eq(sportLeagueSeasons.active, true),
+        lte(sportLeagueSeasons.startTime, now),
+        gte(sportLeagueSeasons.endTime, now),
       ),
     );
   if (!queryRows.length) {
@@ -132,8 +139,10 @@ export async function getDBSportLeagueWeekById(
 export interface UpsertDBSportLeague {
   name: string;
   abbreviation: string;
-  logoUrl?: string;
-  espnId?: string;
+  logoUrl: string | null;
+  espnId: string;
+  espnSlug: ESPNLeagueSlug;
+  espnSportSlug: ESPNSportSlug;
 }
 
 export async function upsertDBSportLeagues(
@@ -150,6 +159,9 @@ export async function upsertDBSportLeagues(
           name: sql`excluded.name`,
           abbreviation: sql`excluded.abbreviation`,
           logoUrl: sql`excluded.logo_url`,
+          espnId: sql`excluded.espn_id`,
+          espnSlug: sql`excluded.espn_slug`,
+          espnSportSlug: sql`excluded.espn_sport_slug`,
         },
       })
       .returning();
@@ -163,8 +175,17 @@ export async function upsertDBSportLeagues(
           name: sql`excluded.name`,
           abbreviation: sql`excluded.abbreviation`,
           logoUrl: sql`excluded.logo_url`,
+          espnId: sql`excluded.espn_id`,
+          espnSlug: sql`excluded.espn_slug`,
+          espnSportSlug: sql`excluded.espn_sport_slug`,
         },
       })
       .returning();
   }
+}
+
+export async function getAllDBSportLeagues(
+  tx?: DBTransaction,
+): Promise<DBSportLeague[]> {
+  return tx ? tx.select().from(sportLeagues) : db.select().from(sportLeagues);
 }

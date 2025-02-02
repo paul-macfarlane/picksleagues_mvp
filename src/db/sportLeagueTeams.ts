@@ -10,7 +10,7 @@ export interface DBSportLeagueTeam {
   location: string;
   abbreviation: string;
   logoUrl: string | null;
-  espnId: string | null;
+  espnId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,8 +39,8 @@ export interface UpsertDBSportLeagueTeam {
   name: string;
   location: string;
   abbreviation: string;
-  logoUrl?: string;
-  espnId?: string;
+  logoUrl: string | null;
+  espnId: string;
 }
 
 export async function upsertDBSportLeagueTeams(

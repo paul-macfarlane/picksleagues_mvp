@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
-import { upsertSportLeaguesFromESPN } from "@/services/sportLeagues";
+import { upsertSportLeagueGamesFromESPN } from "@/services/sportLeagueGames";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return Response.json(
-      { error: "Unauthorized" },
+      { message: "Unauthorized" },
       {
         status: 401,
       },
@@ -13,8 +13,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const upsertedLeagues = await upsertSportLeaguesFromESPN();
-    console.log(`upserted ${upsertedLeagues.length} sport leagues from espn`);
+    const upsertedGames = await upsertSportLeagueGamesFromESPN();
+    console.log(
+      `upserted ${upsertedGames.length} sport league games from espn`,
+    );
   } catch (e) {
     console.error(e);
 

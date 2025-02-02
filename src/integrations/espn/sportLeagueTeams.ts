@@ -60,7 +60,7 @@ interface Venue {
   images?: ESPNLogo[];
 }
 
-async function getTeamsForLeague(
+export async function getESPNSportLeagueTeams(
   sport: ESPNSportSlug,
   league: ESPNLeagueSlug,
   seasonDisplayName: string,
@@ -87,28 +87,6 @@ async function getTeamsForLeague(
       teamRefs[i].replace("http://", "https://"),
     );
     teams.push(teamResponse.data);
-  }
-
-  return teams;
-}
-
-interface GetESPNTeamParam {
-  sportSlug: ESPNSportSlug;
-  leagueSlug: ESPNLeagueSlug;
-  seasonDisplayName: string;
-}
-
-export async function getESPNSportLeagueTeams(
-  params: GetESPNTeamParam[],
-): Promise<Team[]> {
-  let teams: Team[] = [];
-  for (let i = 0; i < params.length; i++) {
-    const sportTeams = await getTeamsForLeague(
-      params[i].sportSlug,
-      params[i].leagueSlug,
-      params[i].seasonDisplayName,
-    );
-    teams = [...teams, ...sportTeams];
   }
 
   return teams;
