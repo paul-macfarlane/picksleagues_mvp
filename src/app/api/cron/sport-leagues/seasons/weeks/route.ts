@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { upsertSportLeaguesFromESPN } from "@/services/sportLeagues";
+import { upsertSportLeagueWeeksFromESPN } from "@/services/sportLeagueWeeks";
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -13,8 +13,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const upsertedLeagues = await upsertSportLeaguesFromESPN();
-    console.log(`upserted ${upsertedLeagues.length} sport leagues from espn`);
+    const upsertedWeeks = await upsertSportLeagueWeeksFromESPN();
+    console.log(
+      `upserted ${upsertedWeeks.length} sport league weeks from espn`,
+    );
   } catch (e) {
     console.error(e);
 
@@ -28,7 +30,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return Response.json({
-    success: true,
-  });
+  return Response.json(
+    { message: "Success" },
+    {
+      status: 200,
+    },
+  );
 }

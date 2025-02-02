@@ -1,7 +1,7 @@
 import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 import { DBTransaction } from "@/db/transactions";
 import { sportLeagueSeasons } from "@/db/schema";
-import { sql } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 
 export interface DBSportLeagueSeason {
@@ -10,7 +10,6 @@ export interface DBSportLeagueSeason {
   name: string;
   startTime: Date;
   endTime: Date;
-  active: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,7 +23,6 @@ export interface UpsertDBSportLeagueSeason {
   name: string;
   startTime: Date;
   endTime: Date;
-  active: boolean;
 }
 
 export async function upsertDBSportLeagueSeasons(
@@ -40,7 +38,6 @@ export async function upsertDBSportLeagueSeasons(
         set: {
           startTime: sql`excluded.start_time`,
           endTime: sql`excluded.end_time`,
-          active: sql`excluded.active`,
         },
       })
       .returning();
@@ -53,9 +50,70 @@ export async function upsertDBSportLeagueSeasons(
         set: {
           startTime: sql`excluded.start_time`,
           endTime: sql`excluded.end_time`,
-          active: sql`excluded.active`,
         },
       })
       .returning();
   }
+}
+
+export async function getActiveDBSportLeagueSeason(
+  sportLeagueId: string,
+  tx?: DBTransaction,
+): Promise<DBSportLeagueSeason | null> {
+  const now = new Date();
+
+  const queryRows = tx
+    ? await tx
+        .select()
+        .from(sportLeagueSeasons)
+        .where(
+          and(
+            eq(sportLeagueSeasons.leagueId, sportLeagueId),
+            lte(sportLeagueSeasons.startTime, now),
+            gte(sportLeagueSeasons.endTime, now),
+          ),
+        )
+    : await db
+        .select()
+        .from(sportLeagueSeasons)
+        .where(
+          and(
+            eq(sportLeagueSeasons.leagueId, sportLeagueId),
+            lte(sportLeagueSeasons.startTime, now),
+            gte(sportLeagueSeasons.endTime, now),
+          ),
+        );
+
+  return queryRows.length > 0 ? queryRows[0] : null;
+}
+
+export async function getNextDBSportLeagueSeason(
+  sportLeagueId: string,
+  tx?: DBTransaction,
+): Promise<DBSportLeagueSeason | null> {
+  const now = new Date();
+
+  const queryRows = tx
+    ? await tx
+        .select()
+        .from(sportLeagueSeasons)
+        .where(
+          and(
+            eq(sportLeagueSeasons.leagueId, sportLeagueId),
+            gte(sportLeagueSeasons.startTime, now),
+          ),
+        )
+        .orderBy(sportLeagueSeasons.startTime)
+    : await db
+        .select()
+        .from(sportLeagueSeasons)
+        .where(
+          and(
+            eq(sportLeagueSeasons.leagueId, sportLeagueId),
+            gte(sportLeagueSeasons.startTime, now),
+          ),
+        )
+        .orderBy(sportLeagueSeasons.startTime);
+
+  return queryRows.length > 0 ? queryRows[0] : null;
 }

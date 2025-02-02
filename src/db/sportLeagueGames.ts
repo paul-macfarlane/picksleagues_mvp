@@ -15,7 +15,8 @@ export interface UpsertDBSportLeagueGame {
   awayTeamScore: number;
   homeTeamId: string;
   homeTeamScore: number;
-  espnId: string | null;
+  espnId: string;
+  espnOddsRef: string;
 }
 
 export interface DBSportLeagueGame {
@@ -29,7 +30,8 @@ export interface DBSportLeagueGame {
   awayTeamScore: number;
   homeTeamId: string;
   homeTeamScore: number;
-  espnId: string | null;
+  espnId: string;
+  espnOddsRef: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,41 +40,41 @@ export async function upsertDBSportGames(
   upserts: UpsertDBSportLeagueGame[],
   tx?: DBTransaction,
 ): Promise<DBSportLeagueGame[]> {
-  if (tx) {
-    return tx
-      .insert(sportLeagueGames)
-      .values(upserts)
-      .onConflictDoUpdate({
-        target: [sportLeagueGames.espnId],
-        set: {
-          status: sql`excluded.status`,
-          clock: sql`excluded.clock`,
-          period: sql`excluded.period`,
-          awayTeamId: sql`excluded.away_team_id`,
-          awayTeamScore: sql`excluded.away_team_score`,
-          homeTeamId: sql`excluded.home_team_id`,
-          homeTeamScore: sql`excluded.home_team_score`,
-        },
-      })
-      .returning();
-  } else {
-    return db
-      .insert(sportLeagueGames)
-      .values(upserts)
-      .onConflictDoUpdate({
-        target: [sportLeagueGames.espnId],
-        set: {
-          status: sql`excluded.status`,
-          clock: sql`excluded.clock`,
-          period: sql`excluded.period`,
-          awayTeamId: sql`excluded.away_team_id`,
-          awayTeamScore: sql`excluded.away_team_score`,
-          homeTeamId: sql`excluded.home_team_id`,
-          homeTeamScore: sql`excluded.home_team_score`,
-        },
-      })
-      .returning();
-  }
+  return tx
+    ? tx
+        .insert(sportLeagueGames)
+        .values(upserts)
+        .onConflictDoUpdate({
+          target: [sportLeagueGames.espnId],
+          set: {
+            status: sql`excluded.status`,
+            clock: sql`excluded.clock`,
+            period: sql`excluded.period`,
+            awayTeamId: sql`excluded.away_team_id`,
+            awayTeamScore: sql`excluded.away_team_score`,
+            homeTeamId: sql`excluded.home_team_id`,
+            homeTeamScore: sql`excluded.home_team_score`,
+            espnOddsRef: sql`excluded.espn_odds_ref`,
+          },
+        })
+        .returning()
+    : db
+        .insert(sportLeagueGames)
+        .values(upserts)
+        .onConflictDoUpdate({
+          target: [sportLeagueGames.espnId],
+          set: {
+            status: sql`excluded.status`,
+            clock: sql`excluded.clock`,
+            period: sql`excluded.period`,
+            awayTeamId: sql`excluded.away_team_id`,
+            awayTeamScore: sql`excluded.away_team_score`,
+            homeTeamId: sql`excluded.home_team_id`,
+            homeTeamScore: sql`excluded.home_team_score`,
+            espnOddsRef: sql`excluded.espn_odds_ref`,
+          },
+        })
+        .returning();
 }
 
 export interface DBSportLeagueGameWithOdds extends DBSportLeagueGame {
@@ -110,4 +112,19 @@ export async function getDBSportLeagueGamesWithOddsFromIds(
   }
 
   return games;
+}
+
+export async function getDBSportLeagueGamesForWeek(
+  weekId: string,
+  tx?: DBTransaction,
+): Promise<DBSportLeagueGame[]> {
+  return tx
+    ? tx
+        .select()
+        .from(sportLeagueGames)
+        .where(eq(sportLeagueGames.weekId, weekId))
+    : db
+        .select()
+        .from(sportLeagueGames)
+        .where(eq(sportLeagueGames.weekId, weekId));
 }

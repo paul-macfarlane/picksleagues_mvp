@@ -33,6 +33,7 @@ import {
 import { PicksLeaguePickStatuses } from "@/shared/picksLeaguePicks";
 import { SportLeagueWeekTypes } from "@/models/sportLeagueWeeks";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
+import { ESPNLeagueSlug, ESPNSportSlug } from "@/integrations/espn/shared";
 
 /**
  * table used by auth.js to store users, some custom fields added on top
@@ -179,7 +180,15 @@ export const sportLeagues = sqliteTable("sports_leagues", {
     .unique(),
   abbreviation: text("abbreviation", { length: 8 }).notNull().unique(),
   logoUrl: text("logo_url", { length: IMG_URL_MAX_LENGTH }),
-  espnId: text("espn_id", { length: 8 }),
+  espnId: text("espn_id", { length: 8 }).notNull(),
+  espnSlug: text("espn_slug", {
+    length: 32,
+    enum: [ESPNLeagueSlug.NFL, ESPNLeagueSlug.COLLEGE_FOOTBALL],
+  }).notNull(),
+  espnSportSlug: text("espn_sport_slug", {
+    length: 32,
+    enum: [ESPNSportSlug.FOOTBALL],
+  }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -201,7 +210,6 @@ export const sportLeagueSeasons = sqliteTable(
     name: text("name", { length: SPORT_LEAGUE_SEASON_MAX_LENGTH }).notNull(),
     startTime: integer("start_time", { mode: "timestamp" }).notNull(),
     endTime: integer("end_time", { mode: "timestamp" }).notNull(),
-    active: integer("active", { mode: "boolean" }).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
@@ -225,7 +233,7 @@ export const sportLeagueWeeks = sqliteTable(
     name: text("name", { length: SPORT_LEAGUE_WEEK_MAX_LENGTH }).notNull(),
     startTime: integer("start_time", { mode: "timestamp" }).notNull(),
     endTime: integer("end_time", { mode: "timestamp" }).notNull(),
-    espnEventsRef: text("espn_events_ref"),
+    espnEventsRef: text("espn_events_ref").notNull(),
     type: text("type", {
       enum: [
         SportLeagueWeekTypes.PLAYOFFS,
@@ -271,7 +279,8 @@ export const sportLeagueGames = sqliteTable("sport_league_games", {
     .notNull()
     .references(() => sportLeagueTeams.id, { onDelete: "cascade" }),
   homeTeamScore: integer("home_team_score").notNull(),
-  espnId: text("espn_id", { length: 16 }).unique(),
+  espnId: text("espn_id", { length: 16 }).unique().notNull(),
+  espnOddsRef: text("espn_odds_ref").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -321,7 +330,7 @@ export const oddsProviders = sqliteTable("odds_providers", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name", { length: 64 }).notNull(),
-  espnId: text("espn_id", { length: 8 }).unique(),
+  espnId: text("espn_id", { length: 8 }).unique().notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -344,7 +353,7 @@ export const sportLeagueTeams = sqliteTable(
     location: text("location", { length: 256 }).notNull(),
     abbreviation: text("abbreviation", { length: 8 }).notNull(),
     logoUrl: text("logo_url", { length: IMG_URL_MAX_LENGTH }),
-    espnId: text("espn_id", { length: 8 }),
+    espnId: text("espn_id", { length: 8 }).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),

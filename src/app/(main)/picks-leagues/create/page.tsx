@@ -1,11 +1,6 @@
 import { auth } from "@/auth";
 import { CreatePicksLeagueForm } from "@/app/(main)/picks-leagues/create/form";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAllDBSportLeaguesWithActiveSeason } from "@/db/sportLeagues";
 import { redirect } from "next/navigation";
 import { AUTH_URL } from "@/models/auth";

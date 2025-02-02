@@ -1,1 +1,0 @@
-ALTER TABLE `picks_league_picks` ADD `status` text(32) DEFAULT 'Picked' NOT NULL;
