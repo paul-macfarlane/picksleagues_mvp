@@ -7,6 +7,7 @@ import {
 import { withDBTransaction } from "@/db/transactions";
 import { getAllDBSportLeagues } from "@/db/sportLeagues";
 import {
+  DBSportLeagueSeason,
   getActiveDBSportLeagueSeason,
   getNextDBSportLeagueSeason,
 } from "@/db/sportLeagueSeason";
@@ -60,61 +61,68 @@ export async function upsertSportLeagueWeeksFromESPN(): Promise<
 
     const dbSportLeagueTeamUpserts: UpsertDBSportLeagueWeek[] = [];
     for (const dbSportLeague of dbSportLeagues) {
-      let dbSeason = await getActiveDBSportLeagueSeason(dbSportLeague.id, tx);
-      if (!dbSeason) {
-        dbSeason = await getNextDBSportLeagueSeason(dbSportLeague.id, tx);
+      const dbSeasons: DBSportLeagueSeason[] = [];
+      const activeDBSeason = await getActiveDBSportLeagueSeason(
+        dbSportLeague.id,
+        tx,
+      );
+      if (activeDBSeason) {
+        dbSeasons.push(activeDBSeason);
       }
-      if (!dbSeason) {
-        console.warn(
-          `Could not find active or next season for sport league ${dbSportLeague.id}`,
-        );
-        continue;
+      const nextDBSeason = await getNextDBSportLeagueSeason(
+        dbSportLeague.id,
+        tx,
+      );
+      if (nextDBSeason) {
+        dbSeasons.push(nextDBSeason);
       }
 
-      const regularSeasonWeekUpserts = (
-        await getESPNSportLeagueSeasonWeeks(
-          dbSportLeague.espnSportSlug,
-          dbSportLeague.espnSlug,
-          dbSeason.name,
-          ESPNSeasonType.REGULAR_SEASON,
-        )
-      ).map((week) => ({
-        seasonId: dbSeason.id,
-        name: week.text,
-        startTime: new Date(week.startDate),
-        endTime: new Date(week.endDate),
-        espnEventsRef: week.events.$ref,
-        type: SportLeagueWeekTypes.REGULAR_SEASON,
-        pickLockTime:
-          findFirstSundayAt1PMET(
-            new Date(week.startDate),
-            new Date(new Date(week.endDate)),
-          ) ?? new Date(week.startDate),
-      }));
-
-      const postSeasonWeekUpserts = (
-        await getESPNSportLeagueSeasonWeeks(
-          dbSportLeague.espnSportSlug,
-          dbSportLeague.espnSlug,
-          dbSeason.name,
-          ESPNSeasonType.POST_SEASON,
-        )
-      )
-        .filter((week) => week.text.toLowerCase() !== "pro bowl")
-        .map((week) => ({
+      for (const dbSeason of dbSeasons) {
+        const regularSeasonWeekUpserts = (
+          await getESPNSportLeagueSeasonWeeks(
+            dbSportLeague.espnSportSlug,
+            dbSportLeague.espnSlug,
+            dbSeason.name,
+            ESPNSeasonType.REGULAR_SEASON,
+          )
+        ).map((week) => ({
           seasonId: dbSeason.id,
           name: week.text,
           startTime: new Date(week.startDate),
           endTime: new Date(week.endDate),
           espnEventsRef: week.events.$ref,
-          type: SportLeagueWeekTypes.PLAYOFFS,
-          pickLockTime: new Date(week.endDate),
+          type: SportLeagueWeekTypes.REGULAR_SEASON,
+          pickLockTime:
+            findFirstSundayAt1PMET(
+              new Date(week.startDate),
+              new Date(new Date(week.endDate)),
+            ) ?? new Date(week.startDate),
         }));
 
-      dbSportLeagueTeamUpserts.push(
-        ...regularSeasonWeekUpserts,
-        ...postSeasonWeekUpserts,
-      );
+        const postSeasonWeekUpserts = (
+          await getESPNSportLeagueSeasonWeeks(
+            dbSportLeague.espnSportSlug,
+            dbSportLeague.espnSlug,
+            dbSeason.name,
+            ESPNSeasonType.POST_SEASON,
+          )
+        )
+          .filter((week) => week.text.toLowerCase() !== "pro bowl")
+          .map((week) => ({
+            seasonId: dbSeason.id,
+            name: week.text,
+            startTime: new Date(week.startDate),
+            endTime: new Date(week.endDate),
+            espnEventsRef: week.events.$ref,
+            type: SportLeagueWeekTypes.PLAYOFFS,
+            pickLockTime: new Date(week.endDate),
+          }));
+
+        dbSportLeagueTeamUpserts.push(
+          ...regularSeasonWeekUpserts,
+          ...postSeasonWeekUpserts,
+        );
+      }
     }
 
     if (dbSportLeagueTeamUpserts.length > 0) {
