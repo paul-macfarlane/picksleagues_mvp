@@ -81,7 +81,7 @@ export function MobileNavbar({
                   <li key={league.id}>
                     <a
                       href={getPicksLeagueHomeUrl(league.id)}
-                      className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === getPicksLeagueHomeUrl(league.id) ? "bg-accent" : ""}`}
+                      className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname.startsWith(`/picks-leagues/${league.id}`) ? "bg-accent" : ""}`}
                     >
                       {league.name}
                     </a>

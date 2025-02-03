@@ -41,6 +41,19 @@ import {
 import { DBPicksLeagueSettingDetails } from "@/db/picksLeagues";
 import { updatePicksLeagueAction } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/action";
 import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Separator } from "@/components/ui/separator";
+import axios, { AxiosError } from "axios";
 
 type FormSchema = z.infer<typeof UpdatePicksLeagueSchema>;
 
@@ -124,6 +137,37 @@ export function PicksLeagueSettingsForm({
   const selectedSportLeagueDetails = sportLeagues.find(
     (league) => league.id === selectedSportLeagueId,
   )!;
+
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+
+  const onDeleteLeague = async () => {
+    try {
+      setDeleteSubmitting(true);
+
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_HOST!}/api/picks-leagues/${picksLeague.id}`,
+      );
+
+      toast({
+        title: "League Deleted!",
+        description: "Picks League Deleted Successfully.",
+      });
+      router.push("/dashboard");
+    } catch (e) {
+      let description = "An unexpected error occurred, please try again later.";
+      if (e instanceof AxiosError && e.response?.data.error) {
+        description = e.response.data.error;
+      }
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description,
+      });
+
+      setDeleteSubmitting(false);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -550,6 +594,36 @@ export function PicksLeagueSettingsForm({
           ) : (
             <></>
           )}
+
+          <Separator />
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant={"destructive"} className="w-full">
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  league and all of its history.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleteSubmitting}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onDeleteLeague}
+                  disabled={deleteSubmitting}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardFooter>
       </form>
     </Form>
