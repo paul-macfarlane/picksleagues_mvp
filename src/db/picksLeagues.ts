@@ -435,3 +435,9 @@ export async function getDBPicksLeagueWithMember(
     DBPicksLeagueWithMember: queryRows[0].picks_league_members,
   };
 }
+
+export async function deleteDBPicksLeague(leagueId: string): Promise<void> {
+  await db.delete(picksLeagues).where(eq(picksLeagues.id, leagueId));
+
+  return;
+}

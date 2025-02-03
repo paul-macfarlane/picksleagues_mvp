@@ -107,7 +107,7 @@ export default function Navbar({
                             <NavigationMenuLink asChild>
                               {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                               <a
-                                className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname === getPicksLeagueHomeUrl(league.id) ? "bg-accent text-accent-foreground" : ""}`}
+                                className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname.startsWith(`/picks-leagues/${league.id}`) ? "bg-accent text-accent-foreground" : ""}`}
                                 href={getPicksLeagueHomeUrl(league.id)}
                               >
                                 <div className="text-sm font-medium leading-none">
