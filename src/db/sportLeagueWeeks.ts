@@ -323,7 +323,7 @@ export async function getLeagueDBWeeklyPickDataByUser(
 }
 
 export async function getDBSportLeagueWeeksForPicksLeagueSeason(
-  picksLeagueId: string,
+  picksLeagueSeasonId: string,
 ): Promise<DBSportLeagueWeek[]> {
   const startSportLeagueWeekAlias = aliasedTable(
     sportLeagueWeeks,
@@ -338,11 +338,7 @@ export async function getDBSportLeagueWeeksForPicksLeagueSeason(
     .select({
       sportLeagueWeek: getTableColumns(sportLeagueWeeks),
     })
-    .from(picksLeagues)
-    .innerJoin(
-      picksLeagueSeasons,
-      eq(picksLeagueSeasons.leagueId, picksLeagues.id),
-    )
+    .from(picksLeagueSeasons)
     .innerJoin(
       startSportLeagueWeekAlias,
       eq(
@@ -356,16 +352,13 @@ export async function getDBSportLeagueWeeksForPicksLeagueSeason(
     )
     .innerJoin(
       sportLeagueWeeks,
-      and(
-        eq(picksLeagueSeasons.sportLeagueSeasonId, sportLeagueWeeks.seasonId),
-        gte(sportLeagueWeeks.startTime, startSportLeagueWeekAlias.startTime),
-        lte(sportLeagueWeeks.endTime, endSportLeagueWeekAlias.endTime),
-      ),
+      eq(picksLeagueSeasons.sportLeagueSeasonId, sportLeagueWeeks.seasonId),
     )
     .where(
       and(
-        eq(picksLeagues.id, picksLeagueId),
-        eq(picksLeagueSeasons.active, true), // assumption is that there is only 1 active season at a time
+        eq(picksLeagueSeasons.id, picksLeagueSeasonId),
+        gte(sportLeagueWeeks.startTime, startSportLeagueWeekAlias.startTime),
+        lte(sportLeagueWeeks.endTime, endSportLeagueWeekAlias.endTime),
       ),
     );
 
@@ -382,6 +375,8 @@ export async function getDBStartAndEndWeekForLeagueActiveSeason(
 ): Promise<DBStartAndEndWeek | null> {
   const startWeekAlias = aliasedTable(sportLeagueWeeks, "startWeekAlias");
   const endWeekAlias = aliasedTable(sportLeagueWeeks, "endWeekAlias");
+  const now = new Date();
+
   const queryRows = await db
     .select({
       startWeek: getTableColumns(startWeekAlias),
@@ -398,8 +393,9 @@ export async function getDBStartAndEndWeekForLeagueActiveSeason(
     )
     .where(
       and(
-        eq(picksLeagueSeasons.active, true),
         eq(picksLeagueSeasons.leagueId, picksLeagueId),
+        lte(startWeekAlias.startTime, now),
+        gte(endWeekAlias.endTime, now),
       ),
     );
 

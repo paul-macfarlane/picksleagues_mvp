@@ -1,5 +1,5 @@
 import { picksLeagueSeasons, picksLeagueStandings, users } from "@/db/schema";
-import { and, eq, getTableColumns, sql } from "drizzle-orm";
+import { eq, getTableColumns, sql } from "drizzle-orm";
 import { DBTransaction } from "@/db/transactions";
 import { db } from "@/db/client";
 import { DBUser } from "@/db/users";
@@ -94,8 +94,8 @@ export interface DBPicksLeagueStandingsWithMembers {
   user: DBUser;
 }
 
-export async function getDBPicksLeagueStandingsWithMembers(
-  picksLeagueId: string,
+export async function getDBPicksLeagueSeasonStandingsWithMembers(
+  picksLeagueSeasonId: string,
 ): Promise<DBPicksLeagueStandingsWithMembers[]> {
   return db
     .select({
@@ -108,11 +108,6 @@ export async function getDBPicksLeagueStandingsWithMembers(
       eq(picksLeagueStandings.seasonId, picksLeagueSeasons.id),
     )
     .innerJoin(users, eq(picksLeagueStandings.userId, users.id))
-    .where(
-      and(
-        eq(picksLeagueSeasons.active, true),
-        eq(picksLeagueSeasons.leagueId, picksLeagueId),
-      ),
-    )
+    .where(eq(picksLeagueSeasons.id, picksLeagueSeasonId))
     .orderBy(picksLeagueStandings.rank);
 }

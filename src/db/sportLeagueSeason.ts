@@ -1,7 +1,7 @@
 import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 import { DBTransaction } from "@/db/transactions";
-import { sportLeagueSeasons } from "@/db/schema";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { sportLeagueSeasons, sportLeagueWeeks } from "@/db/schema";
+import { and, eq, getTableColumns, gte, lte, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 
 export interface DBSportLeagueSeason {
@@ -87,6 +87,51 @@ export async function getActiveDBSportLeagueSeason(
   return queryRows.length > 0 ? queryRows[0] : null;
 }
 
+export async function getActiveDBSportLeagueSeasonHavingActiveWeeks(
+  sportLeagueId: string,
+  tx?: DBTransaction,
+): Promise<DBSportLeagueSeason | null> {
+  const now = new Date();
+
+  const queryRows = tx
+    ? await tx
+        .select({
+          season: getTableColumns(sportLeagueSeasons),
+        })
+        .from(sportLeagueSeasons)
+        .innerJoin(
+          sportLeagueWeeks,
+          eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
+        )
+        .where(
+          and(
+            eq(sportLeagueSeasons.leagueId, sportLeagueId),
+            lte(sportLeagueSeasons.startTime, now),
+            gte(sportLeagueSeasons.endTime, now),
+            gte(sportLeagueWeeks.startTime, now),
+          ),
+        )
+    : await db
+        .select({
+          season: getTableColumns(sportLeagueSeasons),
+        })
+        .from(sportLeagueSeasons)
+        .innerJoin(
+          sportLeagueWeeks,
+          eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
+        )
+        .where(
+          and(
+            eq(sportLeagueSeasons.leagueId, sportLeagueId),
+            lte(sportLeagueSeasons.startTime, now),
+            gte(sportLeagueSeasons.endTime, now),
+            gte(sportLeagueWeeks.startTime, now),
+          ),
+        );
+
+  return queryRows.length > 0 ? queryRows[0].season : null;
+}
+
 export async function getNextDBSportLeagueSeason(
   sportLeagueId: string,
   tx?: DBTransaction,
@@ -115,5 +160,15 @@ export async function getNextDBSportLeagueSeason(
         )
         .orderBy(sportLeagueSeasons.startTime);
 
+  return queryRows.length > 0 ? queryRows[0] : null;
+}
+
+export async function getDBSportLeagueSeasonById(
+  id: string,
+): Promise<DBSportLeagueSeason | null> {
+  const queryRows = await db
+    .select()
+    .from(sportLeagueSeasons)
+    .where(eq(sportLeagueSeasons.id, id));
   return queryRows.length > 0 ? queryRows[0] : null;
 }

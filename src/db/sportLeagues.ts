@@ -21,12 +21,12 @@ export interface DBSportLeague {
   updatedAt: Date;
 }
 
-export interface DBSportLeagueWithActiveSeasonDetail extends DBSportLeague {
+export interface DBSportLeagueWithSeasonDetail extends DBSportLeague {
   season: DBSportLeagueSeasonDetail;
 }
 
-export async function getAllDBSportLeaguesWithActiveSeason(): Promise<
-  DBSportLeagueWithActiveSeasonDetail[]
+export async function getActiveDBSportLeagueSeasonDetailsWithActiveWeeks(): Promise<
+  DBSportLeagueWithSeasonDetail[]
 > {
   const now = new Date();
   const queryRows = await db
@@ -34,27 +34,57 @@ export async function getAllDBSportLeaguesWithActiveSeason(): Promise<
     .from(sportLeagues)
     .innerJoin(
       sportLeagueSeasons,
+      eq(sportLeagues.id, sportLeagueSeasons.leagueId),
+    )
+    .innerJoin(
+      sportLeagueWeeks,
+      eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
+    )
+    .where(
       and(
-        eq(sportLeagues.id, sportLeagueSeasons.leagueId),
         lte(sportLeagueSeasons.startTime, now),
         gte(sportLeagueSeasons.endTime, now),
-      ),
-    )
-    .leftJoin(
-      sportLeagueWeeks,
-      and(
-        eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
         gte(sportLeagueWeeks.startTime, new Date()),
       ),
     )
     .orderBy(sportLeagueWeeks.startTime);
-  if (!queryRows.length) {
-    return [];
-  }
 
-  const dbSportLeagueWithActiveSeasonDetails: DBSportLeagueWithActiveSeasonDetail[] =
+  return aggregateLeagueSeasonAndWeeksIntoDetails(queryRows);
+}
+
+export async function getNextDBSportLeagueSeasonDetailsWithWeeks(): Promise<
+  DBSportLeagueWithSeasonDetail[]
+> {
+  const now = new Date();
+  const queryRows = await db
+    .select()
+    .from(sportLeagues)
+    .innerJoin(
+      sportLeagueSeasons,
+      eq(sportLeagues.id, sportLeagueSeasons.leagueId),
+    )
+    .innerJoin(
+      sportLeagueWeeks,
+      eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
+    )
+    .where(gte(sportLeagueSeasons.startTime, now))
+    .orderBy(sportLeagueWeeks.startTime);
+
+  return aggregateLeagueSeasonAndWeeksIntoDetails(queryRows);
+}
+
+interface LeagueSeasonAndWeekRows {
+  sports_leagues: DBSportLeague;
+  sport_league_seasons: DBSportLeagueSeason;
+  sport_league_weeks: DBSportLeagueWeek;
+}
+
+function aggregateLeagueSeasonAndWeeksIntoDetails(
+  rows: LeagueSeasonAndWeekRows[],
+): DBSportLeagueWithSeasonDetail[] {
+  const dbSportLeagueWithActiveSeasonDetails: DBSportLeagueWithSeasonDetail[] =
     [];
-  queryRows.forEach((row) => {
+  rows.forEach((row) => {
     const existingSportDetailIndex =
       dbSportLeagueWithActiveSeasonDetails.findIndex(
         (detail) => detail.id === row.sports_leagues.id,
@@ -88,27 +118,6 @@ export async function getDBSportLeagueById(
     .select()
     .from(sportLeagues)
     .where(eq(sportLeagues.id, id));
-  if (!queryRows.length) {
-    return null;
-  }
-
-  return queryRows[0];
-}
-
-export async function getActiveSeasonForDBSportLeague(
-  sportLeagueId: string,
-): Promise<DBSportLeagueSeason | null> {
-  const now = new Date();
-  const queryRows = await db
-    .select()
-    .from(sportLeagueSeasons)
-    .where(
-      and(
-        eq(sportLeagueSeasons.leagueId, sportLeagueId),
-        lte(sportLeagueSeasons.startTime, now),
-        gte(sportLeagueSeasons.endTime, now),
-      ),
-    );
   if (!queryRows.length) {
     return null;
   }

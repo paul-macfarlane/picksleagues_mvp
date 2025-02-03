@@ -57,12 +57,12 @@ export function JoinLeagueForm({
             );
 
             if (actionResponse?.errors) {
-              if (actionResponse?.errors?.leagueId) {
-                form.setError("leagueId", {
-                  type: "custom",
-                  message: actionResponse.errors.leagueId,
-                });
-              }
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description:
+                  "An unexpected error occurred, please try again later.",
+              });
 
               return;
             }

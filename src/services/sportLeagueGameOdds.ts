@@ -29,6 +29,14 @@ export async function upsertSportLeagueGameOddsFromESPN(): Promise<
         tx,
       );
       for (const dbSportLeagueGame of dbSportLeagueGames) {
+        const now = new Date();
+        if (dbSportLeagueGame.startTime < now) {
+          console.log(
+            `skipping odds update for game that already started with id ${dbSportLeagueGame.id}`,
+          );
+          continue;
+        }
+
         const oddsList = await getESPNEventOddsFromRefUrl(
           dbSportLeagueGame.espnOddsRef,
         );

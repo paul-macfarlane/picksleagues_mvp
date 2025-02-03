@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DBSportLeagueWithActiveSeasonDetail } from "@/db/sportLeagues";
+import { DBSportLeagueWithSeasonDetail } from "@/db/sportLeagues";
 import { useFormStatus } from "react-dom";
 import {
   PICKS_LEAGUE_VISIBILITY_VALUES,
@@ -45,13 +45,13 @@ import { useRouter } from "next/navigation";
 type FormSchema = z.infer<typeof UpdatePicksLeagueSchema>;
 
 function getDefaultSportStartWeekId(
-  sportLeague: DBSportLeagueWithActiveSeasonDetail,
+  sportLeague: DBSportLeagueWithSeasonDetail,
 ): string {
   return sportLeague.season.weeks.length ? sportLeague.season.weeks[0].id : "";
 }
 
 function getDefaultSportEndWeekId(
-  sportLeague: DBSportLeagueWithActiveSeasonDetail,
+  sportLeague: DBSportLeagueWithSeasonDetail,
 ): string {
   return sportLeague.season.weeks.length
     ? sportLeague.season.weeks[sportLeague.season.weeks.length - 1].id
@@ -63,7 +63,7 @@ export function PicksLeagueSettingsForm({
   picksLeague,
   canEditSeasonSettings,
 }: {
-  sportLeagues: DBSportLeagueWithActiveSeasonDetail[];
+  sportLeagues: DBSportLeagueWithSeasonDetail[];
   picksLeague: DBPicksLeagueSettingDetails;
   canEditSeasonSettings: boolean;
 }) {
@@ -119,6 +119,11 @@ export function PicksLeagueSettingsForm({
   const { toast } = useToast();
 
   const router = useRouter();
+
+  const selectedSportLeagueId = form.watch("sportLeagueId");
+  const selectedSportLeagueDetails = sportLeagues.find(
+    (league) => league.id === selectedSportLeagueId,
+  )!;
 
   return (
     <Form {...form}>
@@ -434,7 +439,9 @@ export function PicksLeagueSettingsForm({
               name="startSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>Start Week</FormLabel>
+                  <FormLabel>
+                    Start Week ({selectedSportLeagueDetails.season.name} season)
+                  </FormLabel>
                   <Select
                     disabled={!canEditSeasonSettings}
                     onValueChange={(val) => {
@@ -472,7 +479,9 @@ export function PicksLeagueSettingsForm({
               name="endSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>End Week</FormLabel>
+                  <FormLabel>
+                    End Week ({selectedSportLeagueDetails.season.name} season)
+                  </FormLabel>
                   <Select
                     disabled={!canEditSeasonSettings}
                     onValueChange={(val) => {

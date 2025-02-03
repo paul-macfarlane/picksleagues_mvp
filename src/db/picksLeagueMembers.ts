@@ -1,7 +1,7 @@
 import { DBTransaction } from "@/db/transactions";
 import { picksLeagueMembers, users } from "@/db/schema";
 import { db } from "@/db/client";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { DBUser } from "@/db/users";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 
@@ -94,4 +94,14 @@ export async function updateDBPicksLeagueMember(
     )
     .returning();
   return queryRows.length > 0 ? queryRows[0] : null;
+}
+
+export async function getPicksLeagueMemberCount(
+  picksLeagueId: string,
+): Promise<number> {
+  const result = await db
+    .select({ count: count() })
+    .from(picksLeagueMembers)
+    .where(eq(picksLeagueMembers.leagueId, picksLeagueId));
+  return result.length > 0 ? result[0].count : 0;
 }

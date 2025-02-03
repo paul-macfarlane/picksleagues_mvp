@@ -8,12 +8,15 @@ import {
   PicksLeagueVisibilities,
 } from "@/models/picksLeagues";
 import { redirect } from "next/navigation";
-import { createDBPicksLeagueMember } from "@/db/picksLeagueMembers";
+import {
+  createDBPicksLeagueMember,
+  getDBPicksLeagueMember,
+} from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { JoinPicksLeagueSchema } from "@/models/picksLeagueInvites";
 import { AUTH_URL } from "@/models/auth";
 import { withDBTransaction } from "@/db/transactions";
-import { getActiveDBPicksLeagueSeasonWithStartAndEndWeeks } from "@/db/picksLeagueSeasons";
+import { getNextDBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { upsertDBPicksLeagueStandings } from "@/db/picksLeagueStandings";
 
 interface JoinLeagueActionFormState {
@@ -84,13 +87,12 @@ export async function joinLeagueAction(
     };
   }
 
-  const dbPicksLeagueSeason =
-    await getActiveDBPicksLeagueSeasonWithStartAndEndWeeks(
-      parsed.data.leagueId,
-    );
-  if (!dbPicksLeagueSeason) {
+  const nextDBPicksLeagueSeason = await getNextDBPicksLeagueSeason(
+    parsed.data.leagueId,
+  );
+  if (!nextDBPicksLeagueSeason) {
     console.error(
-      `unable to find active season for pick league ${parsed.data.leagueId}`,
+      `unable to find next season for pick league ${parsed.data.leagueId}`,
     );
     return {
       errors: {
@@ -99,16 +101,12 @@ export async function joinLeagueAction(
     };
   }
 
-  const now = new Date();
-  if (
-    now >= dbPicksLeagueSeason.startWeek.startTime &&
-    now <= dbPicksLeagueSeason.endWeek.endTime
-  ) {
-    return {
-      errors: {
-        form: "Cannot join league while its in season",
-      },
-    };
+  const existingLeagueMember = await getDBPicksLeagueMember(
+    dbPicksLeague.id,
+    dbUser.id,
+  );
+  if (existingLeagueMember) {
+    return redirect(getPicksLeagueHomeUrl(parsed.data.leagueId));
   }
 
   try {
@@ -132,7 +130,7 @@ export async function joinLeagueAction(
         [
           {
             userId: dbUser.id,
-            seasonId: dbPicksLeagueSeason.id,
+            seasonId: nextDBPicksLeagueSeason.id,
             wins: 0,
             losses: 0,
             pushes: 0,
