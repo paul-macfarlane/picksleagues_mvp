@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DBSportLeagueWithActiveSeasonDetail } from "@/db/sportLeagues";
+import { DBSportLeagueWithSeasonDetail } from "@/db/sportLeagues";
 import { useFormStatus } from "react-dom";
 import {
   CreatePicksLeagueSchema,
@@ -49,13 +49,13 @@ import {
 type FormSchema = z.infer<typeof CreatePicksLeagueSchema>;
 
 function getDefaultSportStartWeekId(
-  sportLeague: DBSportLeagueWithActiveSeasonDetail,
+  sportLeague: DBSportLeagueWithSeasonDetail,
 ): string {
   return sportLeague.season.weeks.length ? sportLeague.season.weeks[0].id : "";
 }
 
 function getDefaultSportEndWeekId(
-  sportLeague: DBSportLeagueWithActiveSeasonDetail,
+  sportLeague: DBSportLeagueWithSeasonDetail,
 ): string {
   return sportLeague.season.weeks.length
     ? sportLeague.season.weeks[sportLeague.season.weeks.length - 1].id
@@ -65,7 +65,7 @@ function getDefaultSportEndWeekId(
 export function CreatePicksLeagueForm({
   sportLeagues,
 }: {
-  sportLeagues: DBSportLeagueWithActiveSeasonDetail[];
+  sportLeagues: DBSportLeagueWithSeasonDetail[];
 }) {
   const router = useRouter();
 
@@ -108,6 +108,11 @@ export function CreatePicksLeagueForm({
   const [endSportLeagueWeekId, setEndSportLeagueWeekId] = useState(
     defaultEndSportLeagueWeekId,
   );
+
+  const selectedSportLeagueId = form.watch("sportLeagueId");
+  const selectedSportLeagueDetails = sportLeagues.find(
+    (league) => league.id === selectedSportLeagueId,
+  )!;
 
   const { toast } = useToast();
 
@@ -404,7 +409,9 @@ export function CreatePicksLeagueForm({
               name="startSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>Start Week</FormLabel>
+                  <FormLabel>
+                    Start Week ({selectedSportLeagueDetails.season.name} season)
+                  </FormLabel>
                   <Select
                     onValueChange={(val) => {
                       if (val) {
@@ -441,7 +448,9 @@ export function CreatePicksLeagueForm({
               name="endSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>End Week</FormLabel>
+                  <FormLabel>
+                    End Week ({selectedSportLeagueDetails.season.name} season)
+                  </FormLabel>
                   <Select
                     onValueChange={(val) => {
                       if (val) {

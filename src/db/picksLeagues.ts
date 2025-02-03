@@ -17,6 +17,7 @@ import {
   eq,
   getTableColumns,
   gte,
+  inArray,
   isNull,
   sql,
 } from "drizzle-orm";
@@ -84,6 +85,7 @@ export async function getDBPicksLeagueDetailsForUser(
 }
 
 export interface filterDBPicksLeaguesParams {
+  sportLeagueSeasonIds: string[];
   sportLeagueId?: string;
   pickType?: PicksLeaguePickTypes;
   picksPerWeek?: number;
@@ -149,6 +151,10 @@ export async function filterDBPicksLeagues(
   const whereClauses = [
     eq(picksLeagues.visibility, PicksLeagueVisibilities.PUBLIC),
     isNull(picksLeagueMembers.leagueId),
+    inArray(
+      picksLeagueSeasons.sportLeagueSeasonId,
+      params.sportLeagueSeasonIds,
+    ),
   ];
   if (params.pickType) {
     whereClauses.push(eq(picksLeagues.pickType, params.pickType));
@@ -181,10 +187,7 @@ export async function filterDBPicksLeagues(
     .innerJoin(sportLeagues, sportLeaguesJoin)
     .innerJoin(
       picksLeagueSeasons,
-      and(
-        eq(picksLeagues.id, picksLeagueSeasons.leagueId),
-        eq(picksLeagueSeasons.active, true),
-      ),
+      eq(picksLeagues.id, picksLeagueSeasons.leagueId),
     )
     .innerJoin(startSportLeagueWeeksAlias, startSportLeagueWeekJoinClause)
     .innerJoin(endSportLeagueWeeksAlias, endSportWeekJoinClause)
@@ -227,10 +230,7 @@ export async function filterDBPicksLeagues(
     .innerJoin(sportLeagues, sportLeaguesJoin)
     .innerJoin(
       picksLeagueSeasons,
-      and(
-        eq(picksLeagues.id, picksLeagueSeasons.leagueId),
-        eq(picksLeagueSeasons.active, true),
-      ),
+      eq(picksLeagues.id, picksLeagueSeasons.leagueId),
     )
     .innerJoin(startSportLeagueWeeksAlias, startSportLeagueWeekJoinClause)
     .innerJoin(endSportLeagueWeeksAlias, endSportWeekJoinClause)
@@ -332,6 +332,7 @@ export interface DBPicksLeagueSettingDetails extends DBPicksLeague {
 
 export async function getPickLeagueSettingsDetails(
   leagueId: string,
+  seasonId: string,
 ): Promise<DBPicksLeagueSettingDetails | null> {
   const startSportLeagueWeeksAlias = aliasedTable(
     sportLeagueWeeks,
@@ -348,10 +349,7 @@ export async function getPickLeagueSettingsDetails(
     .from(picksLeagues)
     .innerJoin(
       picksLeagueSeasons,
-      and(
-        eq(picksLeagues.id, picksLeagueSeasons.leagueId),
-        eq(picksLeagueSeasons.active, true),
-      ),
+      eq(picksLeagues.id, picksLeagueSeasons.leagueId),
     )
     .innerJoin(
       startSportLeagueWeeksAlias,
@@ -364,16 +362,17 @@ export async function getPickLeagueSettingsDetails(
       endSportLeagueWeeksAlias,
       eq(picksLeagueSeasons.endSportLeagueWeekId, endSportLeagueWeeksAlias.id),
     )
-    .where(eq(picksLeagues.id, leagueId));
-  if (!queryRows.length) {
-    return null;
-  }
+    .where(
+      and(eq(picksLeagues.id, leagueId), eq(picksLeagueSeasons.id, seasonId)),
+    );
 
-  return {
-    ...queryRows[0].picksLeague,
-    startSportLeagueWeek: queryRows[0].startSportLeagueWeek,
-    endSportLeagueWeek: queryRows[0].endSportLeagueWeek,
-  };
+  return queryRows.length > 0
+    ? {
+        ...queryRows[0].picksLeague,
+        startSportLeagueWeek: queryRows[0].startSportLeagueWeek,
+        endSportLeagueWeek: queryRows[0].endSportLeagueWeek,
+      }
+    : null;
 }
 
 export interface UpdateDBPicksLeague {

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DBSportLeagueWithActiveSeasonDetail } from "@/db/sportLeagues";
+import { DBSportLeagueWithSeasonDetail } from "@/db/sportLeagues";
 import { PICKS_LEAGUE_PICK_TYPE_VALUES } from "@/models/picksLeagues";
 import {
   Form,
@@ -37,7 +37,7 @@ interface FilterFormData {
 export default function FilterLeaguesForm({
   sportLeagues,
 }: {
-  sportLeagues: DBSportLeagueWithActiveSeasonDetail[];
+  sportLeagues: DBSportLeagueWithSeasonDetail[];
 }) {
   const router = useRouter();
 
@@ -67,6 +67,11 @@ export default function FilterLeaguesForm({
   const [endSportLeagueWeekId, setEndSportLeagueWeekId] = useState<
     string | undefined
   >();
+
+  const selectedSportLeagueId = form.watch("sportLeagueId");
+  const selectedSportLeagueDetails = sportLeagues.find(
+    (league) => league.id === selectedSportLeagueId,
+  );
 
   return (
     <Form {...form}>
@@ -144,7 +149,12 @@ export default function FilterLeaguesForm({
               name="startSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>Start Week</FormLabel>
+                  <FormLabel>
+                    Start Week{" "}
+                    {selectedSportLeagueDetails
+                      ? `(${selectedSportLeagueDetails.season.name} season)`
+                      : ""}
+                  </FormLabel>
                   <Select
                     onValueChange={(val) => {
                       if (val) {
@@ -182,7 +192,12 @@ export default function FilterLeaguesForm({
               name="endSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>End Week</FormLabel>
+                  <FormLabel>
+                    End Week{" "}
+                    {selectedSportLeagueDetails
+                      ? `(${selectedSportLeagueDetails.season.name} season)`
+                      : ""}
+                  </FormLabel>
                   <Select
                     onValueChange={(val) => {
                       if (val) {

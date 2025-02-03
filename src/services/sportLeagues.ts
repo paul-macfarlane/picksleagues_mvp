@@ -1,6 +1,12 @@
 import { getESPNSportLeagues } from "@/integrations/espn/sportLeagues";
 import { ESPNLeagueSlug, ESPNSportSlug } from "@/integrations/espn/shared";
-import { DBSportLeague, upsertDBSportLeagues } from "@/db/sportLeagues";
+import {
+  DBSportLeague,
+  DBSportLeagueWithSeasonDetail,
+  getActiveDBSportLeagueSeasonDetailsWithActiveWeeks,
+  getNextDBSportLeagueSeasonDetailsWithWeeks,
+  upsertDBSportLeagues,
+} from "@/db/sportLeagues";
 
 export async function upsertSportLeaguesFromESPN(): Promise<DBSportLeague[]> {
   const espnSportLeagues = await getESPNSportLeagues(ESPNSportSlug.FOOTBALL);
@@ -20,4 +26,25 @@ export async function upsertSportLeaguesFromESPN(): Promise<DBSportLeague[]> {
       espnSportSlug: ESPNSportSlug.FOOTBALL,
     })),
   );
+}
+
+export async function getActiveOrNextSportLeagueSeasonsDetails(): Promise<
+  DBSportLeagueWithSeasonDetail[]
+> {
+  const activeDBSportLeagueDetails =
+    await getActiveDBSportLeagueSeasonDetailsWithActiveWeeks();
+  const nextDBSportLeagueDetails =
+    await getNextDBSportLeagueSeasonDetailsWithWeeks();
+
+  const details = activeDBSportLeagueDetails;
+  for (const nextDBSportLeagueDetail of nextDBSportLeagueDetails) {
+    const indexOfLeague = details.findIndex(
+      (leagueDetail) => leagueDetail.id === nextDBSportLeagueDetail.id,
+    );
+    if (indexOfLeague === -1) {
+      details.push(nextDBSportLeagueDetail);
+    }
+  }
+
+  return details;
 }

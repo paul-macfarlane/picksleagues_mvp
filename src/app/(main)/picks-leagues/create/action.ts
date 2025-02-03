@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import { createDBPicksLeague, DBPicksLeague } from "@/db/picksLeagues";
 import {
   getDBSportLeagueById,
-  getActiveSeasonForDBSportLeague,
   getDBSportLeagueWeekById,
 } from "@/db/sportLeagues";
 import { getDBUserById } from "@/db/users";
@@ -16,6 +15,10 @@ import { createDBPicksLeagueMember } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { AUTH_URL } from "@/models/auth";
 import { upsertDBPicksLeagueStandings } from "@/db/picksLeagueStandings";
+import {
+  getActiveDBSportLeagueSeasonHavingActiveWeeks,
+  getNextDBSportLeagueSeason,
+} from "@/db/sportLeagueSeason";
 
 export interface CreatePicksLeagueFormState {
   errors?: {
@@ -103,7 +106,6 @@ export async function createPicksLeagueAction(
 
   const dbSportLeague = await getDBSportLeagueById(parsed.data.sportLeagueId);
   if (!dbSportLeague) {
-    console.error(`Sport with id ${parsed.data.sportLeagueId} not found.`);
     return {
       errors: {
         sportLeagueId: "Invalid Sport League",
@@ -111,16 +113,27 @@ export async function createPicksLeagueAction(
     };
   }
 
-  const activeDBSportLeagueSeason = await getActiveSeasonForDBSportLeague(
-    parsed.data.sportLeagueId,
+  // first try to get the active season with 1 or more weeks, then if not available get the next season
+  let dbSportLeagueSeason = await getActiveDBSportLeagueSeasonHavingActiveWeeks(
+    dbSportLeague.id,
   );
-  if (!activeDBSportLeagueSeason) {
+  if (!dbSportLeagueSeason) {
+    dbSportLeagueSeason = await getNextDBSportLeagueSeason(dbSportLeague.id);
+  }
+  if (!dbSportLeagueSeason) {
     console.error(
-      `Sport League with id ${dbSportLeague.id} (${dbSportLeague.name}) does not have an active season.`,
+      `unable to find active or next sport league season for sport with id ${dbSportLeague.id}`,
     );
     return {
       errors: {
-        sportLeagueId: "Selected Sport League does not have an active season.",
+        form: "An unexpected error occurred, please try again later",
+      },
+    };
+  }
+  if (dbSportLeagueSeason.leagueId !== dbSportLeague.id) {
+    return {
+      errors: {
+        form: "Sport League Season not in selected sport",
       },
     };
   }
@@ -129,12 +142,17 @@ export async function createPicksLeagueAction(
     parsed.data.startSportLeagueWeekId,
   );
   if (!startDBSportLeagueWeek) {
-    console.error(
-      `Sport week with id ${parsed.data.startSportLeagueWeekId} not found.`,
-    );
     return {
       errors: {
         startSportLeagueWeekId: "Invalid Start Week",
+      },
+    };
+  }
+  if (startDBSportLeagueWeek.seasonId !== dbSportLeagueSeason.id) {
+    return {
+      errors: {
+        startSportLeagueWeekId:
+          "Start Week not in selected Sport League Season",
       },
     };
   }
@@ -143,12 +161,16 @@ export async function createPicksLeagueAction(
     parsed.data.endSportLeagueWeekId,
   );
   if (!endDBSportLeagueWeek) {
-    console.error(
-      `Sports week with id ${parsed.data.endSportLeagueWeekId} not found.`,
-    );
     return {
       errors: {
         endSportLeagueWeekId: "Invalid End Week",
+      },
+    };
+  }
+  if (endDBSportLeagueWeek.seasonId !== dbSportLeagueSeason.id) {
+    return {
+      errors: {
+        startSportLeagueWeekId: "End Week not in selected Sport League Season",
       },
     };
   }
@@ -189,7 +211,7 @@ export async function createPicksLeagueAction(
 
       const createDBLeagueSeasonData = {
         leagueId: dbPicksLeague.id,
-        sportLeagueSeasonId: activeDBSportLeagueSeason.id,
+        sportLeagueSeasonId: dbSportLeagueSeason.id,
         startSportLeagueWeekId: startDBSportLeagueWeek.id,
         endSportLeagueWeekId: endDBSportLeagueWeek.id,
         active: true,

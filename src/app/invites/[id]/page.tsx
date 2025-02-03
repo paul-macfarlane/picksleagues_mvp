@@ -15,7 +15,7 @@ import {
 } from "@/db/picksLeagueInvite";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { AUTH_URL } from "@/models/auth";
-import { getActiveDBPicksLeagueSeasonWithStartAndEndWeeks } from "@/db/picksLeagueSeasons";
+import { getNextDBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { upsertDBPicksLeagueStandings } from "@/db/picksLeagueStandings";
 
 export default async function InvitesPage(props: {
@@ -126,34 +126,14 @@ export default async function InvitesPage(props: {
     );
   }
 
-  const dbPicksLeagueSeason =
-    await getActiveDBPicksLeagueSeasonWithStartAndEndWeeks(dbLeague.id);
+  const dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(dbLeague.id);
   if (!dbPicksLeagueSeason) {
-    console.error(
-      `unable to find active season for pick league ${dbLeague.id}`,
-    );
+    console.error(`unable to find next season for pick league ${dbLeague.id}`);
 
     return (
       <ErrorPage
         title="Error"
         description="An unexpected error occurred. Please try again later."
-        buttonProps={{
-          link: "/dashboard",
-          text: "Back to Dashboard",
-        }}
-      />
-    );
-  }
-
-  const now = new Date();
-  if (
-    now >= dbPicksLeagueSeason.startWeek.startTime &&
-    now <= dbPicksLeagueSeason.endWeek.endTime
-  ) {
-    return (
-      <ErrorPage
-        title="Error"
-        description="Cannot join league while its in season."
         buttonProps={{
           link: "/dashboard",
           text: "Back to Dashboard",

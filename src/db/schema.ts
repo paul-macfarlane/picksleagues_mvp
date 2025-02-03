@@ -416,7 +416,6 @@ export const picksLeagueSeasons = sqliteTable("picks_league_seasons", {
   })
     .notNull()
     .references(() => sportLeagueWeeks.id, { onDelete: "cascade" }),
-  active: integer("active", { mode: "boolean" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

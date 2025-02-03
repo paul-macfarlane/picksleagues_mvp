@@ -2,7 +2,10 @@
 
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getDBPicksLeagueMember } from "@/db/picksLeagueMembers";
+import {
+  getDBPicksLeagueMember,
+  getPicksLeagueMemberCount,
+} from "@/db/picksLeagueMembers";
 import { UpdatePicksLeagueSchema } from "@/models/picksLeagues";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import {
@@ -13,6 +16,7 @@ import { withDBTransaction } from "@/db/transactions";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 import {
   getActiveDBPicksLeagueSeason,
+  getNextDBPicksLeagueSeason,
   updateDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
 import { canEditPicksLeagueSeasonSettings } from "@/shared/picksLeagues";
@@ -113,8 +117,30 @@ export async function updatePicksLeagueAction(
     };
   }
 
+  const memberCount = await getPicksLeagueMemberCount(parsed.data.id);
+  if (parsed.data.size < memberCount) {
+    return {
+      errors: {
+        size: `Cannot set league size less than current amount of members (${memberCount})`,
+      },
+    };
+  }
+
+  let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(parsed.data.id);
+  if (!dbPicksLeagueSeason) {
+    dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(parsed.data.id);
+  }
+  if (!dbPicksLeagueSeason) {
+    return {
+      errors: {
+        form: "Season not found.",
+      },
+    };
+  }
+
   const dbPicksLeagueDetails = await getPickLeagueSettingsDetails(
     parsed.data.id,
+    dbPicksLeagueSeason.id,
   );
   if (!dbPicksLeagueDetails) {
     return {
@@ -127,75 +153,68 @@ export async function updatePicksLeagueAction(
   const canEditSeasonSettings =
     canEditPicksLeagueSeasonSettings(dbPicksLeagueDetails);
   if (canEditSeasonSettings) {
-    await withDBTransaction(async (tx) => {
-      const startDBSportLeagueWeek = await getDBSportLeagueWeekById(
-        parsed.data.startSportLeagueWeekId,
-        tx,
-      );
-      if (!startDBSportLeagueWeek) {
-        console.error(
-          `Sport week with id ${parsed.data.startSportLeagueWeekId} not found.`,
+    try {
+      await withDBTransaction(async (tx) => {
+        const startDBSportLeagueWeek = await getDBSportLeagueWeekById(
+          parsed.data.startSportLeagueWeekId,
+          tx,
         );
-        return {
-          errors: {
-            startSportLeagueWeekId: "Invalid Start Week",
+        if (!startDBSportLeagueWeek) {
+          console.error(
+            `Sport week with id ${parsed.data.startSportLeagueWeekId} not found.`,
+          );
+
+          throw new Error("Invalid Start Week");
+        }
+
+        const endDBSportLeagueWeek = await getDBSportLeagueWeekById(
+          parsed.data.endSportLeagueWeekId,
+          tx,
+        );
+        if (!endDBSportLeagueWeek) {
+          console.error(
+            `Sports week with id ${parsed.data.endSportLeagueWeekId} not found.`,
+          );
+          throw new Error("Invalid End Week");
+        }
+
+        await updateDBPicksLeague(
+          parsed.data.id,
+          {
+            name: parsed.data.name,
+            logoUrl:
+              parsed.data.logoUrl.length > 0 ? parsed.data.logoUrl : null,
+            // sportLeagueId intentionally omitted because users are not allowed to change it
+            picksPerWeek: parsed.data.picksPerWeek,
+            pickType: parsed.data.pickType,
+            visibility: parsed.data.visibility,
+            size: parsed.data.size,
           },
-        };
+          tx,
+        );
+
+        await updateDBPicksLeagueSeason(
+          dbPicksLeagueSeason.id,
+          {
+            startSportLeagueWeekId: startDBSportLeagueWeek.id,
+            endSportLeagueWeekId: endDBSportLeagueWeek.id,
+          },
+          tx,
+        );
+      });
+    } catch (e) {
+      let message = "An unexpected error occurred, please try again later.";
+      if (e instanceof Error) {
+        console.error(e);
+        message = e.message;
       }
 
-      const endDBSportLeagueWeek = await getDBSportLeagueWeekById(
-        parsed.data.endSportLeagueWeekId,
-        tx,
-      );
-      if (!endDBSportLeagueWeek) {
-        console.error(
-          `Sports week with id ${parsed.data.endSportLeagueWeekId} not found.`,
-        );
-        return {
-          errors: {
-            endSportLeagueWeekId: "Invalid End Week",
-          },
-        };
-      }
-
-      const activeDBPicksLeagueSeason = await getActiveDBPicksLeagueSeason(
-        parsed.data.id,
-        tx,
-      );
-      if (!activeDBPicksLeagueSeason) {
-        console.error(
-          `Active season not found for league with id ${parsed.data.id}.`,
-        );
-        return {
-          errors: {
-            form: "Active season not found.",
-          },
-        };
-      }
-
-      await updateDBPicksLeague(
-        parsed.data.id,
-        {
-          name: parsed.data.name,
-          logoUrl: parsed.data.logoUrl.length > 0 ? parsed.data.logoUrl : null,
-          // sportLeagueId intentionally omitted because users are not allowed to change it
-          picksPerWeek: parsed.data.picksPerWeek,
-          pickType: parsed.data.pickType,
-          visibility: parsed.data.visibility,
-          size: parsed.data.size,
+      return {
+        errors: {
+          form: message,
         },
-        tx,
-      );
-
-      await updateDBPicksLeagueSeason(
-        activeDBPicksLeagueSeason.id,
-        {
-          startSportLeagueWeekId: startDBSportLeagueWeek.id,
-          endSportLeagueWeekId: endDBSportLeagueWeek.id,
-        },
-        tx,
-      );
-    });
+      };
+    }
   } else {
     await updateDBPicksLeague(parsed.data.id, {
       name: parsed.data.name,

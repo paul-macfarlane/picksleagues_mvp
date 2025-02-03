@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -16,7 +11,6 @@ import {
 import FilterLeaguesForm from "@/app/(main)/picks-leagues/join/filter-leagues-form";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getAllDBSportLeaguesWithActiveSeason } from "@/db/sportLeagues";
 import { filterDBPicksLeagues } from "@/db/picksLeagues";
 import { z } from "zod";
 import {
@@ -28,6 +22,7 @@ import {
 } from "@/models/picksLeagues";
 import { JoinLeagueForm } from "@/app/(main)/picks-leagues/join/join-league-form";
 import { AUTH_URL } from "@/models/auth";
+import { getActiveOrNextSportLeagueSeasonsDetails } from "@/services/sportLeagues";
 
 const MAX_VISIBLE_PAGES = 5;
 const PAGE_SIZE = 6;
@@ -171,8 +166,11 @@ export default async function JoinLeagues(props: {
     }
   }
 
+  const dbSportLeagues = await getActiveOrNextSportLeagueSeasonsDetails();
+
   const { leagues, total } = await filterDBPicksLeagues(
     {
+      sportLeagueSeasonIds: dbSportLeagues.map((league) => league.season.id),
       sportLeagueId,
       pickType,
       picksPerWeek,
@@ -187,8 +185,6 @@ export default async function JoinLeagues(props: {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const pages = getPages(currentPage, totalPages);
-
-  const dbSportLeagues = await getAllDBSportLeaguesWithActiveSeason();
 
   return (
     <div className="mx-auto w-full max-w-4xl">

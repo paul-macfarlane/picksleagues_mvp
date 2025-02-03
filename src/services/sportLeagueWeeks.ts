@@ -23,12 +23,12 @@ export interface PrevAndNextDBWeek {
   nextWeek: DBSportLeagueWeek | null;
 }
 
-export async function getPrevAndNextDBWeekForPicksLeague(
-  picksLeagueId: string,
+export async function getPrevAndNextDBWeekForPicksLeagueSeason(
+  picksLeagueSeasonId: string,
   sportsLeagueWeekId: string,
 ): Promise<PrevAndNextDBWeek> {
   const dbSportWeeks =
-    await getDBSportLeagueWeeksForPicksLeagueSeason(picksLeagueId);
+    await getDBSportLeagueWeeksForPicksLeagueSeason(picksLeagueSeasonId);
   dbSportWeeks.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
 
   let previousWeek: DBSportLeagueWeek | null = null;
@@ -99,6 +99,8 @@ export async function upsertSportLeagueWeeksFromESPN(): Promise<
             ) ?? new Date(week.startDate),
         }));
 
+        dbSportLeagueTeamUpserts.push(...regularSeasonWeekUpserts);
+
         const postSeasonWeekUpserts = (
           await getESPNSportLeagueSeasonWeeks(
             dbSportLeague.espnSportSlug,
@@ -107,7 +109,14 @@ export async function upsertSportLeagueWeeksFromESPN(): Promise<
             ESPNSeasonType.POST_SEASON,
           )
         )
-          .filter((week) => week.text.toLowerCase() !== "pro bowl")
+          .filter(
+            (week) =>
+              week.text.toLowerCase() !== "pro bowl" &&
+              // have to filter out weeks with duplicate names between regular and post because ESPN's API has a bug where sometimes regular season weeks also show in the post season
+              regularSeasonWeekUpserts.findIndex(
+                (regWeek) => regWeek.name === week.text,
+              ) === -1,
+          )
           .map((week) => ({
             seasonId: dbSeason.id,
             name: week.text,
@@ -118,14 +127,14 @@ export async function upsertSportLeagueWeeksFromESPN(): Promise<
             pickLockTime: new Date(week.endDate),
           }));
 
-        dbSportLeagueTeamUpserts.push(
-          ...regularSeasonWeekUpserts,
-          ...postSeasonWeekUpserts,
-        );
+        dbSportLeagueTeamUpserts.push(...postSeasonWeekUpserts);
       }
     }
 
     if (dbSportLeagueTeamUpserts.length > 0) {
+      console.log("dbSportLeagueTeamUpserts", dbSportLeagueTeamUpserts);
+      // somehow by the time the weeks get here they get fucked up
+      // its actually a bug with espn
       dbSportLeagueWeeks = await upsertDBSportLeagueWeeks(
         dbSportLeagueTeamUpserts,
         tx,

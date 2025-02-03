@@ -8,6 +8,13 @@
       "when": 1738518215496,
       "tag": "0000_lean_tigra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1738525583668,
+      "tag": "0001_far_ultimo",
+      "breakpoints": true
     }
   ]
 }

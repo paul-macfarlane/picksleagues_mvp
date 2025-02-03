@@ -13,10 +13,19 @@ import {
 } from "@/db/sportLeagueWeeks";
 import { PicksLeaguePickTypes, PicksLeagueTabIds } from "@/models/picksLeagues";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
-import { getPrevAndNextDBWeekForPicksLeague } from "@/services/sportLeagueWeeks";
+import { getPrevAndNextDBWeekForPicksLeagueSeason } from "@/services/sportLeagueWeeks";
 import { UserPicks } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/league-picks/user-picks";
 import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/WeekSwitcher";
 import { DateDisplay } from "@/components/date-display";
+import {
+  getActiveDBPicksLeagueSeason,
+  getNextDBPicksLeagueSeason,
+  getPreviousDBPicksLeagueSeason,
+} from "@/db/picksLeagueSeasons";
+import {
+  DBSportLeagueSeason,
+  getDBSportLeagueSeasonById,
+} from "@/db/sportLeagueSeason";
 
 export interface LeaguePicksTabProps {
   picksLeagueId: string;
@@ -31,20 +40,88 @@ export async function LeaguePicksTab({
   userId,
   weekId,
 }: LeaguePicksTabProps) {
-  let selectedDBWeek: DBSportLeagueWeek | null;
-  const currentDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
-  if (weekId) {
-    selectedDBWeek = await getDBSportLeagueWeekById(weekId);
-  } else {
-    selectedDBWeek = currentDBWeek;
+  let currentOrNextSeason = "current";
+  let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(picksLeagueId);
+  if (!dbPicksLeagueSeason) {
+    currentOrNextSeason = "next";
+    dbPicksLeagueSeason = await getPreviousDBPicksLeagueSeason(picksLeagueId);
   }
-  if (!selectedDBWeek || !currentDBWeek) {
+
+  if (!dbPicksLeagueSeason) {
+    dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(picksLeagueId);
+    let dbSportLeagueSeason: DBSportLeagueSeason | null = null;
+    let dbSportLeagueStartWeek: DBSportLeagueWeek | null = null;
+    if (dbPicksLeagueSeason) {
+      dbSportLeagueSeason = await getDBSportLeagueSeasonById(
+        dbPicksLeagueSeason.sportLeagueSeasonId,
+      );
+      dbSportLeagueStartWeek = await getDBSportLeagueWeekById(
+        dbPicksLeagueSeason.startSportLeagueWeekId,
+      );
+    }
+
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>My Picks</CardTitle>
+          <CardTitle>
+            League Picks{" "}
+            {dbSportLeagueSeason && <>({dbSportLeagueSeason.name} season)</>}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          There are no picks to view now.{" "}
+          {dbSportLeagueStartWeek && (
+            <>
+              Wait until the season starts at{" "}
+              <DateDisplay
+                timestampMS={dbSportLeagueStartWeek.startTime.getTime()}
+              />
+            </>
+          )}{" "}
+          to view picks.
+        </CardContent>
+      </Card>
+    );
+  }
+
+  let selectedDBWeek: DBSportLeagueWeek | null;
+  if (weekId) {
+    selectedDBWeek = await getDBSportLeagueWeekById(weekId);
+    if (
+      !selectedDBWeek ||
+      selectedDBWeek.seasonId !== dbPicksLeagueSeason?.sportLeagueSeasonId
+    ) {
+      return (
+        <Card className="mx-auto w-full max-w-4xl">
+          <CardHeader>
+            <CardTitle>Error</CardTitle>
+            <CardDescription>Invalid week</CardDescription>
+          </CardHeader>
+          <CardContent>
+            Invalid week. Please select a different week.
+          </CardContent>
+        </Card>
+      );
+    }
+  } else if (currentOrNextSeason === "current") {
+    selectedDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
+  } else {
+    // get last week from previous season
+    selectedDBWeek = await getDBSportLeagueWeekById(
+      dbPicksLeagueSeason.endSportLeagueWeekId,
+    );
+  }
+
+  const dbSportLeagueSeason = await getDBSportLeagueSeasonById(
+    dbPicksLeagueSeason.sportLeagueSeasonId,
+  );
+  if (!selectedDBWeek || !dbSportLeagueSeason) {
+    return (
+      <Card className="mx-auto w-full max-w-4xl">
+        <CardHeader>
+          <CardTitle>Error</CardTitle>
           <CardDescription>
-            It is the off season. There are no picks to view.
+            An unexpected error occurred. Please come back later.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -52,8 +129,7 @@ export async function LeaguePicksTab({
   }
 
   const now = new Date();
-  const picksLocked =
-    selectedDBWeek.id === currentDBWeek.id && now < currentDBWeek.pickLockTime;
+  const picksLocked = now < selectedDBWeek.pickLockTime;
   let pickData: DBWeeklyPickDataByUser[] = [];
   if (!picksLocked) {
     pickData = await getLeagueDBWeeklyPickDataByUser(
@@ -70,10 +146,11 @@ export async function LeaguePicksTab({
     }
   }
 
-  const { previousWeek, nextWeek } = await getPrevAndNextDBWeekForPicksLeague(
-    picksLeagueId,
-    selectedDBWeek.id,
-  );
+  const { previousWeek, nextWeek } =
+    await getPrevAndNextDBWeekForPicksLeagueSeason(
+      dbPicksLeagueSeason.id,
+      selectedDBWeek.id,
+    );
 
   return (
     <div className={"flex flex-col items-center gap-2"}>
@@ -87,7 +164,9 @@ export async function LeaguePicksTab({
 
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>League Picks</CardTitle>
+          <CardTitle>
+            League Picks ({dbSportLeagueSeason.name} season)
+          </CardTitle>
           <span>View picks across the league for {selectedDBWeek.name}.</span>
         </CardHeader>
 
@@ -95,7 +174,9 @@ export async function LeaguePicksTab({
           {picksLocked && (
             <span>
               League Picks cannot be viewed until after pick lock time{" "}
-              <DateDisplay timestampMS={currentDBWeek.pickLockTime.getTime()} />
+              <DateDisplay
+                timestampMS={selectedDBWeek.pickLockTime.getTime()}
+              />
             </span>
           )}
 
