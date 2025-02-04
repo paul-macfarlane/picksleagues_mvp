@@ -1,5 +1,5 @@
 import { picksLeagueSeasons, picksLeagueStandings, users } from "@/db/schema";
-import { eq, getTableColumns, sql } from "drizzle-orm";
+import { and, eq, getTableColumns, sql } from "drizzle-orm";
 import { DBTransaction } from "@/db/transactions";
 import { db } from "@/db/client";
 import { DBUser } from "@/db/users";
@@ -110,4 +110,30 @@ export async function getDBPicksLeagueSeasonStandingsWithMembers(
     .innerJoin(users, eq(picksLeagueStandings.userId, users.id))
     .where(eq(picksLeagueSeasons.id, picksLeagueSeasonId))
     .orderBy(picksLeagueStandings.rank);
+}
+
+export async function deleteDBPicksLeagueStandingsRecord(
+  userId: string,
+  seasonId: string,
+  tx?: DBTransaction,
+): Promise<void> {
+  if (tx) {
+    await tx
+      .delete(picksLeagueStandings)
+      .where(
+        and(
+          eq(picksLeagueStandings.userId, userId),
+          eq(picksLeagueStandings.seasonId, seasonId),
+        ),
+      );
+  } else {
+    await db
+      .delete(picksLeagueStandings)
+      .where(
+        and(
+          eq(picksLeagueStandings.userId, userId),
+          eq(picksLeagueStandings.seasonId, seasonId),
+        ),
+      );
+  }
 }

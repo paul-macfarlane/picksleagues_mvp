@@ -599,7 +599,7 @@ export function PicksLeagueSettingsForm({
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant={"destructive"} className="w-full">
+              <Button type="button" variant={"destructive"} className="w-full">
                 Delete
               </Button>
             </AlertDialogTrigger>

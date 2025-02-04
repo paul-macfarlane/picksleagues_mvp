@@ -105,3 +105,29 @@ export async function getPicksLeagueMemberCount(
     .where(eq(picksLeagueMembers.leagueId, picksLeagueId));
   return result.length > 0 ? result[0].count : 0;
 }
+
+export async function deleteDBPicksLeagueMember(
+  userId: string,
+  leagueId: string,
+  tx?: DBTransaction,
+): Promise<void> {
+  if (tx) {
+    await tx
+      .delete(picksLeagueMembers)
+      .where(
+        and(
+          eq(picksLeagueMembers.userId, userId),
+          eq(picksLeagueMembers.leagueId, leagueId),
+        ),
+      );
+  } else {
+    await db
+      .delete(picksLeagueMembers)
+      .where(
+        and(
+          eq(picksLeagueMembers.userId, userId),
+          eq(picksLeagueMembers.leagueId, leagueId),
+        ),
+      );
+  }
+}
