@@ -146,10 +146,6 @@ export const MEMBER_PICKS_LEAGUE_TABS: PicksLeagueTab[] = [
     id: PicksLeagueTabIds.LEAGUE_PICKS,
     name: "League Picks",
   },
-];
-
-export const COMMISSIONER_PICKS_LEAGUE_TABS = [
-  ...MEMBER_PICKS_LEAGUE_TABS,
   {
     id: PicksLeagueTabIds.SETTINGS,
     name: "Settings",
