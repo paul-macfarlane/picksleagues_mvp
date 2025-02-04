@@ -42,6 +42,22 @@ export async function PicksLeagueMembersTab({
     dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
     memberUserId !== userId;
 
+  let canLeaveLeague =
+    dbLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER;
+  let cannotLeaveLeagueReason = "";
+  if (!canLeaveLeague) {
+    const otherCommissioners = dbLeagueMemberDetails.filter(
+      (member) =>
+        member.id !== userId &&
+        member.role === PicksLeagueMemberRoles.COMMISSIONER,
+    );
+    canLeaveLeague = otherCommissioners.length > 0;
+    if (!canLeaveLeague) {
+      cannotLeaveLeagueReason =
+        "You cannot leave the league until at least one other league member is made a commissioner";
+    }
+  }
+
   return (
     <>
       <Card className="mx-auto w-full max-w-4xl">
