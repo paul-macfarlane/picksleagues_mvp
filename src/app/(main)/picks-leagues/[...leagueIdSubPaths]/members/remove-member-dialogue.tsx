@@ -71,7 +71,9 @@ export function RemoveMemberDialogue({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogTitle>
+            Are you sure you want to remove this member?
+          </AlertDialogTitle>
           <AlertDialogDescription>
             The member will be removed from the league and no longer be able
             view league data or make picks. The member&#39;s historical

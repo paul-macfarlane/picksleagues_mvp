@@ -4,6 +4,7 @@ import {
   DBPicksLeagueMember,
   deleteDBPicksLeagueMember,
   getDBPicksLeagueMember,
+  getDBPicksLeagueMembersWithRole,
   updateDBPicksLeagueMember,
 } from "@/db/picksLeagueMembers";
 import {
@@ -92,18 +93,45 @@ export async function removePicksLeagueMember(
     throw new NotAllowedError("Cannot remove member in season");
   }
 
+  await removeUserLeagueData(userId, picksLeagueId);
+}
+
+async function removeUserLeagueData(userId: string, picksLeagueId: string) {
   // remove standings record from future season if it exists
   const nextPicksLeagueSeason = await getNextDBPicksLeagueSeason(picksLeagueId);
-
   await withDBTransaction(async (tx) => {
     if (nextPicksLeagueSeason) {
       await deleteDBPicksLeagueStandingsRecord(
-        memberUserId,
+        userId,
         nextPicksLeagueSeason.id,
         tx,
       );
     }
 
-    await deleteDBPicksLeagueMember(memberUserId, picksLeagueId, tx);
+    await deleteDBPicksLeagueMember(userId, picksLeagueId, tx);
   });
+}
+
+export async function leavePicksLeague(
+  userId: string,
+  picksLeagueId: string,
+): Promise<void> {
+  const userMember = await getDBPicksLeagueMember(picksLeagueId, userId);
+  if (!userMember) {
+    return; // user already is not a member
+  }
+
+  if (userMember.role === PicksLeagueMemberRoles.COMMISSIONER) {
+    const commissioners = await getDBPicksLeagueMembersWithRole(
+      picksLeagueId,
+      PicksLeagueMemberRoles.COMMISSIONER,
+    );
+    if (commissioners.length < 2) {
+      throw new NotAllowedError(
+        "Cannot leave league until at least one other member is given the commissioner role",
+      );
+    }
+  }
+
+  await removeUserLeagueData(userId, picksLeagueId);
 }

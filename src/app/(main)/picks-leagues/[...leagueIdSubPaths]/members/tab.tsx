@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RemoveMemberDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/remove-member-dialogue";
+import { LeaveLeagueDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/leave-league-dialogue";
 
 export interface PicksLeagueMembersTabProps {
   userId: string;
@@ -48,7 +49,7 @@ export async function PicksLeagueMembersTab({
           <CardTitle>League Members</CardTitle>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="space-y-4">
           <ul className="space-y-4">
             {dbLeagueMemberDetails.map((member) => (
               <li key={member.id} className="flex items-center justify-between">
@@ -123,6 +124,12 @@ export async function PicksLeagueMembersTab({
           {canSendInvite && (
             <PicksLeagueInviteDialog leagueId={dbLeagueWithUserRole.id} />
           )}
+
+          <LeaveLeagueDialogue
+            picksLeagueId={dbLeagueWithUserRole.id}
+            canLeaveLeague={canLeaveLeague}
+            cannotLeaveLeagueReason={cannotLeaveLeagueReason}
+          />
         </CardContent>
       </Card>
 

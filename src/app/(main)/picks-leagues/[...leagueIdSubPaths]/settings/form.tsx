@@ -605,7 +605,9 @@ export function PicksLeagueSettingsForm({
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogTitle>
+                  Are you sure you want to delete this league?
+                </AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete the
                   league and all of its history.
