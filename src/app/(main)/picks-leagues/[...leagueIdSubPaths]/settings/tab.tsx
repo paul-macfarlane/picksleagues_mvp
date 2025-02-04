@@ -10,8 +10,10 @@ import { getActiveOrNextSportLeagueSeasonsDetails } from "@/services/sportLeague
 import { getDBSportLeagueSeasonById } from "@/db/sportLeagueSeason";
 
 export async function PicksLeagueSettingsTab({
+  readonly,
   dbPicksLeague,
 }: {
+  readonly: boolean;
   dbPicksLeague: DBPicksLeague;
 }) {
   let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(
@@ -50,14 +52,15 @@ export async function PicksLeagueSettingsTab({
   }
 
   const canEditSeasonSettings =
-    canEditPicksLeagueSeasonSettings(dbPicksLeagueDetails);
+    !readonly && canEditPicksLeagueSeasonSettings(dbPicksLeagueDetails);
   const dbSportLeagueDetails = await getActiveOrNextSportLeagueSeasonsDetails();
 
   return (
     <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
         <CardTitle>
-          Edit League Settings ({dbSportsLeagueSeason.name} season)
+          {!readonly && <>Edit</>}
+          League Settings ({dbSportsLeagueSeason.name} season)
         </CardTitle>
       </CardHeader>
 
@@ -65,6 +68,7 @@ export async function PicksLeagueSettingsTab({
         sportLeagues={dbSportLeagueDetails}
         picksLeague={dbPicksLeagueDetails}
         canEditSeasonSettings={canEditSeasonSettings}
+        readonly={readonly}
       />
     </Card>
   );

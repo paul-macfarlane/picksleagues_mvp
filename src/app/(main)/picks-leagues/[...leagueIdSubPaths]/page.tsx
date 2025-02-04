@@ -4,9 +4,8 @@ import LeagueTabs, {
 } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/tabs";
 import { getDBPicksLeagueByIdWithUserRole } from "@/db/picksLeagues";
 import {
-  COMMISSIONER_PICKS_LEAGUE_TABS,
-  PicksLeagueTabIds,
   MEMBER_PICKS_LEAGUE_TABS,
+  PicksLeagueTabIds,
 } from "@/models/picksLeagues";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -91,10 +90,8 @@ export default async function PicksLeaguePage(props: {
     weekId = searchParamWeekIdParsed.data;
   }
 
-  let tabs = MEMBER_PICKS_LEAGUE_TABS;
-  if (dbPicksLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER) {
-    tabs = COMMISSIONER_PICKS_LEAGUE_TABS;
-  }
+  const tabs = MEMBER_PICKS_LEAGUE_TABS;
+
   let selectedTabId = PicksLeagueTabIds.MEMBERS;
   let selectedTabContent = <>Default (should not happen)</>;
   if (
@@ -143,21 +140,14 @@ export default async function PicksLeaguePage(props: {
       `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.SETTINGS}`,
     )
   ) {
-    if (
-      dbPicksLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER
-    ) {
-      return (
-        <ErrorComponent
-          message={
-            "You don't have permissions to view this page. Please return to your dashboard."
-          }
-        />
-      );
-    }
-
     selectedTabId = PicksLeagueTabIds.SETTINGS;
     selectedTabContent = (
-      <PicksLeagueSettingsTab dbPicksLeague={dbPicksLeagueWithUserRole} />
+      <PicksLeagueSettingsTab
+        readonly={
+          dbPicksLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER
+        }
+        dbPicksLeague={dbPicksLeagueWithUserRole}
+      />
     );
   } else if (
     pathname?.startsWith(
