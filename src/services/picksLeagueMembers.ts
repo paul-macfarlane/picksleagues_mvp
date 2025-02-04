@@ -121,6 +121,11 @@ export async function leavePicksLeague(
     return; // user already is not a member
   }
 
+  const leagueIsInSeason = await picksLeagueIsInSeason(picksLeagueId);
+  if (leagueIsInSeason) {
+    throw new NotAllowedError("Cannot leave league in season");
+  }
+
   if (userMember.role === PicksLeagueMemberRoles.COMMISSIONER) {
     const commissioners = await getDBPicksLeagueMembersWithRole(
       picksLeagueId,
