@@ -42,6 +42,7 @@ export async function PicksLeagueMembersTab({
     dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
     memberUserId !== userId;
 
+  // note also leave league dialogue will not even be visible while in season
   let canLeaveLeague =
     dbLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER;
   let cannotLeaveLeagueReason = "";
@@ -141,11 +142,13 @@ export async function PicksLeagueMembersTab({
             <PicksLeagueInviteDialog leagueId={dbLeagueWithUserRole.id} />
           )}
 
-          <LeaveLeagueDialogue
-            picksLeagueId={dbLeagueWithUserRole.id}
-            canLeaveLeague={canLeaveLeague}
-            cannotLeaveLeagueReason={cannotLeaveLeagueReason}
-          />
+          {!leagueIsInSeason && (
+            <LeaveLeagueDialogue
+              picksLeagueId={dbLeagueWithUserRole.id}
+              canLeaveLeague={canLeaveLeague}
+              cannotLeaveLeagueReason={cannotLeaveLeagueReason}
+            />
+          )}
         </CardContent>
       </Card>
 
