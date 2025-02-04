@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
-import { deletePicksLeague } from "@/services/picksLeagues";
 import { ApplicationError } from "@/models/errors";
+import { removePicksLeagueMember } from "@/services/picksLeagueMembers";
 import { NextRequest } from "next/server";
 
 export async function DELETE(
@@ -8,7 +8,7 @@ export async function DELETE(
   {
     params,
   }: {
-    params: Promise<{ leagueId: string }>;
+    params: Promise<{ userId: string; leagueId: string }>;
   },
 ) {
   const session = await auth();
@@ -21,9 +21,10 @@ export async function DELETE(
     );
   }
 
-  const leagueId = (await params).leagueId;
+  const { leagueId, userId: memberUserId } = await params;
+
   try {
-    await deletePicksLeague(session.user.id, leagueId);
+    await removePicksLeagueMember(session.user.id, leagueId, memberUserId);
   } catch (e) {
     let status = 500;
     let message = "Internal Server Error";

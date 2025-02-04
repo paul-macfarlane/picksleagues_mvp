@@ -16,6 +16,7 @@ import { DBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 import { useToast } from "@/hooks/use-toast";
 import axios, { AxiosError } from "axios";
 import { useState } from "react";
+import { Label } from "@/components/ui/label";
 
 export interface MemberRoleSwitcherProps {
   currentUserId: string;
@@ -64,24 +65,27 @@ export function MemberRoleSwitcher({
   };
 
   return (
-    <Select onValueChange={onChangeRole} defaultValue={member.role}>
-      <SelectTrigger
-        className="w-[150px] md:w-[180px]"
-        disabled={member.id === currentUserId || submitting}
-      >
-        <SelectValue placeholder="Select a role" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {PICKS_LEAGUE_MEMBER_ROLES_VALUES.filter(
-            (role) => role !== PicksLeagueMemberRoles.NONE,
-          ).map((role) => (
-            <SelectItem key={role} value={role}>
-              {role}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    <Label className={"flex w-full items-center justify-between gap-2"}>
+      Member Role
+      <Select onValueChange={onChangeRole} defaultValue={member.role}>
+        <SelectTrigger
+          className="w-[150px] md:w-[180px]"
+          disabled={member.id === currentUserId || submitting}
+        >
+          <SelectValue placeholder="Select a role" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {PICKS_LEAGUE_MEMBER_ROLES_VALUES.filter(
+              (role) => role !== PicksLeagueMemberRoles.NONE,
+            ).map((role) => (
+              <SelectItem key={role} value={role}>
+                {role}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </Label>
   );
 }

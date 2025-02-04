@@ -2,11 +2,21 @@ import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PicksLeagueInviteDialog } from "./invite-dialog";
-import { Users } from "lucide-react";
+import { UserPen, Users } from "lucide-react";
 import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 import { picksLeagueIsInSeason } from "@/services/picksLeagues";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { MemberRoleSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/member-role-switcher";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { RemoveMemberDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/remove-member-dialogue";
 
 export interface PicksLeagueMembersTabProps {
   userId: string;
@@ -21,16 +31,15 @@ export async function PicksLeagueMembersTab({
     dbLeagueWithUserRole.id,
   );
 
-  let canSendInvite = false;
-  if (
+  const leagueIsInSeason = await picksLeagueIsInSeason(dbLeagueWithUserRole.id);
+  const canSendInvite =
     dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
-    dbLeagueMemberDetails.length < dbLeagueWithUserRole.size
-  ) {
-    const leagueIsInSeason = await picksLeagueIsInSeason(
-      dbLeagueWithUserRole.id,
-    );
-    canSendInvite = !leagueIsInSeason;
-  }
+    dbLeagueMemberDetails.length < dbLeagueWithUserRole.size &&
+    !leagueIsInSeason;
+  const canRemoveUser = (memberUserId: string) =>
+    !leagueIsInSeason &&
+    dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
+    memberUserId !== userId;
 
   return (
     <>
@@ -59,16 +68,42 @@ export async function PicksLeagueMembersTab({
 
                   {dbLeagueWithUserRole.role ===
                   PicksLeagueMemberRoles.COMMISSIONER ? (
-                    <div className="md:text-md flex w-full items-center justify-between text-sm">
+                    <div className="md:text-md flex w-full items-center justify-between gap-2 text-sm">
                       <span className="font-medium">
                         {member.username} ({member.firstName} {member.lastName})
                       </span>
 
-                      <MemberRoleSwitcher
-                        currentUserId={userId}
-                        member={member}
-                        picksLeagueId={dbLeagueWithUserRole.id}
-                      />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="secondary">
+                            <UserPen /> Edit
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit Member</DialogTitle>
+                            <DialogDescription></DialogDescription>
+                          </DialogHeader>
+
+                          <div className="flex w-full flex-col gap-2">
+                            <MemberRoleSwitcher
+                              currentUserId={userId}
+                              member={member}
+                              picksLeagueId={dbLeagueWithUserRole.id}
+                            />
+
+                            <div className="flex w-full items-center justify-between">
+                              <span>Remove Member</span>
+
+                              <RemoveMemberDialogue
+                                disabled={!canRemoveUser(member.id)}
+                                memberUserId={member.id}
+                                picksLeagueId={dbLeagueWithUserRole.id}
+                              />
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   ) : (
                     <div className="md:text-md text-sm">
