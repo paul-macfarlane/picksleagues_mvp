@@ -57,6 +57,19 @@ export async function updatePicksLeagueMemberRole(
     throw new NotFoundError("League member does not exist");
   }
 
+  // If user is trying to edit their own role, check if they're not the only commissioner
+  if (parsedInput.data.userId === parsedInput.data.memberId) {
+    const commissioners = await getDBPicksLeagueMembersWithRole(
+      parsedInput.data.leagueId,
+      PicksLeagueMemberRoles.COMMISSIONER,
+    );
+    if (commissioners.length < 2) {
+      throw new NotAllowedError(
+        "Cannot change your role when you are the only commissioner",
+      );
+    }
+  }
+
   const updatedRecord = await updateDBPicksLeagueMember({
     leagueId: parsedInput.data.leagueId,
     userId: parsedInput.data.memberId,
