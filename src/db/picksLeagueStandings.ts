@@ -1,5 +1,10 @@
-import { picksLeagueSeasons, picksLeagueStandings, users } from "@/db/schema";
-import { and, eq, getTableColumns, sql } from "drizzle-orm";
+import {
+  picksLeagueSeasons,
+  picksLeagueStandings,
+  sportLeagueWeeks,
+  users,
+} from "@/db/schema";
+import { and, eq, getTableColumns, gt, inArray, sql } from "drizzle-orm";
 import { DBTransaction } from "@/db/transactions";
 import { db } from "@/db/client";
 import { DBUser } from "@/db/users";
@@ -135,5 +140,47 @@ export async function deleteDBPicksLeagueStandingsRecord(
           eq(picksLeagueStandings.seasonId, seasonId),
         ),
       );
+  }
+}
+
+export async function getUserDBPicksLeagueStandingsForFutureSeasons(
+  userId: string,
+): Promise<DBPicksLeagueStandings[]> {
+  const now = new Date();
+  const queryRows = await db
+    .select({
+      standings: getTableColumns(picksLeagueStandings),
+    })
+    .from(picksLeagueStandings)
+    .innerJoin(
+      picksLeagueSeasons,
+      eq(picksLeagueSeasons.id, picksLeagueStandings.seasonId),
+    )
+    .innerJoin(
+      sportLeagueWeeks,
+      eq(picksLeagueSeasons.startSportLeagueWeekId, sportLeagueWeeks.id),
+    )
+    .where(
+      and(
+        eq(picksLeagueStandings.userId, userId),
+        gt(sportLeagueWeeks.startTime, now),
+      ),
+    );
+
+  return queryRows.map((row) => row.standings);
+}
+
+export async function deleteDBPicksLeagueStandingsByIds(
+  ids: string[],
+  tx?: DBTransaction,
+): Promise<void> {
+  if (tx) {
+    await tx
+      .delete(picksLeagueStandings)
+      .where(inArray(picksLeagueStandings.id, ids));
+  } else {
+    await db
+      .delete(picksLeagueStandings)
+      .where(inArray(picksLeagueStandings.id, ids));
   }
 }

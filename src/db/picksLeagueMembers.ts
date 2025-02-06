@@ -146,3 +146,18 @@ export async function getDBPicksLeagueMembersWithRole(
       ),
     );
 }
+
+export async function deleteUserDBPicksLeagueMemberships(
+  userId: string,
+  tx?: DBTransaction,
+): Promise<void> {
+  if (tx) {
+    await tx
+      .delete(picksLeagueMembers)
+      .where(eq(picksLeagueMembers.userId, userId));
+  } else {
+    await db
+      .delete(picksLeagueMembers)
+      .where(eq(picksLeagueMembers.userId, userId));
+  }
+}

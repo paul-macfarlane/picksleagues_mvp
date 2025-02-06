@@ -23,6 +23,20 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { isUrl } from "@/shared/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import axios, { AxiosError } from "axios";
 
 type FormSchema = z.infer<typeof UpdateProfileFormSchema>;
 
@@ -34,11 +48,17 @@ interface UpdateProfileFormProps {
     imageUrl?: string;
   };
   postSubmitUrl?: string;
+  showDelete: boolean;
+  canDelete: boolean;
+  cannotDeleteReason: string;
 }
 
 export default function UpdateProfileForm({
   defaultValues,
   postSubmitUrl,
+  showDelete,
+  canDelete,
+  cannotDeleteReason,
 }: UpdateProfileFormProps) {
   const router = useRouter();
 
@@ -65,6 +85,35 @@ export default function UpdateProfileForm({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const onDeleteAccount = async () => {
+    try {
+      setDeleteSubmitting(true);
+
+      await axios.delete(`${process.env.NEXT_PUBLIC_HOST!}/api/users`);
+
+      toast({
+        title: "Account Deleted!",
+        description: "Your account has been deleted.",
+      });
+      router.push(`/`);
+      router.refresh(); // refresh to update profile menu
+    } catch (e) {
+      let description = "An unexpected error occurred, please try again later.";
+      if (e instanceof AxiosError && e.response?.data.error) {
+        description = e.response.data.error;
+      }
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description,
+      });
+
+      setDeleteSubmitting(false);
+    }
+  };
 
   // needed to give time to give client side image to load
   if (!mounted) {
@@ -216,6 +265,71 @@ export default function UpdateProfileForm({
             <p className="text-sm font-medium text-destructive">
               {formState.errors.form}
             </p>
+          )}
+
+          <Separator />
+
+          {showDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="w-full" variant="destructive">
+                  <Trash /> Delete Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  {!canDelete && (
+                    <>
+                      <AlertDialogTitle>
+                        Cannot delete account yet
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {cannotDeleteReason}
+                      </AlertDialogDescription>
+                    </>
+                  )}
+
+                  {canDelete && (
+                    <>
+                      <AlertDialogTitle>
+                        Are you sure you want to delete your account?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This cannot be undone You will not be able to sign into
+                        this account again and all of your personal information
+                        will be deleted. Your historical data in picks leagues
+                        such as picks and standings will be retained but
+                        anonymized. You can re-create a new account with the
+                        same email you used for this one, but you cannot
+                        re-attach your historical data like picks or standings.
+                      </AlertDialogDescription>
+                    </>
+                  )}
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                  {!canDelete && (
+                    <>
+                      <AlertDialogCancel>Ok</AlertDialogCancel>
+                    </>
+                  )}
+
+                  {canDelete && (
+                    <>
+                      <AlertDialogCancel disabled={deleteSubmitting}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={onDeleteAccount}
+                        disabled={deleteSubmitting}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </>
+                  )}
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </CardFooter>
       </form>

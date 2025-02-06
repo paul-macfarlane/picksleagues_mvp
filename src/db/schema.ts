@@ -48,10 +48,14 @@ export const users = sqliteTable("users", {
   name: text("name"),
   firstName: text("first_name", { length: MAX_FIRST_NAME_LENGTH }),
   lastName: text("last_name", { length: MAX_LAST_NAME_LENGTH }),
-  email: text("email").unique(),
+  // note this is NOT unique to allow deactivated accounts to share the same email (they'll never be able to log in using this email)
+  // the business logic of the app will make sure that real users don't have the same email
+  email: text("email"),
   emailVerified: integer("email_verified", { mode: "timestamp_ms" }),
   image: text("image", { length: IMG_URL_MAX_LENGTH }),
-  username: text("username", { length: MAX_USERNAME_LENGTH }).unique(),
+  // note this is not unique to allow deactivated accounts to share the same username
+  // the business logic of the app will make sure that real users don't have the same username
+  username: text("username", { length: MAX_USERNAME_LENGTH }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

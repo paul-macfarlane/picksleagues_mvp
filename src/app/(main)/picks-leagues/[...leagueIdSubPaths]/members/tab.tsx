@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RemoveMemberDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/remove-member-dialogue";
 import { LeaveLeagueDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/leave-league-dialogue";
+import { Separator } from "@/components/ui/separator";
 
 export interface PicksLeagueMembersTabProps {
   userId: string;
@@ -111,7 +112,7 @@ export async function PicksLeagueMembersTab({
                             />
 
                             <div className="flex w-full items-center justify-between">
-                              <span>Remove Member</span>
+                              <span className="text-sm">Remove Member</span>
 
                               <RemoveMemberDialogue
                                 disabled={!canRemoveUser(member.id)}
@@ -143,11 +144,15 @@ export async function PicksLeagueMembersTab({
           )}
 
           {!leagueIsInSeason && (
-            <LeaveLeagueDialogue
-              picksLeagueId={dbLeagueWithUserRole.id}
-              canLeaveLeague={canLeaveLeague}
-              cannotLeaveLeagueReason={cannotLeaveLeagueReason}
-            />
+            <>
+              <Separator />
+
+              <LeaveLeagueDialogue
+                picksLeagueId={dbLeagueWithUserRole.id}
+                canLeaveLeague={canLeaveLeague}
+                cannotLeaveLeagueReason={cannotLeaveLeagueReason}
+              />
+            </>
           )}
         </CardContent>
       </Card>

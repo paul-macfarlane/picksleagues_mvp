@@ -10,6 +10,11 @@ import { redirect } from "next/navigation";
 import { getDBUserById } from "@/db/users";
 import { z } from "zod";
 import { AUTH_URL } from "@/models/auth";
+import { DBPicksLeagueWithMembers } from "@/db/picksLeagues";
+import {
+  cannotDeleteSoloCommissionerErrorMessage,
+  getLeaguesUserSoloCommissionerOf,
+} from "@/services/users";
 
 export default async function Profile(props: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
@@ -36,6 +41,22 @@ export default async function Profile(props: {
     return redirect(postSubmitUrl);
   }
 
+  let leaguesSoloCommissionerOf: DBPicksLeagueWithMembers[] = [];
+  let canDelete = false;
+  let cannotDeleteReason = "";
+  if (updateMode === "update") {
+    leaguesSoloCommissionerOf = await getLeaguesUserSoloCommissionerOf(
+      dbUser.id,
+    );
+    if (leaguesSoloCommissionerOf.length > 0) {
+      cannotDeleteReason = cannotDeleteSoloCommissionerErrorMessage(
+        leaguesSoloCommissionerOf,
+      );
+    } else {
+      canDelete = true;
+    }
+  }
+
   return (
     <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
@@ -56,6 +77,9 @@ export default async function Profile(props: {
           imageUrl: dbUser.image ?? undefined,
         }}
         postSubmitUrl={updateMode === "signup" ? postSubmitUrl : undefined}
+        showDelete={updateMode === "update"}
+        canDelete={canDelete}
+        cannotDeleteReason={cannotDeleteReason}
       />
     </Card>
   );
