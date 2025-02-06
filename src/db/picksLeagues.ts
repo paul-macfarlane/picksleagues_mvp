@@ -409,7 +409,7 @@ export async function updateDBPicksLeague(
 }
 
 export interface DBPicksLeagueWithMember extends DBPicksLeague {
-  DBPicksLeagueWithMember: DBPicksLeagueMember;
+  member: DBPicksLeagueMember;
 }
 
 export async function getDBPicksLeagueWithMember(
@@ -432,7 +432,7 @@ export async function getDBPicksLeagueWithMember(
 
   return {
     ...queryRows[0].picks_leagues,
-    DBPicksLeagueWithMember: queryRows[0].picks_league_members,
+    member: queryRows[0].picks_league_members,
   };
 }
 
@@ -440,4 +440,46 @@ export async function deleteDBPicksLeague(leagueId: string): Promise<void> {
   await db.delete(picksLeagues).where(eq(picksLeagues.id, leagueId));
 
   return;
+}
+
+export interface DBPicksLeagueWithMembers extends DBPicksLeague {
+  members: DBPicksLeagueMember[];
+}
+
+export async function getUserDBPicksLeaguesWithMembers(
+  userId: string,
+): Promise<DBPicksLeagueWithMembers[]> {
+  const otherMembersAlias = aliasedTable(
+    picksLeagueMembers,
+    "otherMembersAlias",
+  );
+  const queryRows = await db
+    .select({
+      league: getTableColumns(picksLeagues),
+      member: getTableColumns(otherMembersAlias),
+    })
+    .from(picksLeagueMembers)
+    .innerJoin(picksLeagues, eq(picksLeagueMembers.leagueId, picksLeagues.id))
+    .innerJoin(
+      otherMembersAlias,
+      eq(otherMembersAlias.leagueId, picksLeagues.id),
+    )
+    .where(eq(picksLeagueMembers.userId, userId));
+
+  const leaguesWithMembers: DBPicksLeagueWithMembers[] = [];
+  queryRows.forEach((row) => {
+    const indexOfLeague = leaguesWithMembers.findIndex(
+      (league) => league.id === row.league.id,
+    );
+    if (indexOfLeague > -1) {
+      leaguesWithMembers[indexOfLeague].members.push(row.member);
+    } else {
+      leaguesWithMembers.push({
+        ...row.league,
+        members: [row.member],
+      });
+    }
+  });
+
+  return leaguesWithMembers;
 }
