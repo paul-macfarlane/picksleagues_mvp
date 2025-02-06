@@ -1,10 +1,11 @@
+"use client";
+
 import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PicksLeagueInviteDialog } from "./invite-dialog";
 import { UserPen, Users } from "lucide-react";
-import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
-import { picksLeagueIsInSeason } from "@/services/picksLeagues";
+import { DBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { MemberRoleSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/member-role-switcher";
 import {
@@ -19,24 +20,29 @@ import { Button } from "@/components/ui/button";
 import { RemoveMemberDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/remove-member-dialogue";
 import { LeaveLeagueDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/leave-league-dialogue";
 import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
 
 export interface PicksLeagueMembersTabProps {
   userId: string;
   dbLeagueWithUserRole: DBPicksLeagueWithUserRole;
+  dbLeagueMemberDetails: DBPicksLeagueMemberDetails[];
+  leagueIsInSeason: boolean;
 }
 
-export async function PicksLeagueMembersTab({
+export function PicksLeagueMembersTab({
   userId,
   dbLeagueWithUserRole,
+  dbLeagueMemberDetails,
+  leagueIsInSeason,
 }: PicksLeagueMembersTabProps) {
-  const dbLeagueMemberDetails = await getDBPicksLeagueMemberDetails(
-    dbLeagueWithUserRole.id,
-  );
+  const [memberDetails, setMemberDetails] = useState(dbLeagueMemberDetails);
+  const commissionerCount = memberDetails.filter(
+    (member) => member.role === PicksLeagueMemberRoles.COMMISSIONER,
+  ).length;
 
-  const leagueIsInSeason = await picksLeagueIsInSeason(dbLeagueWithUserRole.id);
   const canSendInvite =
     dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
-    dbLeagueMemberDetails.length < dbLeagueWithUserRole.size &&
+    memberDetails.length < dbLeagueWithUserRole.size &&
     !leagueIsInSeason;
   const canRemoveUser = (memberUserId: string) =>
     !leagueIsInSeason &&
@@ -48,7 +54,7 @@ export async function PicksLeagueMembersTab({
     dbLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER;
   let cannotLeaveLeagueReason = "";
   if (!canLeaveLeague) {
-    const otherCommissioners = dbLeagueMemberDetails.filter(
+    const otherCommissioners = memberDetails.filter(
       (member) =>
         member.id !== userId &&
         member.role === PicksLeagueMemberRoles.COMMISSIONER,
@@ -69,7 +75,7 @@ export async function PicksLeagueMembersTab({
 
         <CardContent className="space-y-4">
           <ul className="space-y-4">
-            {dbLeagueMemberDetails.map((member) => (
+            {memberDetails.map((member) => (
               <li key={member.id} className="flex items-center justify-between">
                 <div className="flex w-full items-center gap-2">
                   <Avatar className={"hidden md:block"}>
@@ -109,6 +115,16 @@ export async function PicksLeagueMembersTab({
                               currentUserId={userId}
                               member={member}
                               picksLeagueId={dbLeagueWithUserRole.id}
+                              commissionerCount={commissionerCount}
+                              onRoleChange={(newRole) => {
+                                setMemberDetails(
+                                  memberDetails.map((m) =>
+                                    m.id === member.id
+                                      ? { ...m, role: newRole }
+                                      : m,
+                                  ),
+                                );
+                              }}
                             />
 
                             <div className="flex w-full items-center justify-between">
@@ -164,7 +180,7 @@ export async function PicksLeagueMembersTab({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {dbLeagueMemberDetails.length} / {dbLeagueWithUserRole.size}
+            {memberDetails.length} / {dbLeagueWithUserRole.size}
           </div>
         </CardContent>
       </Card>

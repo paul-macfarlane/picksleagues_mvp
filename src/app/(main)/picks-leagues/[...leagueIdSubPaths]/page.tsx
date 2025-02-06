@@ -18,6 +18,8 @@ import { LeaguePicksTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]
 import { getDBUserById } from "@/db/users";
 import { PicksLeagueStandingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/standings/tab";
 import { AUTH_URL } from "@/models/auth";
+import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
+import { picksLeagueIsInSeason } from "@/services/picksLeagues";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -99,10 +101,19 @@ export default async function PicksLeaguePage(props: {
       `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.MEMBERS}`,
     )
   ) {
+    const dbLeagueMemberDetails = await getDBPicksLeagueMemberDetails(
+      dbPicksLeagueWithUserRole.id,
+    );
+    const leagueIsInSeason = await picksLeagueIsInSeason(
+      dbPicksLeagueWithUserRole.id,
+    );
+
     selectedTabContent = (
       <PicksLeagueMembersTab
         userId={dbUser.id}
         dbLeagueWithUserRole={dbPicksLeagueWithUserRole}
+        dbLeagueMemberDetails={dbLeagueMemberDetails}
+        leagueIsInSeason={leagueIsInSeason}
       />
     );
   } else if (
