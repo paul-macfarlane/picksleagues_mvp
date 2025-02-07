@@ -57,37 +57,19 @@ import axios, { AxiosError } from "axios";
 
 type FormSchema = z.infer<typeof UpdatePicksLeagueSchema>;
 
-function getDefaultSportStartWeekId(
-  sportLeague: DBSportLeagueWithSeasonDetail,
-): string {
-  return sportLeague.season.weeks.length ? sportLeague.season.weeks[0].id : "";
-}
-
-function getDefaultSportEndWeekId(
-  sportLeague: DBSportLeagueWithSeasonDetail,
-): string {
-  return sportLeague.season.weeks.length
-    ? sportLeague.season.weeks[sportLeague.season.weeks.length - 1].id
-    : "";
-}
-
 export function PicksLeagueSettingsForm({
-  sportLeagues,
+  sportLeague,
   picksLeague,
   canEditSeasonSettings,
   readonly,
 }: {
-  sportLeagues: DBSportLeagueWithSeasonDetail[];
+  sportLeague: DBSportLeagueWithSeasonDetail;
   picksLeague: DBPicksLeagueSettingDetails;
   canEditSeasonSettings: boolean;
   readonly: boolean;
 }) {
-  const defaultStartSportLeagueWeekId = sportLeagues.length
-    ? picksLeague.startSportLeagueWeek.id
-    : "";
-  const defaultEndSportLeagueWeekId = sportLeagues.length
-    ? picksLeague.endSportLeagueWeek.id
-    : "";
+  const defaultStartSportLeagueWeekId = picksLeague.startSportLeagueWeek.id;
+  const defaultEndSportLeagueWeekId = picksLeague.endSportLeagueWeek.id;
 
   const [formState, formAction] = useActionState(updatePicksLeagueAction, {});
   const form = useForm<FormSchema>({
@@ -100,8 +82,8 @@ export function PicksLeagueSettingsForm({
       visibility: picksLeague.visibility,
       pickType: picksLeague.pickType,
       picksPerWeek: picksLeague.picksPerWeek,
-      startSportLeagueWeekId: picksLeague.startSportLeagueWeek.id,
-      endSportLeagueWeekId: picksLeague.endSportLeagueWeek.id,
+      startSportLeagueWeekId: defaultStartSportLeagueWeekId,
+      endSportLeagueWeekId: defaultEndSportLeagueWeekId,
       size: picksLeague.size,
     },
   });
@@ -113,8 +95,7 @@ export function PicksLeagueSettingsForm({
 
   let defaultSportLeagueWeeks = [];
   if (canEditSeasonSettings) {
-    defaultSportLeagueWeeks =
-      sportLeagues.length > 0 ? sportLeagues[0].season.weeks : [];
+    defaultSportLeagueWeeks = sportLeague.season.weeks;
   } else {
     defaultSportLeagueWeeks = [
       picksLeague.startSportLeagueWeek,
@@ -134,11 +115,6 @@ export function PicksLeagueSettingsForm({
   const { toast } = useToast();
 
   const router = useRouter();
-
-  const selectedSportLeagueId = form.watch("sportLeagueId");
-  const selectedSportLeagueDetails = sportLeagues.find(
-    (league) => league.id === selectedSportLeagueId,
-  )!;
 
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
 
@@ -333,22 +309,6 @@ export function PicksLeagueSettingsForm({
                 <FormItem className="space-y-2">
                   <FormLabel>Sport League</FormLabel>
                   <Select
-                    onValueChange={(val) => {
-                      field.onChange(val);
-
-                      const sportLeague = sportLeagues.find(
-                        (sportLeague) => sportLeague.id === val,
-                      )!;
-                      setSportLeagueWeeks(sportLeague.season.weeks);
-
-                      const startId = getDefaultSportStartWeekId(sportLeague);
-                      form.setValue("startSportLeagueWeekId", startId);
-                      setStartSportLeagueWeekId(startId);
-
-                      const endId = getDefaultSportEndWeekId(sportLeague);
-                      form.setValue("endSportLeagueWeekId", endId);
-                      setEndSportLeagueWeekId(endId);
-                    }}
                     defaultValue={field.value}
                     name="sportLeagueId"
                     disabled
@@ -359,11 +319,9 @@ export function PicksLeagueSettingsForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {sportLeagues.map((sportLeague) => (
-                        <SelectItem key={sportLeague.id} value={sportLeague.id}>
-                          {sportLeague.abbreviation}
-                        </SelectItem>
-                      ))}
+                      <SelectItem key={sportLeague.id} value={sportLeague.id}>
+                        {sportLeague.abbreviation}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -488,7 +446,7 @@ export function PicksLeagueSettingsForm({
               render={({ field }) => (
                 <FormItem className="space-y-2">
                   <FormLabel>
-                    Start Week ({selectedSportLeagueDetails.season.name} season)
+                    Start Week ({sportLeague.season.name} season)
                   </FormLabel>
                   <Select
                     disabled={!canEditSeasonSettings}
@@ -528,7 +486,7 @@ export function PicksLeagueSettingsForm({
               render={({ field }) => (
                 <FormItem className="space-y-2">
                   <FormLabel>
-                    End Week ({selectedSportLeagueDetails.season.name} season)
+                    End Week ({sportLeague.season.name} season)
                   </FormLabel>
                   <Select
                     disabled={!canEditSeasonSettings}

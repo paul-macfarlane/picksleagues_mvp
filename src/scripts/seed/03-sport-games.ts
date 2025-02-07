@@ -29,7 +29,7 @@ export async function seedSportGames({
   const oddsProvider = await tx
     .insert(oddsProviders)
     .values({
-      name: "Caesars Sportsbook",
+      name: "FAKE ESPN BET",
       espnId: "1234",
     })
     .onConflictDoUpdate({

@@ -3,7 +3,7 @@ import { ESPNLeagueSlug, ESPNSportSlug } from "@/integrations/espn/shared";
 import { sql } from "drizzle-orm";
 import { DBTransaction } from "@/db/transactions";
 
-export async function seedSportLeagues(tx: DBTransaction) {
+export async function seedSportLeaguesAndTeams(tx: DBTransaction) {
   const nflLeague = await tx
     .insert(sportLeagues)
     .values({
@@ -27,6 +27,7 @@ export async function seedSportLeagues(tx: DBTransaction) {
     })
     .returning()
     .get();
+
   const nflTeams = [
     {
       name: "Buffalo Bills",

@@ -18,6 +18,7 @@ import {
 import { PicksLeaguePickStatuses } from "@/shared/picksLeaguePicks";
 import { and, eq, sql, gte, lte, inArray, desc } from "drizzle-orm";
 import { DBTransaction } from "@/db/transactions";
+import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 
 interface CreatePicksLeagueConfig {
   name: string;
@@ -87,7 +88,7 @@ export async function seedPicksLeagues(
     const shuffledUsers = [...testUsers].sort(() => Math.random() - 0.5);
     const memberCount = Math.min(config.size, shuffledUsers.length);
 
-    for (let i = 0; i < memberCount; i++) {
+    for (let i = 0; i < memberCount - 1; i++) {
       const user = shuffledUsers[i];
       await tx
         .insert(picksLeagueMembers)
@@ -106,6 +107,27 @@ export async function seedPicksLeagues(
           },
         });
     }
+    const myUserRows = await tx
+      .select()
+      .from(users)
+      .where(eq(users.email, "pauljosephmacfarlane@gmail.com"));
+    if (!myUserRows.length) {
+      throw new Error("missing user with email pauljosephmacfarlane@gmail.com");
+    }
+
+    await tx
+      .insert(picksLeagueMembers)
+      .values({
+        userId: myUserRows[0].id,
+        leagueId: league.id,
+        role: PicksLeagueMemberRoles.COMMISSIONER,
+      })
+      .onConflictDoUpdate({
+        target: [picksLeagueMembers.userId, picksLeagueMembers.leagueId],
+        set: {
+          role: sql`excluded.role`,
+        },
+      });
 
     leagues.push(league);
   }
@@ -119,7 +141,7 @@ function determinePickStatus(
   odds: any,
   pickedTeamId: string,
 ): PicksLeaguePickStatuses {
-  if (!game || game.status !== "FINAL") {
+  if (!game || game.status !== SportLeagueGameStatuses.FINAL) {
     return PicksLeaguePickStatuses.PICKED;
   }
 
@@ -135,7 +157,6 @@ function determinePickStatus(
         ? PicksLeaguePickStatuses.PUSH
         : PicksLeaguePickStatuses.LOSS;
   } else {
-    // Against the spread
     if (!odds) {
       console.log("No odds found for game", game.id);
       return PicksLeaguePickStatuses.PICKED;
@@ -145,7 +166,6 @@ function determinePickStatus(
     const favoredTeamId = odds.favoriteTeamId;
     const favoredTeamIsHome = favoredTeamId === game.homeTeamId;
 
-    // Calculate the effective score after applying the spread
     let effectiveHomeScore = homeTeamScore;
     let effectiveAwayScore = awayTeamScore;
 
@@ -155,7 +175,6 @@ function determinePickStatus(
       effectiveAwayScore -= spread;
     }
 
-    // Determine if the picked team covered the spread
     if (pickedHomeTeam) {
       if (effectiveHomeScore > effectiveAwayScore) {
         return PicksLeaguePickStatuses.WIN;
@@ -179,13 +198,11 @@ function determinePickStatus(
 export async function seedPicksLeaguePicks({
   leagueId,
   weekId,
-  games,
   pickType,
   tx,
 }: {
   leagueId: string;
   weekId: string;
-  games: any[];
   pickType: (typeof PicksLeaguePickTypes)[keyof typeof PicksLeaguePickTypes];
   tx: DBTransaction;
 }) {
@@ -195,37 +212,30 @@ export async function seedPicksLeaguePicks({
     .from(picksLeagueMembers)
     .where(eq(picksLeagueMembers.leagueId, leagueId));
 
-  // Get all game IDs
-  const gameIds = games.map((game) => game.id);
-
-  // Get full game data for all games in a single query
   const fullGames = await tx
     .select()
     .from(sportLeagueGames)
-    .where(inArray(sportLeagueGames.id, gameIds))
-    .all();
+    .where(eq(sportLeagueGames.weekId, weekId));
 
-  // Get all odds data in a single query if needed
   const oddsMap = new Map();
   if (pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD) {
     const allOdds = await tx
       .select()
       .from(sportLeagueGameOdds)
-      .where(inArray(sportLeagueGameOdds.gameId, gameIds))
+      .where(
+        inArray(
+          sportLeagueGameOdds.gameId,
+          fullGames.map((game) => game.id),
+        ),
+      )
       .all();
 
-    // Create a map for quick odds lookup
     allOdds.forEach((odds) => {
       oddsMap.set(odds.gameId, odds);
     });
   }
 
-  // Create a map for quick game lookup
-  const gameMap = new Map(fullGames.map((game) => [game.id, game]));
-
-  // Batch insert picks for better performance
   const picksToInsert = [];
-
   for (const member of members) {
     // Randomly select games to pick
     const shuffledGames = [...fullGames].sort(() => Math.random() - 0.5);
@@ -281,7 +291,6 @@ export async function updatePicksLeagueStandings({
   seasonId: string;
   tx: DBTransaction;
 }) {
-  // Get the picks league season to get start and end weeks
   const picksLeagueSeason = await tx
     .select()
     .from(picksLeagueSeasons)
@@ -300,15 +309,12 @@ export async function updatePicksLeagueStandings({
     return;
   }
 
-  // Get all members
   const members = await tx
     .select()
     .from(picksLeagueMembers)
     .where(eq(picksLeagueMembers.leagueId, leagueId));
 
-  // For each member, calculate their record for this season
   for (const member of members) {
-    // Get all weeks in the season
     const weeks = await tx
       .select()
       .from(sportLeagueWeeks)
@@ -321,7 +327,6 @@ export async function updatePicksLeagueStandings({
       )
       .all();
 
-    // Get all picks for these weeks
     const weekIds = weeks.map((week) => week.id);
     const picks = await tx
       .select()
@@ -334,7 +339,6 @@ export async function updatePicksLeagueStandings({
         ),
       );
 
-    // Calculate record
     const wins = picks.filter(
       (p) => p.status === PicksLeaguePickStatuses.WIN,
     ).length;
@@ -345,9 +349,7 @@ export async function updatePicksLeagueStandings({
       (p) => p.status === PicksLeaguePickStatuses.PUSH,
     ).length;
 
-    // Calculate points (win = 1, push = 0.5)
     const points = wins + pushes * 0.5;
-
     await tx
       .insert(picksLeagueStandings)
       .values({

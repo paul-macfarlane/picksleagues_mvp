@@ -1,4 +1,4 @@
-import { seedSportLeagues } from "./01-sport-leagues";
+import { seedSportLeaguesAndTeams } from "./01-sport-leagues";
 import { createSeasonConfigs, seedSportSeasons } from "./02-sport-seasons";
 import { seedSportGames } from "./03-sport-games";
 import {
@@ -20,11 +20,9 @@ async function main() {
     console.log("🌱 Starting seed process...");
 
     await db.transaction(async (tx) => {
-      // 1. Create sport leagues and teams
       console.log("Creating sport leagues and teams...");
-      const { nflLeague, ncaaLeague } = await seedSportLeagues(tx);
+      const { nflLeague, ncaaLeague } = await seedSportLeaguesAndTeams(tx);
 
-      // 2. Create seasons for each league
       console.log("Creating seasons...");
       const seasonConfigs = createSeasonConfigs();
 
@@ -40,7 +38,6 @@ async function main() {
         tx,
       });
 
-      // 3. Create games for each week
       console.log("Creating games...");
       for (const { season, weeks } of [...nflSeasons, ...ncaaSeasons]) {
         for (const week of weeks) {
@@ -53,10 +50,8 @@ async function main() {
         }
       }
 
-      // 4. Create picks leagues
       console.log("Creating picks leagues...");
 
-      // NFL Leagues
       const nflPicksLeagues = await seedPicksLeagues(
         [
           {
@@ -66,7 +61,7 @@ async function main() {
             pickType: PicksLeaguePickTypes.STRAIGHT_UP,
             size: 12,
             picksPerWeek: 3,
-            seasonIds: [nflSeasons[1].season.id], // Current season
+            seasonIds: [nflSeasons[1].season.id],
           },
           {
             name: "NFL Picks - Against the Spread (Current Season)",
@@ -75,7 +70,7 @@ async function main() {
             pickType: PicksLeaguePickTypes.AGAINST_THE_SPREAD,
             size: 10,
             picksPerWeek: 3,
-            seasonIds: [nflSeasons[1].season.id], // Current season
+            seasonIds: [nflSeasons[1].season.id],
           },
           {
             name: "NFL Picks - Previous Season",
@@ -84,7 +79,7 @@ async function main() {
             pickType: PicksLeaguePickTypes.STRAIGHT_UP,
             size: 8,
             picksPerWeek: 3,
-            seasonIds: [nflSeasons[0].season.id], // Previous season
+            seasonIds: [nflSeasons[0].season.id],
           },
           {
             name: "NFL Picks - Future Season",
@@ -93,13 +88,12 @@ async function main() {
             pickType: PicksLeaguePickTypes.STRAIGHT_UP,
             size: 15,
             picksPerWeek: 3,
-            seasonIds: [nflSeasons[2].season.id], // Future season
+            seasonIds: [nflSeasons[2].season.id],
           },
         ],
         tx,
       );
 
-      // NCAA Leagues
       const ncaaPicksLeagues = await seedPicksLeagues(
         [
           {
@@ -109,7 +103,7 @@ async function main() {
             pickType: PicksLeaguePickTypes.STRAIGHT_UP,
             size: 12,
             picksPerWeek: 3,
-            seasonIds: [ncaaSeasons[1].season.id], // Current season
+            seasonIds: [ncaaSeasons[1].season.id],
           },
           {
             name: "College Football Picks (Previous Season)",
@@ -118,13 +112,12 @@ async function main() {
             pickType: PicksLeaguePickTypes.AGAINST_THE_SPREAD,
             size: 10,
             picksPerWeek: 3,
-            seasonIds: [ncaaSeasons[0].season.id], // Previous season
+            seasonIds: [ncaaSeasons[0].season.id],
           },
         ],
         tx,
       );
 
-      // 5. Create picks and standings for each league
       console.log("Creating picks and standings...");
       for (const league of [...nflPicksLeagues, ...ncaaPicksLeagues]) {
         // Get the league's season and weeks
@@ -132,25 +125,17 @@ async function main() {
         const seasons = isNFLLeague ? nflSeasons : ncaaSeasons;
 
         for (const { season, weeks } of seasons) {
-          // Create picks for each week
           for (const week of weeks) {
-            const games = await seedSportGames({
-              weekId: week.id,
-              leagueId: season.leagueId,
-              weekStart: DateTime.fromMillis(week.startTime.getTime()),
-              tx,
-            });
-
-            await seedPicksLeaguePicks({
-              leagueId: league.id,
-              weekId: week.id,
-              games,
-              pickType: league.pickType,
-              tx,
-            });
+            if (week.endTime < new Date()) {
+              await seedPicksLeaguePicks({
+                leagueId: league.id,
+                weekId: week.id,
+                pickType: league.pickType,
+                tx,
+              });
+            }
           }
 
-          // Update standings for the season
           await updatePicksLeagueStandings({
             leagueId: league.id,
             seasonId: season.id,

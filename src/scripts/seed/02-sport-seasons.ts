@@ -4,14 +4,16 @@ import { DateTime } from "luxon";
 import { sql } from "drizzle-orm";
 import { DBTransaction } from "@/db/transactions";
 
+interface SeasonConfig {
+  name: string;
+  startDate: DateTime;
+  endDate: DateTime;
+  weekCount: number;
+}
+
 interface CreateSeasonsConfig {
   leagueId: string;
-  seasonConfigs: {
-    name: string;
-    startDate: DateTime;
-    endDate: DateTime;
-    weekCount: number;
-  }[];
+  seasonConfigs: SeasonConfig[];
   tx: DBTransaction;
 }
 
@@ -23,7 +25,6 @@ export async function seedSportSeasons({
   const seasons = [];
 
   for (const config of seasonConfigs) {
-    // Create season
     const season = await tx
       .insert(sportLeagueSeasons)
       .values({
@@ -43,7 +44,6 @@ export async function seedSportSeasons({
       })
       .get();
 
-    // Create weeks for the season
     const weekStartDate = config.startDate;
     const weeks = [];
 
@@ -60,7 +60,7 @@ export async function seedSportSeasons({
           startTime: new Date(weekStart.toMillis()),
           endTime: new Date(weekEnd.toMillis()),
           pickLockTime: new Date(pickLockTime.toMillis()),
-          espnEventsRef: `2024/week/${i + 1}`,
+          espnEventsRef: `week${i + 1}`,
           type: SportLeagueWeekTypes.REGULAR_SEASON,
         })
         .returning()
@@ -87,37 +87,36 @@ export async function seedSportSeasons({
   return seasons;
 }
 
-export function createSeasonConfigs() {
+export function createSeasonConfigs(): SeasonConfig[] {
   const now = DateTime.now();
   const startOfToday = now.startOf("day");
 
-  // Previous season (completed)
-  const prevSeasonStart = startOfToday.minus({ days: 120 }); // 120 days ago
-  const prevSeasonEnd = prevSeasonStart.plus({ days: 120 }); // 120 days duration
+  const prevSeasonStart = startOfToday.minus({ days: 120 });
+  const prevSeasonEnd = prevSeasonStart.plus({ days: 120 });
 
   // Current season (in progress)
-  const currentSeasonStart = startOfToday.minus({ days: 30 }); // Started 30 days ago
-  const currentSeasonEnd = currentSeasonStart.plus({ days: 120 }); // 120 days duration
+  const currentSeasonStart = startOfToday.minus({ days: 30 });
+  const currentSeasonEnd = currentSeasonStart.plus({ days: 120 });
 
   // Future season (not started)
-  const futureSeasonStart = startOfToday.plus({ days: 30 }); // Starts in 30 days
-  const futureSeasonEnd = futureSeasonStart.plus({ days: 120 }); // 120 days duration
+  const futureSeasonStart = startOfToday.plus({ days: 30 });
+  const futureSeasonEnd = futureSeasonStart.plus({ days: 120 });
 
   return [
     {
-      name: "2023",
+      name: "Previous Season",
       startDate: prevSeasonStart,
       endDate: prevSeasonEnd,
       weekCount: 8,
     },
     {
-      name: "2024",
+      name: "Current Season",
       startDate: currentSeasonStart,
       endDate: currentSeasonEnd,
       weekCount: 8,
     },
     {
-      name: "2025",
+      name: "Next Season",
       startDate: futureSeasonStart,
       endDate: futureSeasonEnd,
       weekCount: 8,

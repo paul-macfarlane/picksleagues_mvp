@@ -6,8 +6,7 @@ import {
   getActiveDBPicksLeagueSeason,
   getNextDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
-import { getActiveOrNextSportLeagueSeasonsDetails } from "@/services/sportLeagues";
-import { getDBSportLeagueSeasonById } from "@/db/sportLeagueSeason";
+import { getDBSportLeagueWithSeasonDetails } from "@/db/sportLeagues";
 
 export async function PicksLeagueSettingsTab({
   readonly,
@@ -22,10 +21,13 @@ export async function PicksLeagueSettingsTab({
   if (!dbPicksLeagueSeason) {
     dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(dbPicksLeague.id);
   }
-  const dbSportsLeagueSeason = dbPicksLeagueSeason
-    ? await getDBSportLeagueSeasonById(dbPicksLeagueSeason.sportLeagueSeasonId)
+  const dbSportLeagueDetails = dbPicksLeagueSeason
+    ? await getDBSportLeagueWithSeasonDetails(
+        dbPicksLeague.sportLeagueId,
+        dbPicksLeagueSeason.sportLeagueSeasonId,
+      )
     : null;
-  if (!dbPicksLeagueSeason || !dbSportsLeagueSeason) {
+  if (!dbPicksLeagueSeason || !dbSportLeagueDetails) {
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
@@ -53,19 +55,18 @@ export async function PicksLeagueSettingsTab({
 
   const canEditSeasonSettings =
     !readonly && canEditPicksLeagueSeasonSettings(dbPicksLeagueDetails);
-  const dbSportLeagueDetails = await getActiveOrNextSportLeagueSeasonsDetails();
 
   return (
     <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
         <CardTitle>
-          {!readonly && <>Edit</>}
-          League Settings ({dbSportsLeagueSeason.name} season)
+          {!readonly && <>Edit</>} League Settings (
+          {dbSportLeagueDetails.season.name} season)
         </CardTitle>
       </CardHeader>
 
       <PicksLeagueSettingsForm
-        sportLeagues={dbSportLeagueDetails}
+        sportLeague={dbSportLeagueDetails}
         picksLeague={dbPicksLeagueDetails}
         canEditSeasonSettings={canEditSeasonSettings}
         readonly={readonly}
