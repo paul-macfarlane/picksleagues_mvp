@@ -174,11 +174,17 @@ export async function PicksLeagueMyPicksTab({
         game.status !== SportLeagueGameStatuses.FINAL && game.period > 0,
     ).length ?? 0;
 
-  const { previousWeek, nextWeek } =
+  let { previousWeek, nextWeek } =
     await getPrevAndNextDBWeekForPicksLeagueSeason(
       dbPicksLeagueSeason.id,
       selectedDBWeek.id,
     );
+  const now = new Date();
+  const activeWeekIsSelectedWeek =
+    selectedDBWeek.startTime <= now && selectedDBWeek.endTime >= now;
+  if (activeWeekIsSelectedWeek) {
+    nextWeek = null;
+  }
 
   return (
     <div className={"flex flex-col items-center gap-2"}>

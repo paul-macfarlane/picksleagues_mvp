@@ -144,6 +144,7 @@ export default async function PicksLeaguePage(props: {
         sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
         userId={dbUser.id}
         weekId={weekId}
+        pickType={dbPicksLeagueWithUserRole.pickType}
       />
     );
   } else if (

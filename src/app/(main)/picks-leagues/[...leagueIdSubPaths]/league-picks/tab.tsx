@@ -32,6 +32,7 @@ export interface LeaguePicksTabProps {
   sportsLeagueId: string;
   userId: string;
   weekId: string | null;
+  pickType: PicksLeaguePickTypes;
 }
 
 export async function LeaguePicksTab({
@@ -39,6 +40,7 @@ export async function LeaguePicksTab({
   sportsLeagueId,
   userId,
   weekId,
+  pickType,
 }: LeaguePicksTabProps) {
   let currentOrNextSeason = "current";
   let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(picksLeagueId);
@@ -146,11 +148,16 @@ export async function LeaguePicksTab({
     }
   }
 
-  const { previousWeek, nextWeek } =
+  let { previousWeek, nextWeek } =
     await getPrevAndNextDBWeekForPicksLeagueSeason(
       dbPicksLeagueSeason.id,
       selectedDBWeek.id,
     );
+  const activeWeekIsSelectedWeek =
+    selectedDBWeek.startTime <= now && selectedDBWeek.endTime >= now;
+  if (activeWeekIsSelectedWeek) {
+    nextWeek = null;
+  }
 
   return (
     <div className={"flex flex-col items-center gap-2"}>
@@ -186,11 +193,7 @@ export async function LeaguePicksTab({
 
           {!picksLocked &&
             pickData.map((data) => (
-              <UserPicks
-                key={data.id}
-                data={data}
-                pickType={PicksLeaguePickTypes.AGAINST_THE_SPREAD}
-              />
+              <UserPicks key={data.id} data={data} pickType={pickType} />
             ))}
         </CardContent>
       </Card>
