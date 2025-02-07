@@ -429,29 +429,33 @@ export const picksLeagueSeasons = sqliteTable("picks_league_seasons", {
     .$onUpdate(() => new Date()),
 });
 
-export const picksLeagueMembers = sqliteTable("picks_league_members", {
-  userId: text("user_id", { length: UUID_LENGTH })
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  leagueId: text("league_id", { length: UUID_LENGTH })
-    .notNull()
-    .references(() => picksLeagues.id, { onDelete: "cascade" }),
-  role: text("role", {
-    length: PICKS_LEAGUE_ROLE_MAX_LENGTH,
-    enum: [
-      PicksLeagueMemberRoles.MEMBER,
-      PicksLeagueMemberRoles.COMMISSIONER,
-      PicksLeagueMemberRoles.NONE,
-    ],
-  }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`)
-    .$onUpdate(() => new Date()),
-});
+export const picksLeagueMembers = sqliteTable(
+  "picks_league_members",
+  {
+    userId: text("user_id", { length: UUID_LENGTH })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    leagueId: text("league_id", { length: UUID_LENGTH })
+      .notNull()
+      .references(() => picksLeagues.id, { onDelete: "cascade" }),
+    role: text("role", {
+      length: PICKS_LEAGUE_ROLE_MAX_LENGTH,
+      enum: [
+        PicksLeagueMemberRoles.MEMBER,
+        PicksLeagueMemberRoles.COMMISSIONER,
+        PicksLeagueMemberRoles.NONE,
+      ],
+    }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [unique("member_id_league_id_unique").on(t.userId, t.leagueId)],
+);
 
 export const picksLeagueInvites = sqliteTable("picks_league_invites", {
   id: text("id", { length: UUID_LENGTH })
@@ -524,26 +528,30 @@ export const picksLeaguePicks = sqliteTable("picks_league_picks", {
     .$onUpdate(() => new Date()),
 });
 
-export const picksLeagueStandings = sqliteTable("picks_league_standings", {
-  id: text("id", { length: UUID_LENGTH })
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id", { length: UUID_LENGTH })
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  seasonId: text("season_id")
-    .notNull()
-    .references(() => picksLeagueSeasons.id, { onDelete: "cascade" }),
-  wins: integer().notNull().default(0),
-  losses: integer().notNull().default(0),
-  pushes: integer().notNull().default(0),
-  points: real().notNull().default(0.0),
-  rank: integer().notNull().default(0),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`)
-    .$onUpdate(() => new Date()),
-});
+export const picksLeagueStandings = sqliteTable(
+  "picks_league_standings",
+  {
+    id: text("id", { length: UUID_LENGTH })
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id", { length: UUID_LENGTH })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    seasonId: text("season_id")
+      .notNull()
+      .references(() => picksLeagueSeasons.id, { onDelete: "cascade" }),
+    wins: integer().notNull().default(0),
+    losses: integer().notNull().default(0),
+    pushes: integer().notNull().default(0),
+    points: real().notNull().default(0.0),
+    rank: integer().notNull().default(0),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`)
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [unique("user_id_season_id_unique").on(t.userId, t.seasonId)],
+);

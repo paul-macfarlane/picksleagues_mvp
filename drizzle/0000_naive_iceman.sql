@@ -62,6 +62,7 @@ CREATE TABLE `picks_league_members` (
 	FOREIGN KEY (`league_id`) REFERENCES `picks_leagues`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `member_id_league_id_unique` ON `picks_league_members` (`user_id`,`league_id`);--> statement-breakpoint
 CREATE TABLE `picks_league_picks` (
 	`id` text(36) PRIMARY KEY NOT NULL,
 	`user_id` text(36) NOT NULL,
@@ -88,7 +89,6 @@ CREATE TABLE `picks_league_seasons` (
 	`sport_league_season_id` text(36) NOT NULL,
 	`start_sport_league_week_id` text(36) NOT NULL,
 	`end_sport_league_week_id` text(36) NOT NULL,
-	`active` integer NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`league_id`) REFERENCES `picks_leagues`(`id`) ON UPDATE no action ON DELETE cascade,
@@ -112,6 +112,7 @@ CREATE TABLE `picks_league_standings` (
 	FOREIGN KEY (`season_id`) REFERENCES `picks_league_seasons`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `user_id_season_id_unique` ON `picks_league_standings` (`user_id`,`season_id`);--> statement-breakpoint
 CREATE TABLE `picks_leagues` (
 	`id` text(36) PRIMARY KEY NOT NULL,
 	`name` text(32) NOT NULL,
@@ -241,8 +242,6 @@ CREATE TABLE `users` (
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
-CREATE UNIQUE INDEX `users_username_unique` ON `users` (`username`);--> statement-breakpoint
 CREATE TABLE `verification_tokens` (
 	`identifier` text NOT NULL,
 	`token` text NOT NULL,

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "144a80be-341b-4c79-8b94-4651dd1dce5e",
+  "id": "7408820b-26f9-4493-991a-02e7738c7a0c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -418,7 +418,16 @@
           "default": "(unixepoch())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "member_id_league_id_unique": {
+          "name": "member_id_league_id_unique",
+          "columns": [
+            "user_id",
+            "league_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "picks_league_members_user_id_users_id_fk": {
           "name": "picks_league_members_user_id_users_id_fk",
@@ -652,13 +661,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "active": {
-          "name": "active",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -816,7 +818,16 @@
           "default": "(unixepoch())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "user_id_season_id_unique": {
+          "name": "user_id_season_id_unique",
+          "columns": [
+            "user_id",
+            "season_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "picks_league_standings_user_id_users_id_fk": {
           "name": "picks_league_standings_user_id_users_id_fk",
@@ -1755,22 +1766,7 @@
           "default": "(unixepoch())"
         }
       },
-      "indexes": {
-        "users_email_unique": {
-          "name": "users_email_unique",
-          "columns": [
-            "email"
-          ],
-          "isUnique": true
-        },
-        "users_username_unique": {
-          "name": "users_username_unique",
-          "columns": [
-            "username"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
