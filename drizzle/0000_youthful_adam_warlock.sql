@@ -44,11 +44,14 @@ CREATE UNIQUE INDEX `odds_providers_espn_id_unique` ON `odds_providers` (`espn_i
 CREATE TABLE `picks_league_invites` (
 	`id` text(36) PRIMARY KEY NOT NULL,
 	`league_id` text(36) NOT NULL,
+	`user_id` text(36),
 	`expires_at` integer NOT NULL,
 	`accepted_by_user_id` text(36),
+	`declined` integer DEFAULT false NOT NULL,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
 	FOREIGN KEY (`league_id`) REFERENCES `picks_leagues`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`accepted_by_user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint

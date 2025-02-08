@@ -464,10 +464,14 @@ export const picksLeagueInvites = sqliteTable("picks_league_invites", {
   leagueId: text("league_id", { length: UUID_LENGTH })
     .notNull()
     .references(() => picksLeagues.id, { onDelete: "cascade" }),
+  userId: text("user_id", { length: UUID_LENGTH }).references(() => users.id, {
+    onDelete: "cascade",
+  }),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
   acceptedByUserId: text("accepted_by_user_id", {
     length: UUID_LENGTH,
   }).references(() => users.id, { onDelete: "cascade" }),
+  declined: integer("declined", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
