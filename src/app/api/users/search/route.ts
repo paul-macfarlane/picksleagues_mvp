@@ -1,8 +1,9 @@
 import { auth } from "@/auth";
 import { searchUsersNotInLeague } from "@/db/users";
 import { z } from "zod";
+import { NextRequest } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
