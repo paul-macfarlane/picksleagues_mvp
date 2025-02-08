@@ -94,11 +94,9 @@ export function createSeasonConfigs(): SeasonConfig[] {
   const prevSeasonStart = startOfToday.minus({ days: 120 });
   const prevSeasonEnd = prevSeasonStart.plus({ days: 120 });
 
-  // Current season (in progress)
   const currentSeasonStart = startOfToday.minus({ days: 30 });
   const currentSeasonEnd = currentSeasonStart.plus({ days: 120 });
 
-  // Future season (not started)
   const futureSeasonStart = startOfToday.plus({ days: 30 });
   const futureSeasonEnd = futureSeasonStart.plus({ days: 120 });
 

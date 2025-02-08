@@ -13,8 +13,6 @@ import {
 import { DateTime } from "luxon";
 import { scriptDB as db } from "@/db/scriptClient";
 
-// todo this is like half functional half not, good start, but need to investigate code a little more before resuming ai use
-
 async function main() {
   try {
     console.log("🌱 Starting seed process...");

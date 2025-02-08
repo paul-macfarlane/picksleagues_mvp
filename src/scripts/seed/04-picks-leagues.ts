@@ -19,6 +19,8 @@ import { PicksLeaguePickStatuses } from "@/shared/picksLeaguePicks";
 import { and, eq, sql, gte, lte, inArray, desc } from "drizzle-orm";
 import { DBTransaction } from "@/db/transactions";
 import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
+import { DBSportLeagueGame } from "@/db/sportLeagueGames";
+import { DBSportLeagueGameOdds } from "@/db/sportLeagueGameOdds";
 
 interface CreatePicksLeagueConfig {
   name: string;
@@ -27,7 +29,7 @@ interface CreatePicksLeagueConfig {
   pickType: (typeof PicksLeaguePickTypes)[keyof typeof PicksLeaguePickTypes];
   size: number;
   picksPerWeek: number;
-  seasonIds?: string[]; // Optional list of season IDs to associate with the league
+  seasonIds: string[];
 }
 
 export async function seedPicksLeagues(
@@ -36,7 +38,6 @@ export async function seedPicksLeagues(
 ) {
   const leagues: DBPicksLeague[] = [];
 
-  // First, create some test users if they don't exist
   const testUsers = [];
   for (let i = 0; i < 20; i++) {
     const user = await tx
@@ -66,8 +67,7 @@ export async function seedPicksLeagues(
       .returning()
       .get();
 
-    // Add seasons if provided
-    if (config.seasonIds) {
+    if (config.seasonIds.length > 0) {
       for (const seasonId of config.seasonIds) {
         const weeks = await tx
           .select()
@@ -84,7 +84,6 @@ export async function seedPicksLeagues(
       }
     }
 
-    // Add members (1 commissioner, rest regular members)
     const shuffledUsers = [...testUsers].sort(() => Math.random() - 0.5);
     const memberCount = Math.min(config.size, shuffledUsers.length);
 
@@ -107,6 +106,7 @@ export async function seedPicksLeagues(
           },
         });
     }
+    // make default user commissioner of leagues
     const myUserRows = await tx
       .select()
       .from(users)
@@ -136,9 +136,9 @@ export async function seedPicksLeagues(
 }
 
 function determinePickStatus(
-  game: any,
+  game: DBSportLeagueGame,
   pickType: (typeof PicksLeaguePickTypes)[keyof typeof PicksLeaguePickTypes],
-  odds: any,
+  odds: DBSportLeagueGameOdds,
   pickedTeamId: string,
 ): PicksLeaguePickStatuses {
   if (!game || game.status !== SportLeagueGameStatuses.FINAL) {
@@ -206,7 +206,6 @@ export async function seedPicksLeaguePicks({
   pickType: (typeof PicksLeaguePickTypes)[keyof typeof PicksLeaguePickTypes];
   tx: DBTransaction;
 }) {
-  // Get all members of the league
   const members = await tx
     .select()
     .from(picksLeagueMembers)
@@ -244,7 +243,6 @@ export async function seedPicksLeaguePicks({
     for (const game of pickedGames) {
       if (!game) continue;
 
-      // Get odds from the map if needed
       const odds =
         pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD
           ? oddsMap.get(game.id)
@@ -276,7 +274,6 @@ export async function seedPicksLeaguePicks({
     }
   }
 
-  // Insert all picks in a single transaction
   if (picksToInsert.length > 0) {
     await tx.insert(picksLeaguePicks).values(picksToInsert);
   }

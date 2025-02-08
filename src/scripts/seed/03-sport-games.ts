@@ -41,7 +41,6 @@ export async function seedSportGames({
     .returning()
     .get();
 
-  // Create 16 games for the week
   const games = [];
   const now = DateTime.now();
 
@@ -68,14 +67,12 @@ export async function seedSportGames({
 
     if (gameStart < now) {
       if (gameStart.plus({ hours: 3 }) < now) {
-        // Game is finished
         status = SportLeagueGameStatuses.FINAL;
         homeScore = Math.floor(Math.random() * 35);
         awayScore = Math.floor(Math.random() * 35);
         clock = "0:00";
         period = 4;
       } else {
-        // Game is in progress
         status = SportLeagueGameStatuses.IN_PROGRESS;
         homeScore = Math.floor(Math.random() * 21);
         awayScore = Math.floor(Math.random() * 21);
@@ -87,7 +84,6 @@ export async function seedSportGames({
       }
     }
 
-    // Create game
     const game = await tx
       .insert(sportLeagueGames)
       .values({
@@ -119,7 +115,6 @@ export async function seedSportGames({
       .returning()
       .get();
 
-    // Create odds for the game
     const spread =
       (Math.floor(Math.random() * 14) + 1) * (Math.random() < 0.5 ? -1 : 1);
     await tx
