@@ -14,8 +14,9 @@ import { DataTable } from "@/components/ui/data-table";
 import { Column, ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PickLeagueInviteWithUser } from "@/db/picksLeagueInvite";
+import { DBPicksLeagueInviteWithUser } from "@/db/picksLeagueInvite";
 import { DateDisplay } from "@/components/date-display";
+import { OutstandingInviteRoleSwitcher } from "./outstanding-invite-role-switcher";
 
 function TableHeader<T>({
   column,
@@ -41,7 +42,7 @@ export interface PicksLeagueMembersTabProps {
   dbLeagueWithUserRole: DBPicksLeagueWithUserRole;
   dbLeagueMemberDetails: DBPicksLeagueMemberDetails[];
   leagueIsInSeason: boolean;
-  outstandingInvites: PickLeagueInviteWithUser[];
+  outstandingInvites: DBPicksLeagueInviteWithUser[];
 }
 
 export function PicksLeagueMembersTab({
@@ -90,21 +91,22 @@ export function PicksLeagueMembersTab({
         return (
           <div className="flex items-center gap-2">
             <Avatar>
-              <AvatarImage
-                src={member.image ?? undefined}
-                alt={member.username!}
-              />
+              <AvatarImage src={member.image ?? undefined} />
               <AvatarFallback>
-                {member
-                  .username!.split(" ")
+                {member.username
+                  ?.split(" ")
                   .map((n) => n[0])
                   .join("")}
               </AvatarFallback>
             </Avatar>
-
-            <span>
-              {member.username} ({member.firstName}){" "}
-            </span>
+            <div className="flex flex-col">
+              <span>@{member.username}</span>
+              {member.firstName && member.lastName && (
+                <span className="text-sm text-muted-foreground">
+                  {member.firstName} {member.lastName}
+                </span>
+              )}
+            </div>
           </div>
         );
       },
@@ -168,10 +170,10 @@ export function PicksLeagueMembersTab({
     });
   }
 
-  const inviteColumns: ColumnDef<PickLeagueInviteWithUser>[] = [
+  const inviteColumns: ColumnDef<DBPicksLeagueInviteWithUser>[] = [
     {
       accessorKey: "user",
-      header: ({ column }) => TableHeader({ column, name: "User" }),
+      header: ({ column }) => TableHeader({ column, name: "Member" }),
       cell: ({ row }) => {
         const invite = row.original;
         return (
@@ -185,12 +187,24 @@ export function PicksLeagueMembersTab({
                   .join("")}
               </AvatarFallback>
             </Avatar>
-
-            <span>
-              {invite.user.username} ({invite.user.firstName}){" "}
-            </span>
+            <div className="flex flex-col">
+              <span>@{invite.user.username}</span>
+              {invite.user.firstName && invite.user.lastName && (
+                <span className="text-sm text-muted-foreground">
+                  {invite.user.firstName} {invite.user.lastName}
+                </span>
+              )}
+            </div>
           </div>
         );
+      },
+    },
+    {
+      accessorKey: "role",
+      header: ({ column }) => TableHeader({ column, name: "Role" }),
+      cell: ({ row }) => {
+        const invite = row.original;
+        return <OutstandingInviteRoleSwitcher invite={invite} />;
       },
     },
     {
@@ -209,6 +223,15 @@ export function PicksLeagueMembersTab({
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>League Members</CardTitle>
+
+          <div className="flex items-center space-x-2">
+            <Users className="h-4 w-4 opacity-70" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium leading-none">
+                {memberDetails.length} / {dbLeagueWithUserRole.size}
+              </p>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -227,24 +250,6 @@ export function PicksLeagueMembersTab({
           </CardContent>
         </Card>
       )}
-
-      <Card className="mx-auto mt-6 w-full max-w-4xl">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Users className="h-4 w-4 opacity-70" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {memberDetails.length} / {dbLeagueWithUserRole.size}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

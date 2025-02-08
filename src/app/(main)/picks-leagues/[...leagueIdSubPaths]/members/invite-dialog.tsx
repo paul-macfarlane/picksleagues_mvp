@@ -30,6 +30,15 @@ import {
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { DBUser } from "@/db/users";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
+import { useRouter } from "next/navigation";
 
 type FormSchema = z.infer<typeof PicksLeagueInviteFormSchema>;
 
@@ -43,9 +52,13 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedUser, setSelectedUser] = useState<DBUser | null>(null);
   const [isInviting, setIsInviting] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<PicksLeagueMemberRoles>(
+    PicksLeagueMemberRoles.MEMBER,
+  );
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
+  // todo invite link logic appears to be a bit broken, link is not generated
   const copyInviteLink = () => {
     void navigator.clipboard.writeText(inviteLink);
     setLinkCopied(true);
@@ -58,6 +71,8 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
   const formRef = useRef<HTMLFormElement>(null);
 
   const { toast } = useToast();
+
+  const router = useRouter();
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -92,6 +107,7 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
       const formData = new FormData();
       formData.append("leagueId", leagueId);
       formData.append("userId", selectedUser.id);
+      formData.append("role", selectedRole);
 
       const actionResponse = await picksLeagueInviteAction(formState, formData);
       if (actionResponse?.errors) {
@@ -115,8 +131,8 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
           title: "Success",
           description: `Successfully invited @${selectedUser.username} to the league.`,
         });
-
         setSelectedUser(null);
+        router.refresh();
       }
     } catch (error) {
       toast({
@@ -283,13 +299,26 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
                             </span>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedUser(null)}
+                        <Select
+                          value={selectedRole}
+                          onValueChange={(value) =>
+                            setSelectedRole(value as PicksLeagueMemberRoles)
+                          }
                         >
-                          Clear
-                        </Button>
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={PicksLeagueMemberRoles.MEMBER}>
+                              {PicksLeagueMemberRoles.MEMBER}
+                            </SelectItem>
+                            <SelectItem
+                              value={PicksLeagueMemberRoles.COMMISSIONER}
+                            >
+                              {PicksLeagueMemberRoles.COMMISSIONER}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <Button
@@ -300,7 +329,7 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
                         {isInviting && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        Invite @{selectedUser.username}
+                        Invite @{selectedUser.username} as {selectedRole}
                       </Button>
                     </div>
                   )}

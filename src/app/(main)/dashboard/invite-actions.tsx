@@ -62,22 +62,17 @@ export function InviteActions({
 
   return (
     <div className="flex gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleAccept}
-        disabled={isLoading}
-      >
+      <Button size="sm" onClick={handleAccept} disabled={isLoading}>
         Accept
       </Button>
 
       <Button
-        variant="ghost"
+        variant="destructive"
         size="sm"
         onClick={handleDecline}
         disabled={isLoading}
       >
-        Ignore
+        Decline
       </Button>
     </div>
   );

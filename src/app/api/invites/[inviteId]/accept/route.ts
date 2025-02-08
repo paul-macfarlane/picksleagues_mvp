@@ -17,7 +17,6 @@ import {
   NotAllowedError,
   NotFoundError,
 } from "@/models/errors";
-import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -62,7 +61,7 @@ export async function POST(
     }
 
     if (dbLeague.invite.acceptedByUserId === session.user.id) {
-      return Response.json(
+      return NextResponse.json(
         {
           message: "Success",
         },
@@ -90,7 +89,7 @@ export async function POST(
       const createDBLeagueMemberData = {
         userId: dbUser.id,
         leagueId: dbLeague.id,
-        role: PicksLeagueMemberRoles.MEMBER,
+        role: dbLeague.invite.role,
       };
 
       await withDBTransaction(async (tx) => {
@@ -128,7 +127,7 @@ export async function POST(
       });
     }
 
-    return Response.json(
+    return NextResponse.json(
       {
         message: "Success",
       },
@@ -139,7 +138,7 @@ export async function POST(
   } catch (error) {
     console.error(error);
     if (error instanceof ApplicationError) {
-      return Response.json(
+      return NextResponse.json(
         {
           errors: {
             form: error.message,
@@ -151,7 +150,7 @@ export async function POST(
       );
     }
 
-    return Response.json(
+    return NextResponse.json(
       {
         errors: {
           form: "Internal Server Error",

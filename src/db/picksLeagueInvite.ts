@@ -169,13 +169,13 @@ export async function getOpenDBPicksLeagueInvitesForUser(
     );
 }
 
-export interface PickLeagueInviteWithUser extends DBPicksLeagueInvite {
+export interface DBPicksLeagueInviteWithUser extends DBPicksLeagueInvite {
   user: DBUser;
 }
 
 export async function getOutstandingDBPicksLeagueInvites(
   leagueId: string,
-): Promise<PickLeagueInviteWithUser[]> {
+): Promise<DBPicksLeagueInviteWithUser[]> {
   const now = new Date();
 
   return db
@@ -193,4 +193,38 @@ export async function getOutstandingDBPicksLeagueInvites(
         eq(picksLeagueInvites.declined, false),
       ),
     );
+}
+
+export async function getDBPicksLeagueInviteById(
+  inviteId: string,
+): Promise<DBPicksLeagueInvite | null> {
+  const queryRows = await db
+    .select()
+    .from(picksLeagueInvites)
+    .where(eq(picksLeagueInvites.id, inviteId));
+  return queryRows.length > 0 ? queryRows[0] : null;
+}
+
+export interface UpdateDBPicksLeagueInvite {
+  role: PicksLeagueMemberRoles;
+}
+
+export async function updateDBPicksLeagueInvite(
+  id: string,
+  params: UpdateDBPicksLeagueInvite,
+  tx?: DBTransaction,
+): Promise<DBPicksLeagueInvite | null> {
+  const queryRes = tx
+    ? await tx
+        .update(picksLeagueInvites)
+        .set(params)
+        .where(eq(picksLeagueInvites.id, id))
+        .returning()
+    : await db
+        .update(picksLeagueInvites)
+        .set(params)
+        .where(eq(picksLeagueInvites.id, id))
+        .returning();
+
+  return queryRes.length ? queryRes[0] : null;
 }
