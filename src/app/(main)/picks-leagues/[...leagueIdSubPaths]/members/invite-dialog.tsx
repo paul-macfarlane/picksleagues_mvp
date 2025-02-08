@@ -29,16 +29,9 @@ import {
 } from "@/components/ui/command";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
+import { DBUser } from "@/db/users";
 
 type FormSchema = z.infer<typeof PicksLeagueInviteFormSchema>;
-
-interface SearchUser {
-  id: string;
-  username: string;
-  firstName: string | null;
-  lastName: string | null;
-  image: string | null;
-}
 
 export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
   const [inviteLink, setInviteLink] = useState("");
@@ -46,9 +39,9 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
   const [error, setError] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [searchResults, setSearchResults] = useState<DBUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<DBUser | null>(null);
   const [isInviting, setIsInviting] = useState(false);
 
   const debouncedSearch = useDebounce(searchQuery, 300);
