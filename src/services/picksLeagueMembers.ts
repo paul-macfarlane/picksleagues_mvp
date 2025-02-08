@@ -106,7 +106,7 @@ export async function removePicksLeagueMember(
     throw new NotAllowedError("Cannot remove member in season");
   }
 
-  await removeUserLeagueData(userId, picksLeagueId);
+  await removeUserLeagueData(memberUserId, picksLeagueId);
 }
 
 async function removeUserLeagueData(userId: string, picksLeagueId: string) {

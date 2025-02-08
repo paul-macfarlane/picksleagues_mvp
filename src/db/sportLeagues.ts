@@ -25,6 +25,33 @@ export interface DBSportLeagueWithSeasonDetail extends DBSportLeague {
   season: DBSportLeagueSeasonDetail;
 }
 
+export async function getDBSportLeagueWithSeasonDetails(
+  sportLeagueId: string,
+  seasonId: string,
+): Promise<DBSportLeagueWithSeasonDetail | null> {
+  const queryRows = await db
+    .select()
+    .from(sportLeagues)
+    .innerJoin(
+      sportLeagueSeasons,
+      eq(sportLeagues.id, sportLeagueSeasons.leagueId),
+    )
+    .innerJoin(
+      sportLeagueWeeks,
+      eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
+    )
+    .where(
+      and(
+        eq(sportLeagues.id, sportLeagueId),
+        eq(sportLeagueSeasons.id, seasonId),
+      ),
+    )
+    .orderBy(sportLeagueWeeks.startTime);
+  return queryRows.length
+    ? aggregateLeagueSeasonAndWeeksIntoDetails(queryRows)[0]
+    : null;
+}
+
 export async function getActiveDBSportLeagueSeasonDetailsWithActiveWeeks(): Promise<
   DBSportLeagueWithSeasonDetail[]
 > {

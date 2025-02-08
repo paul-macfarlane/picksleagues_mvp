@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
 import { db } from "./client";
-import { users } from "./schema";
+import { picksLeagueMembers, users } from "./schema";
 import { DBTransaction } from "@/db/transactions";
+import { like, or, and, not, exists, eq } from "drizzle-orm";
 
 export interface DBUser {
   id: string;
@@ -46,4 +46,38 @@ export async function updateDBUser(
 export async function dbUsernameAvailable(username: string): Promise<boolean> {
   return !(await db.select().from(users).where(eq(users.username, username)))
     .length;
+}
+
+export async function searchUsersNotInLeague(
+  picksLeagueId: string,
+  query: string,
+  limit: number,
+): Promise<DBUser[]> {
+  return db
+    .select()
+    .from(users)
+    .where(
+      and(
+        or(
+          like(users.username, `%${query}%`),
+          like(users.firstName, `%${query}%`),
+          like(users.lastName, `%${query}%`),
+        ),
+        // Exclude users who are already members of the league
+        not(
+          exists(
+            db
+              .select()
+              .from(picksLeagueMembers)
+              .where(
+                and(
+                  eq(picksLeagueMembers.leagueId, picksLeagueId),
+                  eq(picksLeagueMembers.userId, users.id),
+                ),
+              ),
+          ),
+        ),
+      ),
+    )
+    .limit(limit);
 }

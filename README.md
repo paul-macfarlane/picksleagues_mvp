@@ -30,6 +30,6 @@ This app is built using Next.js, and Turso. To run lcoally
    to [paul-macfarlane](https://github.com/paul-macfarlane).
 2. [Install Turso CLI](https://docs.turso.tech/cli/introduction)
 3. Create a local db file using npm run db:local (keep the process running)
-4. Install dependencies by running `npm install`
+4. Install dependencies by running `npm install --force`
 5. Run `npm run db:generate && npm run db:migrate` to run database migrations
 6. Finally, run `npm run dev` to run the app locally

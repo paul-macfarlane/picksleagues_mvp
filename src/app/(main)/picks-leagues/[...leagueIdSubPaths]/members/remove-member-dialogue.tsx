@@ -16,7 +16,6 @@ import { UserMinus } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
 
 export interface RemoveMemberDialogueProps {
   disabled: boolean;
@@ -31,7 +30,6 @@ export function RemoveMemberDialogue({
 }: RemoveMemberDialogueProps) {
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const onRemoveMember = async () => {
     try {
@@ -45,7 +43,8 @@ export function RemoveMemberDialogue({
         title: "Member Removed!",
         description: "Picks League Member Removed.",
       });
-      router.push(`/picks-leagues/${picksLeagueId}/members`);
+
+      window.location.reload(); // router didn't refresh, window did
     } catch (e) {
       let description = "An unexpected error occurred, please try again later.";
       if (e instanceof AxiosError && e.response?.data.error) {
