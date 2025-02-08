@@ -95,22 +95,29 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
 
       const actionResponse = await picksLeagueInviteAction(formState, formData);
       if (actionResponse?.errors) {
+        let errorMessage =
+          "An unexpected error occurred while inviting user to league";
         if (actionResponse?.errors?.leagueId) {
-          form.setError("leagueId", {
-            type: "custom",
-            message: actionResponse.errors.leagueId,
-          });
+          errorMessage = actionResponse?.errors?.leagueId;
         }
-        return;
-      }
 
-      setSelectedUser(null);
-      setSearchQuery("");
-      setSearchResults([]);
-      toast({
-        title: "Invite Sent!",
-        description: `Successfully invited @${selectedUser.username} to the league.`,
-      });
+        if (actionResponse?.errors?.form) {
+          errorMessage = actionResponse.errors.form;
+        }
+
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `Successfully invited @${selectedUser.username} to the league.`,
+        });
+
+        setSelectedUser(null);
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -196,89 +203,104 @@ export function PicksLeagueInviteDialog({ leagueId }: { leagueId: string }) {
 
               <TabsContent value="search" className="space-y-4">
                 <div className="flex flex-col space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Search className="h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by username or name..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
+                  <Command className="rounded-lg border pt-2 shadow-md">
+                    <div className="flex items-center border-b px-3">
+                      <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                      <Input
+                        className="flex w-full border-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="Search users..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        disabled={isInviting}
+                      />
+                    </div>
 
-                  {searchQuery.length > 0 && (
-                    <Command className="rounded-lg border shadow-md">
-                      <CommandEmpty>
-                        {isSearching ? (
-                          <p>Searching...</p>
-                        ) : searchQuery.length < 3 ? (
-                          <p>Enter at least 3 characters to search</p>
-                        ) : (
-                          <p>No users found</p>
-                        )}
-                      </CommandEmpty>
-                      <CommandGroup>
-                        {searchResults.map((user) => (
+                    <CommandEmpty>
+                      {searchQuery.length < 3
+                        ? "Enter at least 3 characters to search..."
+                        : "No users found."}
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {isSearching ? (
+                        <div className="flex items-center justify-center p-4">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
+                      ) : (
+                        searchResults.map((user) => (
                           <CommandItem
                             key={user.id}
-                            onSelect={() => setSelectedUser(user)}
-                            className="flex items-center space-x-2 p-2"
+                            onSelect={() => {
+                              setSelectedUser(user);
+                            }}
+                            className="flex items-center gap-2"
                           >
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={user.image || undefined} />
+                              <AvatarImage
+                                src={user.image ?? undefined}
+                                alt={user.username ?? ""}
+                              />
                               <AvatarFallback>
-                                {user.username?.[0]?.toUpperCase() || "U"}
+                                {user.username
+                                  ?.split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                              <span className="font-medium">
-                                @{user.username}
+                              <span className="text-sm">@{user.username}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {user.firstName} {user.lastName}
                               </span>
-                              {user.firstName && user.lastName && (
-                                <span className="text-sm text-muted-foreground">
-                                  {user.firstName} {user.lastName}
-                                </span>
-                              )}
                             </div>
                           </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </Command>
-                  )}
+                        ))
+                      )}
+                    </CommandGroup>
+                  </Command>
 
                   {selectedUser && (
-                    <div className="rounded-lg border p-4">
-                      <div className="mb-4 flex items-center space-x-2">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={selectedUser.image || undefined} />
-                          <AvatarFallback>
-                            {selectedUser.username?.[0]?.toUpperCase() || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">
-                            @{selectedUser.username}
-                          </p>
-                          {selectedUser.firstName && selectedUser.lastName && (
-                            <p className="text-sm text-muted-foreground">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between rounded-lg border p-3">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={selectedUser.image ?? undefined}
+                              alt={selectedUser.username ?? ""}
+                            />
+                            <AvatarFallback>
+                              {selectedUser.username
+                                ?.split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">
+                              @{selectedUser.username}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
                               {selectedUser.firstName} {selectedUser.lastName}
-                            </p>
-                          )}
+                            </span>
+                          </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedUser(null)}
+                        >
+                          Clear
+                        </Button>
                       </div>
+
                       <Button
-                        type="button"
-                        className="w-full"
-                        disabled={isInviting}
                         onClick={handleDirectInvite}
+                        disabled={isInviting}
+                        className="w-full"
                       >
-                        {isInviting ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Sending Invite...
-                          </>
-                        ) : (
-                          <>Send Invite</>
+                        {isInviting && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
+                        Invite @{selectedUser.username}
                       </Button>
                     </div>
                   )}

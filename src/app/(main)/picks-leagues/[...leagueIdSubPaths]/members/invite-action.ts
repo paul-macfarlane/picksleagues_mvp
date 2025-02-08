@@ -3,7 +3,10 @@
 import { auth } from "@/auth";
 import { getDBPicksLeagueByIdWithMemberCount } from "@/db/picksLeagues";
 import { redirect } from "next/navigation";
-import { createDBPicksLeagueInvite } from "@/db/picksLeagueInvite";
+import {
+  createDBPicksLeagueInvite,
+  getOpenDBPicksLeagueInvitesForUser,
+} from "@/db/picksLeagueInvite";
 import {
   DirectInviteFormSchema,
   PICKS_LEAGUE_INVITE_EXPIRATION,
@@ -99,6 +102,18 @@ export async function picksLeagueInviteAction(
       return {
         errors: {
           form: "User is already a member of this league",
+        },
+      };
+    }
+
+    const existingInvites = await getOpenDBPicksLeagueInvitesForUser(
+      leagueId,
+      userId,
+    );
+    if (existingInvites.length > 0) {
+      return {
+        errors: {
+          form: "User is already invited to this league",
         },
       };
     }

@@ -149,3 +149,23 @@ export async function declineDBPicksLeagueInvite(
       .where(eq(picksLeagueInvites.id, leagueInviteId));
   }
 }
+
+export async function getOpenDBPicksLeagueInvitesForUser(
+  leagueId: string,
+  userId: string,
+): Promise<DBPicksLeagueInvite[]> {
+  const now = new Date();
+
+  return db
+    .select()
+    .from(picksLeagueInvites)
+    .where(
+      and(
+        eq(picksLeagueInvites.leagueId, leagueId),
+        eq(picksLeagueInvites.userId, userId),
+        isNull(picksLeagueInvites.acceptedByUserId),
+        gt(picksLeagueInvites.expiresAt, now),
+        eq(picksLeagueInvites.declined, false),
+      ),
+    );
+}
