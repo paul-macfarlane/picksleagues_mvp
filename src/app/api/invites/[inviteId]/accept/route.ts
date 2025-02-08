@@ -81,12 +81,6 @@ export async function POST(
     }
 
     const dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(dbLeague.id);
-    if (!dbPicksLeagueSeason) {
-      console.error(
-        `unable to find next season for pick league ${dbLeague.id}`,
-      );
-      throw new Error("Unable to find next season");
-    }
 
     const existingLeagueMember = await getDBPicksLeagueMember(
       dbLeague.id,
@@ -115,20 +109,22 @@ export async function POST(
           throw new Error("Unable to create league member");
         }
 
-        await upsertDBPicksLeagueStandings(
-          [
-            {
-              userId: dbUser.id,
-              seasonId: dbPicksLeagueSeason.id,
-              wins: 0,
-              losses: 0,
-              pushes: 0,
-              points: 0,
-              rank: 1, // users can't join mid-season so can assume a tie for first
-            },
-          ],
-          tx,
-        );
+        if (dbPicksLeagueSeason) {
+          await upsertDBPicksLeagueStandings(
+            [
+              {
+                userId: dbUser.id,
+                seasonId: dbPicksLeagueSeason.id,
+                wins: 0,
+                losses: 0,
+                pushes: 0,
+                points: 0,
+                rank: 1, // users can't join mid-season so can assume a tie for first
+              },
+            ],
+            tx,
+          );
+        }
       });
     }
 

@@ -65,7 +65,7 @@ export function LeaveLeagueDialogue({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="w-full" variant="destructive">
+        <Button variant="destructive">
           <LogOut /> Leave League
         </Button>
       </AlertDialogTrigger>

@@ -131,25 +131,38 @@ export function PicksLeagueMembersTab({
         );
       },
     },
-    {
+  ];
+
+  if (!leagueIsInSeason) {
+    columns.push({
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
         const member = row.original;
+        const isCurrentUser = member.id === userId;
+
         return (
-          <div className="">
-            {canRemoveUser(member.id) && (
-              <RemoveMemberDialogue
-                disabled={!canRemoveUser(member.id)}
-                memberUserId={member.id}
+          <div className="flex items-center gap-2">
+            {isCurrentUser ? (
+              <LeaveLeagueDialogue
                 picksLeagueId={dbLeagueWithUserRole.id}
+                canLeaveLeague={canLeaveLeague}
+                cannotLeaveLeagueReason={cannotLeaveLeagueReason}
               />
+            ) : (
+              canRemoveUser(member.id) && (
+                <RemoveMemberDialogue
+                  disabled={!canRemoveUser(member.id)}
+                  memberUserId={member.id}
+                  picksLeagueId={dbLeagueWithUserRole.id}
+                />
+              )
             )}
           </div>
         );
       },
-    },
-  ];
+    });
+  }
 
   return (
     <>
@@ -183,28 +196,6 @@ export function PicksLeagueMembersTab({
           </div>
         </CardContent>
       </Card>
-
-      {!leagueIsInSeason && (
-        <Card className="mx-auto mt-6 w-full max-w-4xl">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Leave League</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <UserPen className="h-4 w-4 opacity-70" />
-                <div className="space-y-1">
-                  <LeaveLeagueDialogue
-                    picksLeagueId={dbLeagueWithUserRole.id}
-                    canLeaveLeague={canLeaveLeague}
-                    cannotLeaveLeagueReason={cannotLeaveLeagueReason}
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </>
   );
 }
