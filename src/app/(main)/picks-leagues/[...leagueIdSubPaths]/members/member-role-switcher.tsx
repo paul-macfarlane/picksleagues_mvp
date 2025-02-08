@@ -121,28 +121,25 @@ export function MemberRoleSwitcher({
 
   return (
     <>
-      <Label className={"flex w-full items-center justify-between gap-2"}>
-        Member Role
-        <Select onValueChange={handleRoleChange} defaultValue={member.role}>
-          <SelectTrigger
-            className="w-[150px] md:w-[180px]"
-            disabled={submitting || (isCurrentUser && isOnlyCommissioner)}
-          >
-            <SelectValue placeholder="Select a role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {PICKS_LEAGUE_MEMBER_ROLES_VALUES.filter(
-                (role) => role !== PicksLeagueMemberRoles.NONE,
-              ).map((role) => (
-                <SelectItem key={role} value={role}>
-                  {role}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </Label>
+      <Select onValueChange={handleRoleChange} defaultValue={member.role}>
+        <SelectTrigger
+          className="w-[150px] md:w-[180px]"
+          disabled={submitting || (isCurrentUser && isOnlyCommissioner)}
+        >
+          <SelectValue placeholder="Select a role" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {PICKS_LEAGUE_MEMBER_ROLES_VALUES.filter(
+              (role) => role !== PicksLeagueMemberRoles.NONE,
+            ).map((role) => (
+              <SelectItem key={role} value={role}>
+                {role}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
 
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>

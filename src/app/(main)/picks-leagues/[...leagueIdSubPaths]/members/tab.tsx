@@ -4,23 +4,35 @@ import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PicksLeagueInviteDialog } from "./invite-dialog";
-import { UserPen, Users } from "lucide-react";
+import { ArrowUpDown, UserPen, Users } from "lucide-react";
 import { DBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { MemberRoleSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/member-role-switcher";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { RemoveMemberDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/remove-member-dialogue";
 import { LeaveLeagueDialogue } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/leave-league-dialogue";
-import { Separator } from "@/components/ui/separator";
+import { DataTable } from "@/components/ui/data-table";
+import { Column, ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+
+function TableHeader({
+  column,
+  name,
+}: {
+  column: Column<DBPicksLeagueMemberDetails, unknown>;
+  name: string;
+}) {
+  return (
+    <Button
+      className="-ml-2 px-1"
+      variant="ghost"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+      {name}
+      <ArrowUpDown className="h-4 w-4" />
+    </Button>
+  );
+}
 
 export interface PicksLeagueMembersTabProps {
   userId: string;
@@ -49,7 +61,6 @@ export function PicksLeagueMembersTab({
     dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
     memberUserId !== userId;
 
-  // note also leave league dialogue will not even be visible while in season
   let canLeaveLeague =
     dbLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER;
   let cannotLeaveLeagueReason = "";
@@ -66,124 +77,134 @@ export function PicksLeagueMembersTab({
     }
   }
 
+  const columns: ColumnDef<DBPicksLeagueMemberDetails>[] = [
+    {
+      accessorKey: "username",
+      header: ({ column }) => TableHeader({ column, name: "Member" }),
+      cell: ({ row }) => {
+        const member = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Avatar>
+              <AvatarImage
+                src={member.image ?? undefined}
+                alt={member.username!}
+              />
+              <AvatarFallback>
+                {member
+                  .username!.split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+
+            <span>
+              {member.username} ({member.firstName}){" "}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "role",
+      accessorKey: "role",
+      header: ({ column }) => TableHeader({ column, name: "Role" }),
+      cell: ({ row }) => {
+        const member = row.original;
+        return dbLeagueWithUserRole.role ===
+          PicksLeagueMemberRoles.COMMISSIONER ? (
+          <MemberRoleSwitcher
+            currentUserId={userId}
+            picksLeagueId={dbLeagueWithUserRole.id}
+            member={member}
+            commissionerCount={commissionerCount}
+            onRoleChange={(newRole) => {
+              setMemberDetails(
+                memberDetails.map((m) =>
+                  m.id === member.id ? { ...m, role: newRole } : m,
+                ),
+              );
+            }}
+          />
+        ) : (
+          <span>{member.role}</span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const member = row.original;
+        return (
+          <div className="">
+            {canRemoveUser(member.id) && (
+              <RemoveMemberDialogue
+                disabled={!canRemoveUser(member.id)}
+                memberUserId={member.id}
+                picksLeagueId={dbLeagueWithUserRole.id}
+              />
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <>
       <Card className="mx-auto w-full max-w-4xl">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>League Members</CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <ul className="space-y-4">
-            {memberDetails.map((member) => (
-              <li key={member.id} className="flex items-center justify-between">
-                <div className="flex w-full items-center gap-2">
-                  <Avatar className={"hidden md:block"}>
-                    <AvatarImage
-                      src={member.image ?? undefined}
-                      alt={member.username!}
-                    />
-                    <AvatarFallback>
-                      {member
-                        .username!.split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-
-                  {dbLeagueWithUserRole.role ===
-                  PicksLeagueMemberRoles.COMMISSIONER ? (
-                    <div className="md:text-md flex w-full items-center justify-between gap-2 text-sm">
-                      <span className="font-medium">
-                        {member.username} ({member.firstName} {member.lastName})
-                      </span>
-
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="secondary">
-                            <UserPen /> Edit
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Edit Member</DialogTitle>
-                            <DialogDescription></DialogDescription>
-                          </DialogHeader>
-
-                          <div className="flex w-full flex-col gap-2">
-                            <MemberRoleSwitcher
-                              currentUserId={userId}
-                              member={member}
-                              picksLeagueId={dbLeagueWithUserRole.id}
-                              commissionerCount={commissionerCount}
-                              onRoleChange={(newRole) => {
-                                setMemberDetails(
-                                  memberDetails.map((m) =>
-                                    m.id === member.id
-                                      ? { ...m, role: newRole }
-                                      : m,
-                                  ),
-                                );
-                              }}
-                            />
-
-                            <div className="flex w-full items-center justify-between">
-                              <span className="text-sm">Remove Member</span>
-
-                              <RemoveMemberDialogue
-                                disabled={!canRemoveUser(member.id)}
-                                memberUserId={member.id}
-                                picksLeagueId={dbLeagueWithUserRole.id}
-                              />
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  ) : (
-                    <div className="md:text-md text-sm">
-                      <p className="font-medium">
-                        {member.username} ({member.firstName} {member.lastName})
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {member.role}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-
           {canSendInvite && (
             <PicksLeagueInviteDialog leagueId={dbLeagueWithUserRole.id} />
           )}
+        </CardHeader>
 
-          {!leagueIsInSeason && (
-            <>
-              <Separator />
-
-              <LeaveLeagueDialogue
-                picksLeagueId={dbLeagueWithUserRole.id}
-                canLeaveLeague={canLeaveLeague}
-                cannotLeaveLeagueReason={cannotLeaveLeagueReason}
-              />
-            </>
-          )}
+        <CardContent className="space-y-4">
+          <DataTable columns={columns} data={memberDetails} />
         </CardContent>
       </Card>
 
-      <Card className="mx-auto mt-2 w-full max-w-4xl md:mt-4">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Card className="mx-auto mt-6 w-full max-w-4xl">
+        <CardHeader>
           <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {memberDetails.length} / {dbLeagueWithUserRole.size}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Users className="h-4 w-4 opacity-70" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium leading-none">
+                  {memberDetails.length} / {dbLeagueWithUserRole.size}
+                </p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {!leagueIsInSeason && (
+        <Card className="mx-auto mt-6 w-full max-w-4xl">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Leave League</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <UserPen className="h-4 w-4 opacity-70" />
+                <div className="space-y-1">
+                  <LeaveLeagueDialogue
+                    picksLeagueId={dbLeagueWithUserRole.id}
+                    canLeaveLeague={canLeaveLeague}
+                    cannotLeaveLeagueReason={cannotLeaveLeagueReason}
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 }
