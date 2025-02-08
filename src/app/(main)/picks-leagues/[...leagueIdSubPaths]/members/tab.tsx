@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { DBPicksLeagueInviteWithUser } from "@/db/picksLeagueInvite";
 import { DateDisplay } from "@/components/date-display";
 import { OutstandingInviteRoleSwitcher } from "./outstanding-invite-role-switcher";
+import { RevokeInviteButton } from "./revoke-invite-button";
 
 function TableHeader<T>({
   column,
@@ -215,6 +216,11 @@ export function PicksLeagueMembersTab({
           <DateDisplay timestampMS={row.original.expiresAt.getTime()} />
         </span>
       ),
+    },
+    {
+      id: "actions",
+      header: ({ column }) => TableHeader({ column, name: "Actions" }),
+      cell: ({ row }) => <RevokeInviteButton invite={row.original} />,
     },
   ];
 

@@ -228,3 +228,12 @@ export async function updateDBPicksLeagueInvite(
 
   return queryRes.length ? queryRes[0] : null;
 }
+
+export async function deleteDBPicksLeagueInvite(
+  id: string,
+  tx?: DBTransaction,
+): Promise<void> {
+  tx
+    ? await tx.delete(picksLeagueInvites).where(eq(picksLeagueInvites.id, id))
+    : await db.delete(picksLeagueInvites).where(eq(picksLeagueInvites.id, id));
+}
