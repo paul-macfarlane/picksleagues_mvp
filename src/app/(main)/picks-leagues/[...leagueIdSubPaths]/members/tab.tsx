@@ -4,7 +4,7 @@ import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PicksLeagueInviteDialog } from "./invite-dialog";
-import { ArrowUpDown, UserPen, Users } from "lucide-react";
+import { ArrowUpDown, Users } from "lucide-react";
 import { DBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { MemberRoleSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/members/member-role-switcher";
@@ -14,12 +14,14 @@ import { DataTable } from "@/components/ui/data-table";
 import { Column, ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PickLeagueInviteWithUser } from "@/db/picksLeagueInvite";
+import { DateDisplay } from "@/components/date-display";
 
-function TableHeader({
+function TableHeader<T>({
   column,
   name,
 }: {
-  column: Column<DBPicksLeagueMemberDetails, unknown>;
+  column: Column<T, unknown>;
   name: string;
 }) {
   return (
@@ -39,6 +41,7 @@ export interface PicksLeagueMembersTabProps {
   dbLeagueWithUserRole: DBPicksLeagueWithUserRole;
   dbLeagueMemberDetails: DBPicksLeagueMemberDetails[];
   leagueIsInSeason: boolean;
+  outstandingInvites: PickLeagueInviteWithUser[];
 }
 
 export function PicksLeagueMembersTab({
@@ -46,6 +49,7 @@ export function PicksLeagueMembersTab({
   dbLeagueWithUserRole,
   dbLeagueMemberDetails,
   leagueIsInSeason,
+  outstandingInvites,
 }: PicksLeagueMembersTabProps) {
   const [memberDetails, setMemberDetails] = useState(dbLeagueMemberDetails);
   const commissionerCount = memberDetails.filter(
@@ -164,20 +168,68 @@ export function PicksLeagueMembersTab({
     });
   }
 
+  const inviteColumns: ColumnDef<PickLeagueInviteWithUser>[] = [
+    {
+      accessorKey: "user",
+      header: ({ column }) => TableHeader({ column, name: "User" }),
+      cell: ({ row }) => {
+        const invite = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Avatar>
+              <AvatarImage src={invite.user.image ?? undefined} />
+              <AvatarFallback>
+                {invite.user.username
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+
+            <span>
+              {invite.user.username} ({invite.user.firstName}){" "}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "expiresAt",
+      header: ({ column }) => TableHeader({ column, name: "Expires" }),
+      cell: ({ row }) => (
+        <span className="text-sm">
+          <DateDisplay timestampMS={row.original.expiresAt.getTime()} />
+        </span>
+      ),
+    },
+  ];
+
   return (
-    <>
+    <div className="space-y-4">
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>League Members</CardTitle>
-          {canSendInvite && (
-            <PicksLeagueInviteDialog leagueId={dbLeagueWithUserRole.id} />
-          )}
         </CardHeader>
 
         <CardContent className="space-y-4">
           <DataTable columns={columns} data={memberDetails} />
         </CardContent>
       </Card>
+
+      {dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
+        outstandingInvites.length > 0 && (
+          <Card className="mx-auto w-full max-w-4xl">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Outstanding Invites</CardTitle>
+              {canSendInvite && (
+                <PicksLeagueInviteDialog leagueId={dbLeagueWithUserRole.id} />
+              )}
+            </CardHeader>
+            <CardContent>
+              <DataTable columns={inviteColumns} data={outstandingInvites} />
+            </CardContent>
+          </Card>
+        )}
 
       <Card className="mx-auto mt-6 w-full max-w-4xl">
         <CardHeader>
@@ -196,6 +248,6 @@ export function PicksLeagueMembersTab({
           </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }

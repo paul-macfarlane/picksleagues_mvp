@@ -5,9 +5,12 @@ import {
   picksLeagueMembers,
   picksLeagues,
   sportLeagues,
+  users,
 } from "@/db/schema";
 import { DBPicksLeague } from "@/db/picksLeagues";
 import { DBTransaction } from "@/db/transactions";
+import { DBUser } from "@/db/users";
+import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 
 export interface DBPicksLeagueDetailsForInvite extends DBPicksLeague {
   memberCount: number;
@@ -50,6 +53,7 @@ export interface CreateDBPicksLeagueInvite {
   leagueId: string;
   expiresAt: Date;
   userId?: string;
+  role: PicksLeagueMemberRoles;
 }
 
 export interface DBPicksLeagueInvite {
@@ -60,6 +64,7 @@ export interface DBPicksLeagueInvite {
   acceptedByUserId: string | null;
   expiresAt: Date;
   userId: string | null;
+  role: PicksLeagueMemberRoles;
 }
 
 export interface DBPicksLeaguePendingInvite extends DBPicksLeagueInvite {
@@ -76,13 +81,7 @@ export async function getDBPicksLeaguePendingInvitesForUser(
 
   return db
     .select({
-      id: picksLeagueInvites.id,
-      createdAt: picksLeagueInvites.createdAt,
-      updatedAt: picksLeagueInvites.updatedAt,
-      leagueId: picksLeagueInvites.leagueId,
-      acceptedByUserId: picksLeagueInvites.acceptedByUserId,
-      expiresAt: picksLeagueInvites.expiresAt,
-      userId: picksLeagueInvites.userId,
+      ...getTableColumns(picksLeagueInvites),
       leagueName: picksLeagues.name,
       sportLeagueAbbreviation: sportLeagues.abbreviation,
       pickType: picksLeagues.pickType,
@@ -163,6 +162,32 @@ export async function getOpenDBPicksLeagueInvitesForUser(
       and(
         eq(picksLeagueInvites.leagueId, leagueId),
         eq(picksLeagueInvites.userId, userId),
+        isNull(picksLeagueInvites.acceptedByUserId),
+        gt(picksLeagueInvites.expiresAt, now),
+        eq(picksLeagueInvites.declined, false),
+      ),
+    );
+}
+
+export interface PickLeagueInviteWithUser extends DBPicksLeagueInvite {
+  user: DBUser;
+}
+
+export async function getOutstandingDBPicksLeagueInvites(
+  leagueId: string,
+): Promise<PickLeagueInviteWithUser[]> {
+  const now = new Date();
+
+  return db
+    .select({
+      ...getTableColumns(picksLeagueInvites),
+      user: getTableColumns(users),
+    })
+    .from(picksLeagueInvites)
+    .innerJoin(users, eq(users.id, picksLeagueInvites.userId))
+    .where(
+      and(
+        eq(picksLeagueInvites.leagueId, leagueId),
         isNull(picksLeagueInvites.acceptedByUserId),
         gt(picksLeagueInvites.expiresAt, now),
         eq(picksLeagueInvites.declined, false),
