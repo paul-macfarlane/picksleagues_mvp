@@ -33,7 +33,7 @@ export default function Navbar({
 }: NavbarProps) {
   // lint rules ignored below because in order for the pathname to update a full refresh is needed
   return (
-    <header className="sticky top-0 z-10 mx-auto w-full border-b border-primary bg-primary-foreground p-4">
+    <header className="sticky top-0 z-10 mx-auto w-full border-b border-primary bg-primary-foreground bg-gradient-to-b from-primary/20 to-background p-4">
       <nav className="flex items-center justify-between">
         {dbUser ? (
           <div className="hidden items-center gap-4 md:flex">
