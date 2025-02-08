@@ -82,8 +82,10 @@ export default async function InvitesPage(props: {
     );
   }
 
-  const dbLeague = await getDBPicksLeagueDetailsForInvite(parseInviteId.data);
-  if (!dbLeague) {
+  const dbLeagueWithInvite = await getDBPicksLeagueDetailsForInvite(
+    parseInviteId.data,
+  );
+  if (!dbLeagueWithInvite) {
     return (
       <ErrorPage
         title="Error"
@@ -96,7 +98,7 @@ export default async function InvitesPage(props: {
     );
   }
 
-  if (dbLeague.memberCount >= dbLeague.size) {
+  if (dbLeagueWithInvite.memberCount >= dbLeagueWithInvite.size) {
     return (
       <ErrorPage
         title="Error"
@@ -109,11 +111,7 @@ export default async function InvitesPage(props: {
     );
   }
 
-  if (
-    new Date() > dbLeague.invite.expiresAt ||
-    (dbLeague.invite.acceptedByUserId &&
-      dbLeague.invite.acceptedByUserId !== session.user.id)
-  ) {
+  if (new Date() > dbLeagueWithInvite.invite.expiresAt) {
     return (
       <ErrorPage
         title="Error"
@@ -126,35 +124,27 @@ export default async function InvitesPage(props: {
     );
   }
 
-  const dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(dbLeague.id);
-  if (!dbPicksLeagueSeason) {
-    console.error(`unable to find next season for pick league ${dbLeague.id}`);
-
-    return (
-      <ErrorPage
-        title="Error"
-        description="An unexpected error occurred. Please try again later."
-        buttonProps={{
-          link: "/dashboard",
-          text: "Back to Dashboard",
-        }}
-      />
-    );
-  }
+  const dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(
+    dbLeagueWithInvite.id,
+  );
 
   const existingLeagueMember = await getDBPicksLeagueMember(
-    dbLeague.id,
+    dbLeagueWithInvite.id,
     dbUser.id,
   );
   if (!existingLeagueMember) {
     const createDBLeagueMemberData = {
       userId: dbUser.id,
-      leagueId: dbLeague.id,
-      role: PicksLeagueMemberRoles.MEMBER,
+      leagueId: dbLeagueWithInvite.id,
+      role: dbLeagueWithInvite.invite.role,
     };
     try {
       await withDBTransaction(async (tx) => {
-        await acceptDBPicksLeagueInvite(dbUser.id, dbLeague.invite.id, tx);
+        await acceptDBPicksLeagueInvite(
+          dbUser.id,
+          dbLeagueWithInvite.invite.id,
+          tx,
+        );
 
         const dbLeagueMember = await createDBPicksLeagueMember(
           createDBLeagueMemberData,
@@ -169,20 +159,22 @@ export default async function InvitesPage(props: {
           throw new Error("Unable to create league member");
         }
 
-        await upsertDBPicksLeagueStandings(
-          [
-            {
-              userId: dbUser.id,
-              seasonId: dbPicksLeagueSeason.id,
-              wins: 0,
-              losses: 0,
-              pushes: 0,
-              points: 0,
-              rank: 1, // users can't join mid-season so can assume a tie for first
-            },
-          ],
-          tx,
-        );
+        if (dbPicksLeagueSeason) {
+          await upsertDBPicksLeagueStandings(
+            [
+              {
+                userId: dbUser.id,
+                seasonId: dbPicksLeagueSeason.id,
+                wins: 0,
+                losses: 0,
+                pushes: 0,
+                points: 0,
+                rank: 1, // users can't join mid-season so can assume a tie for first
+              },
+            ],
+            tx,
+          );
+        }
       });
     } catch (e: unknown) {
       console.error(
@@ -204,5 +196,5 @@ export default async function InvitesPage(props: {
     }
   }
 
-  return redirect(getPicksLeagueHomeUrl(dbLeague.id));
+  return redirect(getPicksLeagueHomeUrl(dbLeagueWithInvite.id));
 }
