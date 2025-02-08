@@ -216,20 +216,17 @@ export function PicksLeagueMembersTab({
         </CardContent>
       </Card>
 
-      {dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
-        outstandingInvites.length > 0 && (
-          <Card className="mx-auto w-full max-w-4xl">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Outstanding Invites</CardTitle>
-              {canSendInvite && (
-                <PicksLeagueInviteDialog leagueId={dbLeagueWithUserRole.id} />
-              )}
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={inviteColumns} data={outstandingInvites} />
-            </CardContent>
-          </Card>
-        )}
+      {canSendInvite && (
+        <Card className="mx-auto w-full max-w-4xl">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Outstanding Invites</CardTitle>
+            <PicksLeagueInviteDialog leagueId={dbLeagueWithUserRole.id} />
+          </CardHeader>
+          <CardContent>
+            <DataTable columns={inviteColumns} data={outstandingInvites} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="mx-auto mt-6 w-full max-w-4xl">
         <CardHeader>
