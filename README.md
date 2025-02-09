@@ -32,4 +32,5 @@ This app is built using Next.js, and Turso. To run lcoally
 3. Create a local db file using npm run db:local (keep the process running)
 4. Install dependencies by running `npm install --force`
 5. Run `npm run db:generate && npm run db:migrate` to run database migrations
-6. Finally, run `npm run dev` to run the app locally
+6. Run `npm run db:seed` which will seed your local database with fake sport league data.
+7. Finally, run `npm run dev` to run the app locally
