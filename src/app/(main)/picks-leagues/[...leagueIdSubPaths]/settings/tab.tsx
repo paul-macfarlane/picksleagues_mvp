@@ -39,6 +39,11 @@ export async function PicksLeagueSettingsTab({
     );
   }
 
+  // only show weeks after current moment in time so league can not be set to date in past
+  dbSportLeagueDetails.season.weeks = dbSportLeagueDetails.season.weeks.filter(
+    (week) => week.startTime > new Date(),
+  );
+
   const dbPicksLeagueDetails = await getPickLeagueSettingsDetails(
     dbPicksLeague.id,
     dbPicksLeagueSeason.id,

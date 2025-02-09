@@ -442,6 +442,17 @@ export async function deleteDBPicksLeague(leagueId: string): Promise<void> {
   return;
 }
 
+export async function deleteDBPicksLeagues(
+  leagueIds: string[],
+  tx?: DBTransaction,
+): Promise<void> {
+  tx
+    ? await tx.delete(picksLeagues).where(inArray(picksLeagues.id, leagueIds))
+    : await db.delete(picksLeagues).where(inArray(picksLeagues.id, leagueIds));
+
+  return;
+}
+
 export interface DBPicksLeagueWithMembers extends DBPicksLeague {
   members: DBPicksLeagueMember[];
 }

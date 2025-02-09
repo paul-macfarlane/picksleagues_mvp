@@ -5,17 +5,19 @@ import { getDBPicksLeagueByIdWithMemberCount } from "@/db/picksLeagues";
 import { redirect } from "next/navigation";
 import {
   createDBPicksLeagueInvite,
-  getOpenDBPicksLeagueInvitesForUser,
+  getOpenDBPicksLeagueInvitesForLeagueAndUser,
 } from "@/db/picksLeagueInvite";
 import {
   DirectInviteFormSchema,
-  PICKS_LEAGUE_INVITE_EXPIRATION,
   PicksLeagueInviteFormSchema,
 } from "@/models/picksLeagueInvites";
 import { AUTH_URL } from "@/models/auth";
 import { getDBPicksLeagueMember } from "@/db/picksLeagueMembers";
 import { getDBUserById } from "@/db/users";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
+import { picksLeagueIsInSeason } from "@/services/picksLeagues";
+import { getNextDBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
+import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 
 export interface LeagueInviteActionState {
   errors?: {
@@ -86,7 +88,6 @@ export async function picksLeagueInviteAction(
       };
     }
 
-    // Check if user exists
     const invitedUser = await getDBUserById(userId);
     if (!invitedUser) {
       return {
@@ -96,7 +97,6 @@ export async function picksLeagueInviteAction(
       };
     }
 
-    // Check if user is already a member
     const existingMember = await getDBPicksLeagueMember(leagueId, userId);
     if (existingMember) {
       return {
@@ -106,7 +106,7 @@ export async function picksLeagueInviteAction(
       };
     }
 
-    const existingInvites = await getOpenDBPicksLeagueInvitesForUser(
+    const existingInvites = await getOpenDBPicksLeagueInvitesForLeagueAndUser(
       leagueId,
       userId,
     );
@@ -118,12 +118,39 @@ export async function picksLeagueInviteAction(
       };
     }
 
+    const leagueIsInSeason = await picksLeagueIsInSeason(leagueId);
+    if (leagueIsInSeason) {
+      return {
+        errors: {
+          form: "Cannot invite members to league while in season",
+        },
+      };
+    }
+
+    const nextSeason = await getNextDBPicksLeagueSeason(leagueId);
+    if (!nextSeason) {
+      return {
+        errors: {
+          form: "There is no next season for this league",
+        },
+      };
+    }
+
+    const startWeek = await getDBSportLeagueWeekById(
+      nextSeason.startSportLeagueWeekId,
+    );
+    if (!startWeek) {
+      return {
+        errors: {
+          form: "Unable to find start week for next season",
+        },
+      };
+    }
+
     const createInviteData = {
       leagueId,
       userId,
-      expiresAt: new Date(
-        new Date().getTime() + PICKS_LEAGUE_INVITE_EXPIRATION,
-      ),
+      expiresAt: startWeek.startTime,
       role,
     };
 
@@ -156,9 +183,8 @@ export async function picksLeagueInviteAction(
     };
   }
 
-  const dbPicksLeague = await getDBPicksLeagueByIdWithMemberCount(
-    parsed.data.leagueId,
-  );
+  const { leagueId, role } = parsed.data;
+  const dbPicksLeague = await getDBPicksLeagueByIdWithMemberCount(leagueId);
   if (!dbPicksLeague) {
     return {
       errors: {
@@ -195,10 +221,39 @@ export async function picksLeagueInviteAction(
     };
   }
 
+  const leagueIsInSeason = await picksLeagueIsInSeason(leagueId);
+  if (leagueIsInSeason) {
+    return {
+      errors: {
+        form: "Cannot invite members to league while in season",
+      },
+    };
+  }
+
+  const nextSeason = await getNextDBPicksLeagueSeason(leagueId);
+  if (!nextSeason) {
+    return {
+      errors: {
+        form: "There is no next season for this league",
+      },
+    };
+  }
+
+  const startWeek = await getDBSportLeagueWeekById(
+    nextSeason.startSportLeagueWeekId,
+  );
+  if (!startWeek) {
+    return {
+      errors: {
+        form: "Unable to find start week for next season",
+      },
+    };
+  }
+
   const createInviteData = {
-    leagueId: parsed.data.leagueId,
-    expiresAt: new Date(new Date().getTime() + PICKS_LEAGUE_INVITE_EXPIRATION),
-    role: parsed.data.role,
+    leagueId,
+    expiresAt: startWeek.startTime,
+    role,
   };
   const dbInvite = await createDBPicksLeagueInvite(createInviteData);
   if (!dbInvite) {

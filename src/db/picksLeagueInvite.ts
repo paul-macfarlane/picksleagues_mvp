@@ -1,5 +1,13 @@
 import { db } from "@/db/client";
-import { eq, getTableColumns, sql, and, isNull, gt } from "drizzle-orm";
+import {
+  eq,
+  getTableColumns,
+  sql,
+  and,
+  isNull,
+  gt,
+  inArray,
+} from "drizzle-orm";
 import {
   picksLeagueInvites,
   picksLeagueMembers,
@@ -149,7 +157,7 @@ export async function declineDBPicksLeagueInvite(
   }
 }
 
-export async function getOpenDBPicksLeagueInvitesForUser(
+export async function getOpenDBPicksLeagueInvitesForLeagueAndUser(
   leagueId: string,
   userId: string,
 ): Promise<DBPicksLeagueInvite[]> {
@@ -169,11 +177,42 @@ export async function getOpenDBPicksLeagueInvitesForUser(
     );
 }
 
+export async function getOpenDBPicksLeagueInvitesForLeague(
+  leagueId: string,
+  tx?: DBTransaction,
+): Promise<DBPicksLeagueInvite[]> {
+  const now = new Date();
+
+  return tx
+    ? tx
+        .select()
+        .from(picksLeagueInvites)
+        .where(
+          and(
+            eq(picksLeagueInvites.leagueId, leagueId),
+            isNull(picksLeagueInvites.acceptedByUserId),
+            gt(picksLeagueInvites.expiresAt, now),
+            eq(picksLeagueInvites.declined, false),
+          ),
+        )
+    : db
+        .select()
+        .from(picksLeagueInvites)
+        .where(
+          and(
+            eq(picksLeagueInvites.leagueId, leagueId),
+            isNull(picksLeagueInvites.acceptedByUserId),
+            gt(picksLeagueInvites.expiresAt, now),
+            eq(picksLeagueInvites.declined, false),
+          ),
+        );
+}
+
 export interface DBPicksLeagueInviteWithUser extends DBPicksLeagueInvite {
   user: DBUser;
 }
 
-export async function getOutstandingDBPicksLeagueInvites(
+export async function getOutstandingDBPicksLeagueInvitesWithUser(
   leagueId: string,
 ): Promise<DBPicksLeagueInviteWithUser[]> {
   const now = new Date();
@@ -227,6 +266,24 @@ export async function updateDBPicksLeagueInvite(
         .returning();
 
   return queryRes.length ? queryRes[0] : null;
+}
+
+export async function updateDBPicksLeagueInvitesExpiry(
+  ids: string[],
+  expiresAt: Date,
+  tx?: DBTransaction,
+): Promise<DBPicksLeagueInvite[]> {
+  return tx
+    ? tx
+        .update(picksLeagueInvites)
+        .set({ expiresAt })
+        .where(inArray(picksLeagueInvites.id, ids))
+        .returning()
+    : await db
+        .update(picksLeagueInvites)
+        .set({ expiresAt })
+        .where(inArray(picksLeagueInvites.id, ids))
+        .returning();
 }
 
 export async function deleteDBPicksLeagueInvite(

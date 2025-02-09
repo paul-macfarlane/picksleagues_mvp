@@ -57,10 +57,6 @@ export async function POST(
       throw new NotAllowedError("You have already accepted this invite");
     }
 
-    if (dbLeague.invite.expiresAt < new Date()) {
-      throw new NotAllowedError("Invite has expired");
-    }
-
     await declineDBPicksLeagueInvite(inviteId);
 
     return Response.json({

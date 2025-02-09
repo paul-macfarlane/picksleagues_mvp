@@ -91,18 +91,16 @@ export function PicksLeagueSettingsForm({
   const leagueName = form.watch("name");
   const logoUrl = form.watch("logoUrl");
 
-  let defaultSportLeagueWeeks = [];
+  let sportLeagueWeeks = [];
   if (canEditSeasonSettings) {
-    defaultSportLeagueWeeks = sportLeague.season.weeks;
+    sportLeagueWeeks = sportLeague.season.weeks;
   } else {
-    defaultSportLeagueWeeks = [
+    sportLeagueWeeks = [
       picksLeague.startSportLeagueWeek,
       picksLeague.endSportLeagueWeek,
     ];
   }
-  const [sportLeagueWeeks, setSportLeagueWeeks] = useState(
-    defaultSportLeagueWeeks,
-  );
+
   const [startSportLeagueWeekId, setStartSportLeagueWeekId] = useState(
     defaultStartSportLeagueWeekId,
   );
