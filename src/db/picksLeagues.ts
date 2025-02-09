@@ -483,3 +483,49 @@ export async function getUserDBPicksLeaguesWithMembers(
 
   return leaguesWithMembers;
 }
+
+export async function getDBPicksLeaguesWithoutSportLeagueSeason(
+  sportLeagueId: string,
+  sportLeagueSeasonId: string,
+  tx?: DBTransaction,
+): Promise<DBPicksLeague[]> {
+  const queryRows = tx
+    ? await tx
+        .select({
+          ...getTableColumns(picksLeagues),
+        })
+        .from(picksLeagues)
+        .leftJoin(
+          picksLeagueSeasons,
+          and(
+            eq(picksLeagueSeasons.leagueId, picksLeagues.id),
+            eq(picksLeagueSeasons.sportLeagueSeasonId, sportLeagueSeasonId),
+          ),
+        )
+        .where(
+          and(
+            eq(picksLeagues.sportLeagueId, sportLeagueId),
+            isNull(picksLeagueSeasons.id),
+          ),
+        )
+    : await db
+        .select({
+          ...getTableColumns(picksLeagues),
+        })
+        .from(picksLeagues)
+        .leftJoin(
+          picksLeagueSeasons,
+          and(
+            eq(picksLeagueSeasons.leagueId, picksLeagues.id),
+            eq(picksLeagueSeasons.sportLeagueSeasonId, sportLeagueSeasonId),
+          ),
+        )
+        .where(
+          and(
+            eq(picksLeagues.sportLeagueId, sportLeagueId),
+            isNull(picksLeagueSeasons.id),
+          ),
+        );
+
+  return queryRows;
+}

@@ -17,6 +17,7 @@ import {
   lte,
 } from "drizzle-orm";
 import { DBPicksLeagueMember } from "@/db/picksLeagueMembers";
+import { DBSportLeagueWeek } from "./sportLeagueWeeks";
 
 export interface CreateDBPicksLeagueSeason {
   leagueId: string;
@@ -47,6 +48,17 @@ export async function createDBPicksLeagueSeason(
   }
 
   return queryRows[0];
+}
+
+export async function bulkCreateDBPicksLeagueSeasons(
+  data: CreateDBPicksLeagueSeason[],
+  tx?: DBTransaction,
+): Promise<DBPicksLeagueSeason[]> {
+  const queryRows = tx
+    ? await tx.insert(picksLeagueSeasons).values(data).returning()
+    : await db.insert(picksLeagueSeasons).values(data).returning();
+
+  return queryRows;
 }
 
 export interface UpdateDBPicksLeagueSeason {
@@ -270,4 +282,56 @@ export async function getPreviousDBPicksLeagueSeason(
     )
     .orderBy(desc(endWeekAlias.startTime));
   return queryRows.length > 0 ? queryRows[0].season : null;
+}
+
+export interface DBPicksLeagueSeasonWithStartAndEndWeek
+  extends DBPicksLeagueSeason {
+  startweek: DBSportLeagueWeek;
+  endweek: DBSportLeagueWeek;
+}
+
+export async function getLatestDBPicksLeagueSeason(
+  picksLeagueId: string,
+  tx?: DBTransaction,
+): Promise<DBPicksLeagueSeasonWithStartAndEndWeek | null> {
+  const startWeekAlias = aliasedTable(sportLeagueWeeks, "startWeekAlias");
+  const endWeekAlias = aliasedTable(sportLeagueWeeks, "endWeekAlias");
+  const queryRows = tx
+    ? await tx
+        .select({
+          ...getTableColumns(picksLeagueSeasons),
+          startweek: getTableColumns(startWeekAlias),
+          endweek: getTableColumns(endWeekAlias),
+        })
+        .from(picksLeagueSeasons)
+        .where(eq(picksLeagueSeasons.leagueId, picksLeagueId))
+        .innerJoin(
+          startWeekAlias,
+          eq(startWeekAlias.id, picksLeagueSeasons.startSportLeagueWeekId),
+        )
+        .innerJoin(
+          endWeekAlias,
+          eq(endWeekAlias.id, picksLeagueSeasons.endSportLeagueWeekId),
+        )
+        .orderBy(desc(startWeekAlias.startTime))
+        .limit(1)
+    : await db
+        .select({
+          ...getTableColumns(picksLeagueSeasons),
+          startweek: getTableColumns(startWeekAlias),
+          endweek: getTableColumns(endWeekAlias),
+        })
+        .from(picksLeagueSeasons)
+        .where(eq(picksLeagueSeasons.leagueId, picksLeagueId))
+        .innerJoin(
+          startWeekAlias,
+          eq(startWeekAlias.id, picksLeagueSeasons.startSportLeagueWeekId),
+        )
+        .innerJoin(
+          endWeekAlias,
+          eq(endWeekAlias.id, picksLeagueSeasons.endSportLeagueWeekId),
+        )
+        .orderBy(desc(startWeekAlias.startTime))
+        .limit(1);
+  return queryRows.length > 0 ? queryRows[0] : null;
 }

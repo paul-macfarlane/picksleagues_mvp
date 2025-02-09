@@ -441,9 +441,7 @@ export function PicksLeagueSettingsForm({
               name="startSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>
-                    Start Week ({sportLeague.season.name} season)
-                  </FormLabel>
+                  <FormLabel>Start Week</FormLabel>
                   <Select
                     disabled={!canEditSeasonSettings}
                     onValueChange={(val) => {
@@ -481,9 +479,7 @@ export function PicksLeagueSettingsForm({
               name="endSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>
-                    End Week ({sportLeague.season.name} season)
-                  </FormLabel>
+                  <FormLabel>End Week</FormLabel>
                   <Select
                     disabled={!canEditSeasonSettings}
                     onValueChange={(val) => {
