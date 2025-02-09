@@ -1,7 +1,7 @@
 import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 import { DBTransaction } from "@/db/transactions";
 import { sportLeagueSeasons, sportLeagueWeeks } from "@/db/schema";
-import { and, eq, getTableColumns, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, gte, lte, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 
 export interface DBSportLeagueSeason {
@@ -170,5 +170,23 @@ export async function getDBSportLeagueSeasonById(
     .select()
     .from(sportLeagueSeasons)
     .where(eq(sportLeagueSeasons.id, id));
+  return queryRows.length > 0 ? queryRows[0] : null;
+}
+
+export async function getLatestDBSportLeagueSeason(
+  sportLeagueId: string,
+  tx?: DBTransaction,
+): Promise<DBSportLeagueSeason | null> {
+  const queryRows = tx
+    ? await tx
+        .select()
+        .from(sportLeagueSeasons)
+        .where(eq(sportLeagueSeasons.leagueId, sportLeagueId))
+        .orderBy(desc(sportLeagueSeasons.startTime))
+    : await db
+        .select()
+        .from(sportLeagueSeasons)
+        .where(eq(sportLeagueSeasons.leagueId, sportLeagueId))
+        .orderBy(desc(sportLeagueSeasons.startTime));
   return queryRows.length > 0 ? queryRows[0] : null;
 }

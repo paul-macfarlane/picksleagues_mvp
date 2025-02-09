@@ -2,7 +2,6 @@ import {
   oddsProviders,
   picksLeagueMembers,
   picksLeaguePicks,
-  picksLeagues,
   picksLeagueSeasons,
   sportLeagueGameOdds,
   sportLeagueGames,
@@ -400,4 +399,21 @@ export async function getDBStartAndEndWeekForLeagueActiveSeason(
     );
 
   return queryRows.length > 0 ? queryRows[0] : null;
+}
+
+export async function getDBSportLeagueWeeksForSportLeagueSeason(
+  sportLeagueSeasonId: string,
+  tx?: DBTransaction,
+): Promise<DBSportLeagueWeek[]> {
+  const queryRows = tx
+    ? await tx
+        .select()
+        .from(sportLeagueWeeks)
+        .where(eq(sportLeagueWeeks.seasonId, sportLeagueSeasonId))
+    : await db
+        .select()
+        .from(sportLeagueWeeks)
+        .where(eq(sportLeagueWeeks.seasonId, sportLeagueSeasonId));
+
+  return queryRows;
 }
