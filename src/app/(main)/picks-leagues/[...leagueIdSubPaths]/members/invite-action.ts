@@ -16,6 +16,9 @@ import { AUTH_URL } from "@/models/auth";
 import { getDBPicksLeagueMember } from "@/db/picksLeagueMembers";
 import { getDBUserById } from "@/db/users";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
+import { picksLeagueIsInSeason } from "@/services/picksLeagues";
+import { getNextDBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
+import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 
 export interface LeagueInviteActionState {
   errors?: {
@@ -86,7 +89,6 @@ export async function picksLeagueInviteAction(
       };
     }
 
-    // Check if user exists
     const invitedUser = await getDBUserById(userId);
     if (!invitedUser) {
       return {
@@ -96,7 +98,6 @@ export async function picksLeagueInviteAction(
       };
     }
 
-    // Check if user is already a member
     const existingMember = await getDBPicksLeagueMember(leagueId, userId);
     if (existingMember) {
       return {
@@ -118,12 +119,45 @@ export async function picksLeagueInviteAction(
       };
     }
 
+    const leagueIsInSeason = await picksLeagueIsInSeason(leagueId);
+    if (leagueIsInSeason) {
+      return {
+        errors: {
+          form: "Cannot invite members to league while in season",
+        },
+      };
+    }
+
+    const nextSeason = await getNextDBPicksLeagueSeason(leagueId);
+    if (!nextSeason) {
+      return {
+        errors: {
+          form: "There is no next season for this league",
+        },
+      };
+    }
+
+    const startWeek = await getDBSportLeagueWeekById(
+      nextSeason.startSportLeagueWeekId,
+    );
+    if (!startWeek) {
+      return {
+        errors: {
+          form: "Unable to find start week for next season",
+        },
+      };
+    }
+
+    const now = new Date();
+    let expiresAt = new Date(now.getTime() + PICKS_LEAGUE_INVITE_EXPIRATION);
+    if (expiresAt > startWeek.startTime) {
+      expiresAt = startWeek.startTime;
+    }
+
     const createInviteData = {
       leagueId,
       userId,
-      expiresAt: new Date(
-        new Date().getTime() + PICKS_LEAGUE_INVITE_EXPIRATION,
-      ),
+      expiresAt,
       role,
     };
 
@@ -156,9 +190,8 @@ export async function picksLeagueInviteAction(
     };
   }
 
-  const dbPicksLeague = await getDBPicksLeagueByIdWithMemberCount(
-    parsed.data.leagueId,
-  );
+  const { leagueId, role } = parsed.data;
+  const dbPicksLeague = await getDBPicksLeagueByIdWithMemberCount(leagueId);
   if (!dbPicksLeague) {
     return {
       errors: {
@@ -195,10 +228,45 @@ export async function picksLeagueInviteAction(
     };
   }
 
+  const leagueIsInSeason = await picksLeagueIsInSeason(leagueId);
+  if (leagueIsInSeason) {
+    return {
+      errors: {
+        form: "Cannot invite members to league while in season",
+      },
+    };
+  }
+
+  const nextSeason = await getNextDBPicksLeagueSeason(leagueId);
+  if (!nextSeason) {
+    return {
+      errors: {
+        form: "There is no next season for this league",
+      },
+    };
+  }
+
+  const startWeek = await getDBSportLeagueWeekById(
+    nextSeason.startSportLeagueWeekId,
+  );
+  if (!startWeek) {
+    return {
+      errors: {
+        form: "Unable to find start week for next season",
+      },
+    };
+  }
+
+  const now = new Date();
+  let expiresAt = new Date(now.getTime() + PICKS_LEAGUE_INVITE_EXPIRATION);
+  if (expiresAt > startWeek.startTime) {
+    expiresAt = startWeek.startTime;
+  }
+
   const createInviteData = {
-    leagueId: parsed.data.leagueId,
-    expiresAt: new Date(new Date().getTime() + PICKS_LEAGUE_INVITE_EXPIRATION),
-    role: parsed.data.role,
+    leagueId,
+    expiresAt,
+    role,
   };
   const dbInvite = await createDBPicksLeagueInvite(createInviteData);
   if (!dbInvite) {
