@@ -22,10 +22,6 @@ import {
   getNextDBPicksLeagueSeason,
   getPreviousDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
-import {
-  DBSportLeagueSeason,
-  getDBSportLeagueSeasonById,
-} from "@/db/sportLeagueSeason";
 
 export interface LeaguePicksTabProps {
   picksLeagueId: string;
@@ -51,12 +47,8 @@ export async function LeaguePicksTab({
 
   if (!dbPicksLeagueSeason) {
     dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(picksLeagueId);
-    let dbSportLeagueSeason: DBSportLeagueSeason | null = null;
     let dbSportLeagueStartWeek: DBSportLeagueWeek | null = null;
     if (dbPicksLeagueSeason) {
-      dbSportLeagueSeason = await getDBSportLeagueSeasonById(
-        dbPicksLeagueSeason.sportLeagueSeasonId,
-      );
       dbSportLeagueStartWeek = await getDBSportLeagueWeekById(
         dbPicksLeagueSeason.startSportLeagueWeekId,
       );
@@ -65,10 +57,7 @@ export async function LeaguePicksTab({
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>
-            League Picks{" "}
-            {dbSportLeagueSeason && <>({dbSportLeagueSeason.name} season)</>}
-          </CardTitle>
+          <CardTitle>League Picks</CardTitle>
         </CardHeader>
         <CardContent>
           There are no picks to view now.{" "}
@@ -113,11 +102,7 @@ export async function LeaguePicksTab({
       dbPicksLeagueSeason.endSportLeagueWeekId,
     );
   }
-
-  const dbSportLeagueSeason = await getDBSportLeagueSeasonById(
-    dbPicksLeagueSeason.sportLeagueSeasonId,
-  );
-  if (!selectedDBWeek || !dbSportLeagueSeason) {
+  if (!selectedDBWeek) {
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
@@ -171,9 +156,7 @@ export async function LeaguePicksTab({
 
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>
-            League Picks ({dbSportLeagueSeason.name} season)
-          </CardTitle>
+          <CardTitle>League Picks</CardTitle>
           <span>View picks across the league for {selectedDBWeek.name}.</span>
         </CardHeader>
 

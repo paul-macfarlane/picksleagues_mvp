@@ -120,7 +120,7 @@ export enum PicksLeagueTabIds {
   MEMBERS = "members",
   MY_PICKS = "my-picks",
   LEAGUE_PICKS = "league-picks",
-  SETTINGS = "settings",
+  LEAGUE_SETTINGS = "league-settings",
   STANDINGS = "standings",
 }
 
@@ -147,8 +147,8 @@ export const MEMBER_PICKS_LEAGUE_TABS: PicksLeagueTab[] = [
     name: "League Picks",
   },
   {
-    id: PicksLeagueTabIds.SETTINGS,
-    name: "Settings",
+    id: PicksLeagueTabIds.LEAGUE_SETTINGS,
+    name: "League Settings",
   },
 ];
 

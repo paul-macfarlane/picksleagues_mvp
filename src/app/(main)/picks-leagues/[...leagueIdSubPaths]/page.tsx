@@ -154,10 +154,10 @@ export default async function PicksLeaguePage(props: {
     );
   } else if (
     pathname?.startsWith(
-      `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.SETTINGS}`,
+      `/picks-leagues/${picksLeagueId}/${PicksLeagueTabIds.LEAGUE_SETTINGS}`,
     )
   ) {
-    selectedTabId = PicksLeagueTabIds.SETTINGS;
+    selectedTabId = PicksLeagueTabIds.LEAGUE_SETTINGS;
     selectedTabContent = (
       <PicksLeagueSettingsTab
         readonly={

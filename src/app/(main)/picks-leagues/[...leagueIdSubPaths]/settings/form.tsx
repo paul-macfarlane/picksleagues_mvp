@@ -61,12 +61,10 @@ export function PicksLeagueSettingsForm({
   sportLeague,
   picksLeague,
   canEditSeasonSettings,
-  readonly,
 }: {
   sportLeague: DBSportLeagueWithSeasonDetail;
   picksLeague: DBPicksLeagueSettingDetails;
   canEditSeasonSettings: boolean;
-  readonly: boolean;
 }) {
   const defaultStartSportLeagueWeekId = picksLeague.startSportLeagueWeek.id;
   const defaultEndSportLeagueWeekId = picksLeague.endSportLeagueWeek.id;
@@ -256,7 +254,6 @@ export function PicksLeagueSettingsForm({
 
           <div className="grid gap-6 md:grid-cols-2">
             <FormField
-              disabled={readonly}
               control={form.control}
               name="name"
               render={({ field }) => (
@@ -271,7 +268,6 @@ export function PicksLeagueSettingsForm({
             />
 
             <FormField
-              disabled={readonly}
               control={form.control}
               name="logoUrl"
               render={({ field }) => (
@@ -544,57 +540,51 @@ export function PicksLeagueSettingsForm({
           />
         </CardContent>
 
-        {!readonly && (
-          <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full" disabled={pending} type="submit">
-              Save
-            </Button>
+        <CardFooter className="flex flex-col gap-4">
+          <Button className="w-full" disabled={pending} type="submit">
+            Save
+          </Button>
 
-            {formState.errors?.form ? (
-              <p className="text-sm font-medium text-destructive">
-                {formState.errors.form}
-              </p>
-            ) : (
-              <></>
-            )}
+          {formState.errors?.form ? (
+            <p className="text-sm font-medium text-destructive">
+              {formState.errors.form}
+            </p>
+          ) : (
+            <></>
+          )}
 
-            <Separator />
+          <Separator />
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant={"destructive"}
-                  className="w-full"
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button type="button" variant={"destructive"} className="w-full">
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you want to delete this league?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  league and all of its history.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleteSubmitting}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onDeleteLeague}
+                  disabled={deleteSubmitting}
                 >
                   Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Are you sure you want to delete this league?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    the league and all of its history.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={deleteSubmitting}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={onDeleteLeague}
-                    disabled={deleteSubmitting}
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </CardFooter>
-        )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardFooter>
       </form>
     </Form>
   );
