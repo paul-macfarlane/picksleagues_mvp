@@ -44,6 +44,7 @@ CREATE UNIQUE INDEX `odds_providers_espn_id_unique` ON `odds_providers` (`espn_i
 CREATE TABLE `picks_league_invites` (
 	`id` text(36) PRIMARY KEY NOT NULL,
 	`league_id` text(36) NOT NULL,
+	`role` text(32) NOT NULL,
 	`user_id` text(36),
 	`expires_at` integer NOT NULL,
 	`accepted_by_user_id` text(36),

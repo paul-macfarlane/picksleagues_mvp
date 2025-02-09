@@ -73,9 +73,9 @@ export async function getDBPicksLeagueDetailsForUser(
   const queryRows = await db
     .select()
     .from(picksLeagueMembers)
-    .where(eq(picksLeagueMembers.userId, userId))
     .innerJoin(picksLeagues, eq(picksLeagueMembers.leagueId, picksLeagues.id))
     .innerJoin(sportLeagues, eq(picksLeagues.sportLeagueId, sportLeagues.id))
+    .where(eq(picksLeagueMembers.userId, userId))
     .limit(limit ?? 10); // todo maybe should enforce that a user can only be in so many picks-sport-leagues
 
   return queryRows.map((row) => ({

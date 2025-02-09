@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "35297314-7874-4388-8fa7-2d995acc2a60",
+  "id": "1593b8fd-086b-4289-baae-436fc548a5bc",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -309,6 +309,13 @@
         "league_id": {
           "name": "league_id",
           "type": "text(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text(32)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

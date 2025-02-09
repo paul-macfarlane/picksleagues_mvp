@@ -119,12 +119,14 @@ export function PicksLeagueGameBox({
           </div>
         </div>
 
-        <div className="pr-2 text-right">
-          <p className="text-sm text-muted-foreground">
-            Odds presented by{" "}
-            <span className="italic">{game.oddsProvider.name}</span>
-          </p>
-        </div>
+        {pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD && (
+          <div className="pr-2 text-right">
+            <p className="text-sm text-muted-foreground">
+              Odds presented by{" "}
+              <span className="italic">{game.oddsProvider.name}</span>
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 rounded border p-2 md:hidden">
@@ -181,12 +183,14 @@ export function PicksLeagueGameBox({
           <span>{game.homeTeamScore}</span>
         </div>
 
-        <div className="pr-2 text-right">
-          <p className="text-sm text-muted-foreground">
-            Odds presented by{" "}
-            <span className="italic">{game.oddsProvider.name}</span>
-          </p>
-        </div>
+        {pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD && (
+          <div className="pr-2 text-right">
+            <p className="text-sm text-muted-foreground">
+              Odds presented by{" "}
+              <span className="italic">{game.oddsProvider.name}</span>
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
