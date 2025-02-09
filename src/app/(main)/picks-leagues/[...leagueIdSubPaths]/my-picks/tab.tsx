@@ -242,6 +242,7 @@ export async function PicksLeagueMyPicksTab({
             games={picksData.games.map((game) => ({
               ...game,
               userPick: game.userPick!,
+              oddsProvider: game.odds[0].provider!,
             }))}
             correctPickCount={correctPickCount}
             gamesComplete={gamesComplete}

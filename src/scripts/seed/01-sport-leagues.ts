@@ -472,7 +472,7 @@ export async function seedSportLeaguesAndTeams(tx: DBTransaction) {
         name: team.name,
         location: team.location,
         abbreviation: team.abbreviation,
-        logoUrl: `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.abbreviation.toLowerCase()}.png`,
+        logoUrl: `https://a.espncdn.com/i/teamlogos/ncaa/500/${team.espnId}.png`,
         espnId: team.espnId,
       })),
     )

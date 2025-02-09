@@ -201,6 +201,15 @@ export function PicksLeagueMyPicksForm({
                   }
                 />
               </RadioGroup>
+
+              {pickType === PicksLeaguePickTypes.AGAINST_THE_SPREAD && (
+                <div className="pr-2 text-right">
+                  <p className="text-sm text-muted-foreground">
+                    Odds presented by{" "}
+                    <span className="italic">{game.odds[0].provider.name}</span>
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
