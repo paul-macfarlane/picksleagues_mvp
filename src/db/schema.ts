@@ -464,6 +464,14 @@ export const picksLeagueInvites = sqliteTable("picks_league_invites", {
   leagueId: text("league_id", { length: UUID_LENGTH })
     .notNull()
     .references(() => picksLeagues.id, { onDelete: "cascade" }),
+  role: text("role", {
+    length: PICKS_LEAGUE_ROLE_MAX_LENGTH,
+    enum: [
+      PicksLeagueMemberRoles.MEMBER,
+      PicksLeagueMemberRoles.COMMISSIONER,
+      PicksLeagueMemberRoles.NONE,
+    ],
+  }).notNull(),
   userId: text("user_id", { length: UUID_LENGTH }).references(() => users.id, {
     onDelete: "cascade",
   }),

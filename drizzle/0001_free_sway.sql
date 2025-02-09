@@ -1,0 +1,1 @@
+ALTER TABLE `picks_league_invites` ADD `role` text(32) DEFAULT 'Member' NOT NULL;

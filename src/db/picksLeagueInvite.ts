@@ -5,9 +5,12 @@ import {
   picksLeagueMembers,
   picksLeagues,
   sportLeagues,
+  users,
 } from "@/db/schema";
 import { DBPicksLeague } from "@/db/picksLeagues";
 import { DBTransaction } from "@/db/transactions";
+import { DBUser } from "@/db/users";
+import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 
 export interface DBPicksLeagueDetailsForInvite extends DBPicksLeague {
   memberCount: number;
@@ -50,6 +53,7 @@ export interface CreateDBPicksLeagueInvite {
   leagueId: string;
   expiresAt: Date;
   userId?: string;
+  role: PicksLeagueMemberRoles;
 }
 
 export interface DBPicksLeagueInvite {
@@ -60,6 +64,7 @@ export interface DBPicksLeagueInvite {
   acceptedByUserId: string | null;
   expiresAt: Date;
   userId: string | null;
+  role: PicksLeagueMemberRoles;
 }
 
 export interface DBPicksLeaguePendingInvite extends DBPicksLeagueInvite {
@@ -76,13 +81,7 @@ export async function getDBPicksLeaguePendingInvitesForUser(
 
   return db
     .select({
-      id: picksLeagueInvites.id,
-      createdAt: picksLeagueInvites.createdAt,
-      updatedAt: picksLeagueInvites.updatedAt,
-      leagueId: picksLeagueInvites.leagueId,
-      acceptedByUserId: picksLeagueInvites.acceptedByUserId,
-      expiresAt: picksLeagueInvites.expiresAt,
-      userId: picksLeagueInvites.userId,
+      ...getTableColumns(picksLeagueInvites),
       leagueName: picksLeagues.name,
       sportLeagueAbbreviation: sportLeagues.abbreviation,
       pickType: picksLeagues.pickType,
@@ -148,4 +147,93 @@ export async function declineDBPicksLeagueInvite(
       .set({ declined: true })
       .where(eq(picksLeagueInvites.id, leagueInviteId));
   }
+}
+
+export async function getOpenDBPicksLeagueInvitesForUser(
+  leagueId: string,
+  userId: string,
+): Promise<DBPicksLeagueInvite[]> {
+  const now = new Date();
+
+  return db
+    .select()
+    .from(picksLeagueInvites)
+    .where(
+      and(
+        eq(picksLeagueInvites.leagueId, leagueId),
+        eq(picksLeagueInvites.userId, userId),
+        isNull(picksLeagueInvites.acceptedByUserId),
+        gt(picksLeagueInvites.expiresAt, now),
+        eq(picksLeagueInvites.declined, false),
+      ),
+    );
+}
+
+export interface DBPicksLeagueInviteWithUser extends DBPicksLeagueInvite {
+  user: DBUser;
+}
+
+export async function getOutstandingDBPicksLeagueInvites(
+  leagueId: string,
+): Promise<DBPicksLeagueInviteWithUser[]> {
+  const now = new Date();
+
+  return db
+    .select({
+      ...getTableColumns(picksLeagueInvites),
+      user: getTableColumns(users),
+    })
+    .from(picksLeagueInvites)
+    .innerJoin(users, eq(users.id, picksLeagueInvites.userId))
+    .where(
+      and(
+        eq(picksLeagueInvites.leagueId, leagueId),
+        isNull(picksLeagueInvites.acceptedByUserId),
+        gt(picksLeagueInvites.expiresAt, now),
+        eq(picksLeagueInvites.declined, false),
+      ),
+    );
+}
+
+export async function getDBPicksLeagueInviteById(
+  inviteId: string,
+): Promise<DBPicksLeagueInvite | null> {
+  const queryRows = await db
+    .select()
+    .from(picksLeagueInvites)
+    .where(eq(picksLeagueInvites.id, inviteId));
+  return queryRows.length > 0 ? queryRows[0] : null;
+}
+
+export interface UpdateDBPicksLeagueInvite {
+  role: PicksLeagueMemberRoles;
+}
+
+export async function updateDBPicksLeagueInvite(
+  id: string,
+  params: UpdateDBPicksLeagueInvite,
+  tx?: DBTransaction,
+): Promise<DBPicksLeagueInvite | null> {
+  const queryRes = tx
+    ? await tx
+        .update(picksLeagueInvites)
+        .set(params)
+        .where(eq(picksLeagueInvites.id, id))
+        .returning()
+    : await db
+        .update(picksLeagueInvites)
+        .set(params)
+        .where(eq(picksLeagueInvites.id, id))
+        .returning();
+
+  return queryRes.length ? queryRes[0] : null;
+}
+
+export async function deleteDBPicksLeagueInvite(
+  id: string,
+  tx?: DBTransaction,
+): Promise<void> {
+  tx
+    ? await tx.delete(picksLeagueInvites).where(eq(picksLeagueInvites.id, id))
+    : await db.delete(picksLeagueInvites).where(eq(picksLeagueInvites.id, id));
 }

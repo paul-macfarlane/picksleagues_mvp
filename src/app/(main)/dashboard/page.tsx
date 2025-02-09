@@ -55,6 +55,9 @@ export default async function Dashboard() {
                       <p className="text-sm text-muted-foreground">
                         {invite.sportLeagueAbbreviation} • {invite.pickType}
                       </p>
+                      <p className="text-sm text-muted-foreground">
+                        Invited as {invite.role}
+                      </p>
                     </div>
                   </div>
                   <InviteActions invite={invite} />

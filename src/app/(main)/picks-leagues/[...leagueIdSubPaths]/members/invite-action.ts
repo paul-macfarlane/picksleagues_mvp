@@ -3,7 +3,10 @@
 import { auth } from "@/auth";
 import { getDBPicksLeagueByIdWithMemberCount } from "@/db/picksLeagues";
 import { redirect } from "next/navigation";
-import { createDBPicksLeagueInvite } from "@/db/picksLeagueInvite";
+import {
+  createDBPicksLeagueInvite,
+  getOpenDBPicksLeagueInvitesForUser,
+} from "@/db/picksLeagueInvite";
 import {
   DirectInviteFormSchema,
   PICKS_LEAGUE_INVITE_EXPIRATION,
@@ -44,7 +47,7 @@ export async function picksLeagueInviteAction(
     Object.fromEntries(formData),
   );
   if (directInviteParsed.success) {
-    const { leagueId, userId } = directInviteParsed.data;
+    const { leagueId, userId, role } = directInviteParsed.data;
 
     const dbPicksLeague = await getDBPicksLeagueByIdWithMemberCount(leagueId);
     if (!dbPicksLeague) {
@@ -103,17 +106,31 @@ export async function picksLeagueInviteAction(
       };
     }
 
+    const existingInvites = await getOpenDBPicksLeagueInvitesForUser(
+      leagueId,
+      userId,
+    );
+    if (existingInvites.length > 0) {
+      return {
+        errors: {
+          form: "User is already invited to this league",
+        },
+      };
+    }
+
     const createInviteData = {
       leagueId,
       userId,
       expiresAt: new Date(
         new Date().getTime() + PICKS_LEAGUE_INVITE_EXPIRATION,
       ),
+      role,
     };
 
     const dbInvite = await createDBPicksLeagueInvite(createInviteData);
     if (!dbInvite) {
       console.error("Unable to create league invite with ", createInviteData);
+
       return {
         errors: {
           form: "Unable to generate invite. Please try again later.",
@@ -181,6 +198,7 @@ export async function picksLeagueInviteAction(
   const createInviteData = {
     leagueId: parsed.data.leagueId,
     expiresAt: new Date(new Date().getTime() + PICKS_LEAGUE_INVITE_EXPIRATION),
+    role: parsed.data.role,
   };
   const dbInvite = await createDBPicksLeagueInvite(createInviteData);
   if (!dbInvite) {

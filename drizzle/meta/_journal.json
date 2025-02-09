@@ -8,6 +8,20 @@
       "when": 1738990719622,
       "tag": "0000_youthful_adam_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1739047146117,
+      "tag": "0001_free_sway",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1739047166309,
+      "tag": "0002_keen_paper_doll",
+      "breakpoints": true
     }
   ]
 }
