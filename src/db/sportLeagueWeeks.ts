@@ -22,7 +22,10 @@ import {
 import { db } from "@/db/client";
 import { DBTransaction } from "@/db/transactions";
 import { DBSportLeagueGame } from "@/db/sportLeagueGames";
-import { DBSportLeagueGameOdds } from "@/db/sportLeagueGameOdds";
+import {
+  DBOddsProvider,
+  DBSportLeagueGameOddsWithProvider,
+} from "@/db/sportLeagueGameOdds";
 import { DBPicksLeaguePick } from "@/db/picksLeaguesPicks";
 import { DBSportLeagueTeam } from "@/db/sportLeagueTeams";
 import { DBUser } from "@/db/users";
@@ -144,7 +147,7 @@ export async function upsertDBSportLeagueWeeks(
 }
 
 export interface DbWeeklyPickGameData extends DBSportLeagueGame {
-  odds: DBSportLeagueGameOdds[];
+  odds: DBSportLeagueGameOddsWithProvider[];
   userPick: DBPicksLeaguePick | null;
   awayTeam: DBSportLeagueTeam;
   homeTeam: DBSportLeagueTeam;
@@ -169,6 +172,7 @@ export async function getUserDBWeeklyPickData(
       awayTeamAlias: getTableColumns(awayTeamAlias),
       homeTeamAlias: getTableColumns(homeTeamAlias),
       sportLeagueGameOdds: getTableColumns(sportLeagueGameOdds),
+      oddsProviders: getTableColumns(oddsProviders),
     })
     .from(sportLeagueWeeks)
     .innerJoin(
@@ -180,6 +184,10 @@ export async function getUserDBWeeklyPickData(
     .innerJoin(
       sportLeagueGameOdds,
       eq(sportLeagueGameOdds.gameId, sportLeagueGames.id),
+    )
+    .innerJoin(
+      oddsProviders,
+      eq(oddsProviders.id, sportLeagueGameOdds.providerId),
     )
     .where(eq(sportLeagueWeeks.id, sportsLeagueWeekId));
   if (!queryRows.length) {
@@ -197,11 +205,14 @@ export async function getUserDBWeeklyPickData(
         ...row.sportLeagueGame,
         awayTeam: row.awayTeamAlias,
         homeTeam: row.homeTeamAlias,
-        odds: [row.sportLeagueGameOdds],
+        odds: [{ ...row.sportLeagueGameOdds, provider: row.oddsProviders }],
         userPick: null, // may be added later
       });
     } else {
-      games[indexOfGame].odds.push(row.sportLeagueGameOdds);
+      games[indexOfGame].odds.push({
+        ...row.sportLeagueGameOdds,
+        provider: row.oddsProviders,
+      });
     }
   }
 
@@ -232,6 +243,7 @@ export async function getUserDBWeeklyPickData(
 }
 
 export interface DBWeeklyPickDataByUserGame extends DBSportLeagueGame {
+  oddsProvider: DBOddsProvider;
   userPick: DBPicksLeaguePick;
   awayTeam: DBSportLeagueTeam;
   homeTeam: DBSportLeagueTeam;
@@ -255,6 +267,7 @@ export async function getLeagueDBWeeklyPickDataByUser(
       game: getTableColumns(sportLeagueGames),
       awayTeam: getTableColumns(awayTeamAlias),
       homeTeam: getTableColumns(homeTeamAlias),
+      oddsProvider: getTableColumns(oddsProviders),
     })
     .from(picksLeagueMembers)
     .innerJoin(users, eq(users.id, picksLeaguePicks.userId))
@@ -299,6 +312,7 @@ export async function getLeagueDBWeeklyPickDataByUser(
                   userPick: row.pick,
                   awayTeam: row.awayTeam,
                   homeTeam: row.homeTeam,
+                  oddsProvider: row.oddsProvider,
                 },
               ]
             : [],
@@ -313,6 +327,7 @@ export async function getLeagueDBWeeklyPickDataByUser(
           userPick: row.pick,
           awayTeam: row.awayTeam,
           homeTeam: row.homeTeam,
+          oddsProvider: row.oddsProvider,
         });
       }
     }

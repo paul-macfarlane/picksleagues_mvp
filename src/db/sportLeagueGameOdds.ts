@@ -115,3 +115,8 @@ export interface DBSportLeagueGameOdds {
   underDogTeamId: string;
   spread: number;
 }
+
+export interface DBSportLeagueGameOddsWithProvider
+  extends DBSportLeagueGameOdds {
+  provider: DBOddsProvider;
+}
