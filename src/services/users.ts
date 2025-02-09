@@ -1,5 +1,6 @@
 import {
   DBPicksLeagueWithMembers,
+  deleteDBPicksLeagues,
   getUserDBPicksLeaguesWithMembers,
 } from "@/db/picksLeagues";
 import { getDBUserById, updateDBUser } from "@/db/users";
@@ -22,6 +23,7 @@ export function cannotDeleteSoloCommissionerErrorMessage(
 
 export async function getLeaguesUserSoloCommissionerOf(
   userId: string,
+  includeLeaguesOnlyMemberOf = false,
 ): Promise<DBPicksLeagueWithMembers[]> {
   const leaguesWithMembers = await getUserDBPicksLeaguesWithMembers(userId);
 
@@ -40,7 +42,7 @@ export async function getLeaguesUserSoloCommissionerOf(
     return (
       userIsCommissioner &&
       !otherCommissionerExists &&
-      league.members.length > 1
+      (includeLeaguesOnlyMemberOf || league.members.length > 1)
     );
   });
 }
@@ -51,13 +53,24 @@ export async function deleteAccount(userId: string): Promise<void> {
     return;
   }
 
-  const leaguesSoloCommissionerOf =
-    await getLeaguesUserSoloCommissionerOf(userId);
-  if (leaguesSoloCommissionerOf.length) {
+  const leaguesSoloCommissionerOf = await getLeaguesUserSoloCommissionerOf(
+    userId,
+    true,
+  );
+  const leaguesWithMembersSoloCommissionerOf = leaguesSoloCommissionerOf.filter(
+    (league) => league.members.length > 1,
+  );
+  if (leaguesWithMembersSoloCommissionerOf.length) {
     throw new NotAllowedError(
-      cannotDeleteSoloCommissionerErrorMessage(leaguesSoloCommissionerOf),
+      cannotDeleteSoloCommissionerErrorMessage(
+        leaguesWithMembersSoloCommissionerOf,
+      ),
     );
   }
+
+  const leaguesWithNoMembersOtherThanSelf = leaguesSoloCommissionerOf.filter(
+    (league) => league.members.length === 1,
+  );
 
   const futureDBPicksLeagueStandings =
     await getUserDBPicksLeagueStandingsForFutureSeasons(dbUser.id);
@@ -83,6 +96,12 @@ export async function deleteAccount(userId: string): Promise<void> {
     if (futureDBPicksLeagueStandings.length > 0) {
       await deleteDBPicksLeagueStandingsByIds(
         futureDBPicksLeagueStandings.map((standing) => standing.id),
+        tx,
+      );
+    }
+    if (leaguesWithNoMembersOtherThanSelf.length > 0) {
+      await deleteDBPicksLeagues(
+        leaguesWithNoMembersOtherThanSelf.map((league) => league.id),
         tx,
       );
     }
