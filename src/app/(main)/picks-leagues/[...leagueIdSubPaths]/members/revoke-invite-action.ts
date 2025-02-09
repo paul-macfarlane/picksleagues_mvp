@@ -44,7 +44,6 @@ export async function revokeInviteAction(
     };
   }
 
-  // Check if user is a commissioner of the league
   const member = await getDBPicksLeagueMember(invite.leagueId, session.user.id);
   if (!member || member.role !== PicksLeagueMemberRoles.COMMISSIONER) {
     return {

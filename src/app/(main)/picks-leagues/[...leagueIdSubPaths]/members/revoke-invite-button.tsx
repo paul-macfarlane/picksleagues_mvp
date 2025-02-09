@@ -59,7 +59,6 @@ export function RevokeInviteButton({ invite }: RevokeInviteButtonProps) {
       onClick={handleRevoke}
       disabled={isRevoking}
     >
-      {isRevoking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       Revoke
     </Button>
   );
