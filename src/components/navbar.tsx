@@ -98,7 +98,7 @@ export default function Navbar({
                         </NavigationMenuLink>
                       </li>
 
-                      <Separator />
+                      {dbPicksLeagueDetails.length > 0 && <Separator />}
 
                       {dbPicksLeagueDetails
                         .slice(0, maxLeaguesToDisplay)

@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { DBPicksLeagueInviteWithUser } from "@/db/picksLeagueInvite";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { revokeInviteAction } from "./revoke-invite-action";
