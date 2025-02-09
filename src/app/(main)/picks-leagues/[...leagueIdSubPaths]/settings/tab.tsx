@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PicksLeagueSettingsForm } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/form";
+import { PicksLeagueSettingsViewer } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/viewer";
 import { DBPicksLeague, getPickLeagueSettingsDetails } from "@/db/picksLeagues";
 import { canEditPicksLeagueSeasonSettings } from "@/shared/picksLeagues";
 import {
@@ -60,17 +61,22 @@ export async function PicksLeagueSettingsTab({
     <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
         <CardTitle>
-          {!readonly && <>Edit</>} League Settings (
-          {dbSportLeagueDetails.season.name} season)
+          {readonly ? "League Settings" : "Edit League Settings"}
         </CardTitle>
       </CardHeader>
 
-      <PicksLeagueSettingsForm
-        sportLeague={dbSportLeagueDetails}
-        picksLeague={dbPicksLeagueDetails}
-        canEditSeasonSettings={canEditSeasonSettings}
-        readonly={readonly}
-      />
+      {readonly ? (
+        <PicksLeagueSettingsViewer
+          sportLeague={dbSportLeagueDetails}
+          picksLeague={dbPicksLeagueDetails}
+        />
+      ) : (
+        <PicksLeagueSettingsForm
+          sportLeague={dbSportLeagueDetails}
+          picksLeague={dbPicksLeagueDetails}
+          canEditSeasonSettings={canEditSeasonSettings}
+        />
+      )}
     </Card>
   );
 }

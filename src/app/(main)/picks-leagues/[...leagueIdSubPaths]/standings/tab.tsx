@@ -5,10 +5,7 @@ import {
   getNextDBPicksLeagueSeason,
   getPreviousDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
-import {
-  DBSportLeagueSeason,
-  getDBSportLeagueSeasonById,
-} from "@/db/sportLeagueSeason";
+import { getDBSportLeagueSeasonById } from "@/db/sportLeagueSeason";
 import { DateDisplay } from "@/components/date-display";
 import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
@@ -38,12 +35,8 @@ export async function PicksLeagueStandingsTab({
       );
     }
 
-    let dbSportLeagueSeason: DBSportLeagueSeason | null = null;
     let dbSportLeagueStartWeek: DBSportLeagueWeek | null = null;
     if (dbPicksLeagueSeason) {
-      dbSportLeagueSeason = await getDBSportLeagueSeasonById(
-        dbPicksLeagueSeason.sportLeagueSeasonId,
-      );
       dbSportLeagueStartWeek = await getDBSportLeagueWeekById(
         dbPicksLeagueSeason.startSportLeagueWeekId,
       );
@@ -52,10 +45,7 @@ export async function PicksLeagueStandingsTab({
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>
-            League Standings{" "}
-            {dbSportLeagueSeason && <>({dbSportLeagueSeason.name} season)</>}
-          </CardTitle>
+          <CardTitle>League Standings</CardTitle>
         </CardHeader>
         <CardContent>
           There are no standings to view right now.{" "}
@@ -93,9 +83,7 @@ export async function PicksLeagueStandingsTab({
   return (
     <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
-        <CardTitle>
-          League Standings ({dbSportLeagueSeason!.name} season)
-        </CardTitle>
+        <CardTitle>League Standings</CardTitle>
       </CardHeader>
 
       <CardContent>

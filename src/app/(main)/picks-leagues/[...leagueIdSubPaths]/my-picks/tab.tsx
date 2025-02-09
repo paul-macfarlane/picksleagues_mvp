@@ -28,10 +28,6 @@ import {
   getNextDBPicksLeagueSeason,
   getPreviousDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
-import {
-  DBSportLeagueSeason,
-  getDBSportLeagueSeasonById,
-} from "@/db/sportLeagueSeason";
 
 export interface PicksLeagueMyPicksTabProps {
   picksLeagueId: string;
@@ -59,12 +55,8 @@ export async function PicksLeagueMyPicksTab({
 
   if (!dbPicksLeagueSeason) {
     dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(picksLeagueId);
-    let dbSportLeagueSeason: DBSportLeagueSeason | null = null;
     let dbSportLeagueStartWeek: DBSportLeagueWeek | null = null;
     if (dbPicksLeagueSeason) {
-      dbSportLeagueSeason = await getDBSportLeagueSeasonById(
-        dbPicksLeagueSeason.sportLeagueSeasonId,
-      );
       dbSportLeagueStartWeek = await getDBSportLeagueWeekById(
         dbPicksLeagueSeason.startSportLeagueWeekId,
       );
@@ -73,10 +65,7 @@ export async function PicksLeagueMyPicksTab({
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>
-            My Picks{" "}
-            {dbSportLeagueSeason && <>({dbSportLeagueSeason.name} season)</>}
-          </CardTitle>
+          <CardTitle>My Picks</CardTitle>
         </CardHeader>
         <CardContent>
           There are no picks to view or make right now.{" "}
@@ -122,10 +111,7 @@ export async function PicksLeagueMyPicksTab({
     );
   }
 
-  const dbSportLeagueSeason = await getDBSportLeagueSeasonById(
-    dbPicksLeagueSeason.sportLeagueSeasonId,
-  );
-  if (!selectedDBWeek || !dbSportLeagueSeason) {
+  if (!selectedDBWeek) {
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
@@ -198,7 +184,7 @@ export async function PicksLeagueMyPicksTab({
 
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>My Picks ({dbSportLeagueSeason.name} season)</CardTitle>
+          <CardTitle>My Picks</CardTitle>
 
           {!picksData && (
             <span>
