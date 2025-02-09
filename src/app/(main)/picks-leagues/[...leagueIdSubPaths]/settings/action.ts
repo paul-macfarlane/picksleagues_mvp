@@ -21,6 +21,10 @@ import {
 } from "@/db/picksLeagueSeasons";
 import { canEditPicksLeagueSeasonSettings } from "@/shared/picksLeagues";
 import { AUTH_URL } from "@/models/auth";
+import {
+  getOpenDBPicksLeagueInvitesForLeague,
+  updateDBPicksLeagueInvitesExpiry,
+} from "@/db/picksLeagueInvite";
 
 interface UpdatePicksLeagueActionState {
   errors?: {
@@ -166,6 +170,9 @@ export async function updatePicksLeagueAction(
 
           throw new Error("Invalid Start Week");
         }
+        if (startDBSportLeagueWeek.startTime < new Date()) {
+          throw new Error("Invalid Start Week");
+        }
 
         const endDBSportLeagueWeek = await getDBSportLeagueWeekById(
           parsed.data.endSportLeagueWeekId,
@@ -175,6 +182,9 @@ export async function updatePicksLeagueAction(
           console.error(
             `Sports week with id ${parsed.data.endSportLeagueWeekId} not found.`,
           );
+          throw new Error("Invalid End Week");
+        }
+        if (endDBSportLeagueWeek.startTime < new Date()) {
           throw new Error("Invalid End Week");
         }
 
@@ -201,6 +211,16 @@ export async function updatePicksLeagueAction(
           },
           tx,
         );
+
+        const openDBPicksLeagueInvites =
+          await getOpenDBPicksLeagueInvitesForLeague(parsed.data.id);
+        if (openDBPicksLeagueInvites.length) {
+          await updateDBPicksLeagueInvitesExpiry(
+            openDBPicksLeagueInvites.map((invite) => invite.id),
+            startDBSportLeagueWeek.startTime,
+            tx,
+          );
+        }
       });
     } catch (e) {
       let message = "An unexpected error occurred, please try again later.";

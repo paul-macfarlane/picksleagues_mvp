@@ -5,7 +5,7 @@ import { getDBPicksLeagueByIdWithMemberCount } from "@/db/picksLeagues";
 import { redirect } from "next/navigation";
 import {
   createDBPicksLeagueInvite,
-  getOpenDBPicksLeagueInvitesForUser,
+  getOpenDBPicksLeagueInvitesForLeagueAndUser,
 } from "@/db/picksLeagueInvite";
 import {
   DirectInviteFormSchema,
@@ -106,7 +106,7 @@ export async function picksLeagueInviteAction(
       };
     }
 
-    const existingInvites = await getOpenDBPicksLeagueInvitesForUser(
+    const existingInvites = await getOpenDBPicksLeagueInvitesForLeagueAndUser(
       leagueId,
       userId,
     );

@@ -20,7 +20,7 @@ import { PicksLeagueStandingsTab } from "@/app/(main)/picks-leagues/[...leagueId
 import { AUTH_URL } from "@/models/auth";
 import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 import { picksLeagueIsInSeason } from "@/services/picksLeagues";
-import { getOutstandingDBPicksLeagueInvites } from "@/db/picksLeagueInvite";
+import { getOutstandingDBPicksLeagueInvitesWithUser } from "@/db/picksLeagueInvite";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -108,7 +108,7 @@ export default async function PicksLeaguePage(props: {
     const leagueIsInSeason = await picksLeagueIsInSeason(
       dbPicksLeagueWithUserRole.id,
     );
-    const invites = await getOutstandingDBPicksLeagueInvites(
+    const invites = await getOutstandingDBPicksLeagueInvitesWithUser(
       dbPicksLeagueWithUserRole.id,
     );
 
