@@ -9,7 +9,6 @@ import {
 } from "@/db/picksLeagueInvite";
 import {
   DirectInviteFormSchema,
-  PICKS_LEAGUE_INVITE_EXPIRATION,
   PicksLeagueInviteFormSchema,
 } from "@/models/picksLeagueInvites";
 import { AUTH_URL } from "@/models/auth";
@@ -148,16 +147,10 @@ export async function picksLeagueInviteAction(
       };
     }
 
-    const now = new Date();
-    let expiresAt = new Date(now.getTime() + PICKS_LEAGUE_INVITE_EXPIRATION);
-    if (expiresAt > startWeek.startTime) {
-      expiresAt = startWeek.startTime;
-    }
-
     const createInviteData = {
       leagueId,
       userId,
-      expiresAt,
+      expiresAt: startWeek.startTime,
       role,
     };
 
@@ -257,15 +250,9 @@ export async function picksLeagueInviteAction(
     };
   }
 
-  const now = new Date();
-  let expiresAt = new Date(now.getTime() + PICKS_LEAGUE_INVITE_EXPIRATION);
-  if (expiresAt > startWeek.startTime) {
-    expiresAt = startWeek.startTime;
-  }
-
   const createInviteData = {
     leagueId,
-    expiresAt,
+    expiresAt: startWeek.startTime,
     role,
   };
   const dbInvite = await createDBPicksLeagueInvite(createInviteData);
