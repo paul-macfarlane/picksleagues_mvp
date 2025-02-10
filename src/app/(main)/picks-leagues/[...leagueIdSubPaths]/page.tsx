@@ -21,6 +21,11 @@ import { AUTH_URL } from "@/models/auth";
 import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
 import { picksLeagueIsInSeason } from "@/services/picksLeagues";
 import { getOutstandingDBPicksLeagueInvitesWithUser } from "@/db/picksLeagueInvite";
+import {
+  getActiveDBPicksLeagueSeason,
+  getNextDBPicksLeagueSeason,
+  getPreviousDBPicksLeagueSeason,
+} from "@/db/picksLeagueSeasons";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -80,17 +85,40 @@ export default async function PicksLeaguePage(props: {
     );
   }
 
+  let seasonType: "current" | "next" | "previous" = "current";
+  let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(
+    dbPicksLeagueWithUserRole.id,
+  );
+  if (!dbPicksLeagueSeason) {
+    dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(
+      dbPicksLeagueWithUserRole.id,
+    );
+    seasonType = "next";
+  }
+  if (!dbPicksLeagueSeason) {
+    dbPicksLeagueSeason = await getPreviousDBPicksLeagueSeason(
+      dbPicksLeagueWithUserRole.id,
+    );
+    seasonType = "previous";
+  }
+  if (!dbPicksLeagueSeason) {
+    // this should never happen, there should always be one of these
+    return (
+      <ErrorComponent message="League season not found. Please return to your dashboard." />
+    );
+  }
+
   const headerList = await headers();
   const pathname = headerList.get("x-current-path");
 
-  let weekId: string | null = null;
+  let selectedWeekId: string | null = null;
   const searchParamWeekIdParsed = z
     .string()
     .trim()
     .uuid()
     .safeParse(searchParams["weekId"]);
   if (searchParamWeekIdParsed.success) {
-    weekId = searchParamWeekIdParsed.data;
+    selectedWeekId = searchParamWeekIdParsed.data;
   }
 
   const tabs = MEMBER_PICKS_LEAGUE_TABS;
@@ -129,12 +157,11 @@ export default async function PicksLeaguePage(props: {
     selectedTabId = PicksLeagueTabIds.MY_PICKS;
     selectedTabContent = (
       <PicksLeagueMyPicksTab
-        picksLeagueId={dbPicksLeagueWithUserRole.id}
-        sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
-        picksPerWeek={dbPicksLeagueWithUserRole.picksPerWeek}
-        userId={session.user.id}
-        pickType={dbPicksLeagueWithUserRole.pickType}
-        weekId={weekId}
+        dbPicksLeague={dbPicksLeagueWithUserRole}
+        dbPicksLeagueSeason={dbPicksLeagueSeason}
+        seasonType={seasonType}
+        selectedWeekId={selectedWeekId}
+        userId={dbUser.id}
       />
     );
   } else if (
@@ -145,11 +172,11 @@ export default async function PicksLeaguePage(props: {
     selectedTabId = PicksLeagueTabIds.LEAGUE_PICKS;
     selectedTabContent = (
       <LeaguePicksTab
-        picksLeagueId={dbPicksLeagueWithUserRole.id}
-        sportsLeagueId={dbPicksLeagueWithUserRole.sportLeagueId}
+        dbPicksLeague={dbPicksLeagueWithUserRole}
+        dbPicksLeagueSeason={dbPicksLeagueSeason}
+        seasonType={seasonType}
+        selectedWeekId={selectedWeekId}
         userId={dbUser.id}
-        weekId={weekId}
-        pickType={dbPicksLeagueWithUserRole.pickType}
       />
     );
   } else if (
@@ -164,6 +191,7 @@ export default async function PicksLeaguePage(props: {
           dbPicksLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER
         }
         dbPicksLeague={dbPicksLeagueWithUserRole}
+        dbPicksLeagueSeason={dbPicksLeagueSeason}
       />
     );
   } else if (
@@ -173,7 +201,10 @@ export default async function PicksLeaguePage(props: {
   ) {
     selectedTabId = PicksLeagueTabIds.STANDINGS;
     selectedTabContent = (
-      <PicksLeagueStandingsTab picksLeagueId={picksLeagueId} />
+      <PicksLeagueStandingsTab
+        dbPicksLeagueSeason={dbPicksLeagueSeason}
+        seasonType={seasonType}
+      />
     );
   } else {
     return (

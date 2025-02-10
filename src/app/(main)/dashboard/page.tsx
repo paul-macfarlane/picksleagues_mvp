@@ -25,13 +25,38 @@ export default async function Dashboard() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
       <div className="flex gap-4">
-        <Button size="lg" className="flex-1" asChild>
+        <Button size="sm" className="flex flex-1 md:hidden" asChild>
           <Link href="/picks-leagues/create">
             <Plus className="mr-2 h-5 w-5" />
             Create League
           </Link>
         </Button>
-        <Button size="lg" variant="secondary" className="flex-1" asChild>
+
+        <Button size="lg" className="hidden flex-1 md:flex" asChild>
+          <Link href="/picks-leagues/create">
+            <Plus className="mr-2 h-5 w-5" />
+            Create League
+          </Link>
+        </Button>
+
+        <Button
+          size="sm"
+          variant="secondary"
+          className="flex flex-1 md:hidden"
+          asChild
+        >
+          <Link href="/picks-leagues/join">
+            <CircleArrowRight className="mr-2 h-5 w-5" />
+            Join League
+          </Link>
+        </Button>
+
+        <Button
+          size="lg"
+          variant="secondary"
+          className="hidden flex-1 md:flex"
+          asChild
+        >
           <Link href="/picks-leagues/join">
             <CircleArrowRight className="mr-2 h-5 w-5" />
             Join League

@@ -38,12 +38,14 @@ const columns: ColumnDef<DBPicksLeagueDetails>[] = [
     cell: ({ row }) => {
       const league = row.original;
       return (
-        <Button asChild size="sm">
-          <Link href={getPicksLeagueHomeUrl(league.id)}>
-            Go to League
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex w-full justify-end">
+          <Button asChild size="sm">
+            <Link href={getPicksLeagueHomeUrl(league.id)}>
+              Go to League
+              <ChevronRight className="h-4 w-4 md:ml-2" />
+            </Link>
+          </Button>
+        </div>
       );
     },
   },

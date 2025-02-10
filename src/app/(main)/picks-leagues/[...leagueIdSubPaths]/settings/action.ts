@@ -17,6 +17,7 @@ import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 import {
   getActiveDBPicksLeagueSeason,
   getNextDBPicksLeagueSeason,
+  getPreviousDBPicksLeagueSeason,
   updateDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
 import { canEditPicksLeagueSeasonSettings } from "@/shared/picksLeagues";
@@ -133,6 +134,9 @@ export async function updatePicksLeagueAction(
   let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(parsed.data.id);
   if (!dbPicksLeagueSeason) {
     dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(parsed.data.id);
+  }
+  if (!dbPicksLeagueSeason) {
+    dbPicksLeagueSeason = await getPreviousDBPicksLeagueSeason(parsed.data.id);
   }
   if (!dbPicksLeagueSeason) {
     return {
