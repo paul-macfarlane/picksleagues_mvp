@@ -298,11 +298,7 @@ export async function updatePicksLeagueStandings({
       ),
     )
     .get();
-
   if (!picksLeagueSeason) {
-    console.log(
-      `No picks league season found for season ${seasonId} in league ${leagueId}`,
-    );
     return;
   }
 
@@ -315,14 +311,7 @@ export async function updatePicksLeagueStandings({
     const weeks = await tx
       .select()
       .from(sportLeagueWeeks)
-      .where(
-        and(
-          eq(sportLeagueWeeks.seasonId, seasonId),
-          gte(sportLeagueWeeks.id, picksLeagueSeason.startSportLeagueWeekId),
-          lte(sportLeagueWeeks.id, picksLeagueSeason.endSportLeagueWeekId),
-        ),
-      )
-      .all();
+      .where(eq(sportLeagueWeeks.seasonId, seasonId));
 
     const weekIds = weeks.map((week) => week.id);
     const picks = await tx
@@ -345,8 +334,8 @@ export async function updatePicksLeagueStandings({
     const pushes = picks.filter(
       (p) => p.status === PicksLeaguePickStatuses.PUSH,
     ).length;
-
     const points = wins + pushes * 0.5;
+
     await tx
       .insert(picksLeagueStandings)
       .values({
@@ -366,6 +355,7 @@ export async function updatePicksLeagueStandings({
           losses: sql`excluded.losses`,
           pushes: sql`excluded.pushes`,
           points: sql`excluded.points`,
+          rank: sql`excluded.rank`,
         },
       });
   }
