@@ -3,32 +3,25 @@ import { PicksLeagueSettingsForm } from "@/app/(main)/picks-leagues/[...leagueId
 import { PicksLeagueSettingsViewer } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/settings/viewer";
 import { DBPicksLeague, getPickLeagueSettingsDetails } from "@/db/picksLeagues";
 import { canEditPicksLeagueSeasonSettings } from "@/shared/picksLeagues";
-import {
-  getActiveDBPicksLeagueSeason,
-  getNextDBPicksLeagueSeason,
-} from "@/db/picksLeagueSeasons";
+import { DBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { getDBSportLeagueWithSeasonDetails } from "@/db/sportLeagues";
 
 export async function PicksLeagueSettingsTab({
   readonly,
   dbPicksLeague,
+  dbPicksLeagueSeason,
 }: {
   readonly: boolean;
   dbPicksLeague: DBPicksLeague;
+  dbPicksLeagueSeason: DBPicksLeagueSeason;
 }) {
-  let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(
-    dbPicksLeague.id,
-  );
-  if (!dbPicksLeagueSeason) {
-    dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(dbPicksLeague.id);
-  }
   const dbSportLeagueDetails = dbPicksLeagueSeason
     ? await getDBSportLeagueWithSeasonDetails(
         dbPicksLeague.sportLeagueId,
         dbPicksLeagueSeason.sportLeagueSeasonId,
       )
     : null;
-  if (!dbPicksLeagueSeason || !dbSportLeagueDetails) {
+  if (!dbSportLeagueDetails) {
     return (
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
@@ -59,9 +52,6 @@ export async function PicksLeagueSettingsTab({
     );
   }
 
-  const canEditSeasonSettings =
-    !readonly && canEditPicksLeagueSeasonSettings(dbPicksLeagueDetails);
-
   return (
     <Card className="mx-auto w-full max-w-4xl">
       <CardHeader>
@@ -79,7 +69,9 @@ export async function PicksLeagueSettingsTab({
         <PicksLeagueSettingsForm
           sportLeague={dbSportLeagueDetails}
           picksLeague={dbPicksLeagueDetails}
-          canEditSeasonSettings={canEditSeasonSettings}
+          canEditSeasonSettings={canEditPicksLeagueSeasonSettings(
+            dbPicksLeagueDetails,
+          )}
         />
       )}
     </Card>

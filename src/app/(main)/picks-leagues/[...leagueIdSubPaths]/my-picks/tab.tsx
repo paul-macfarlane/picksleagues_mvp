@@ -23,44 +23,28 @@ import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 import { getPrevAndNextDBWeekForPicksLeagueSeason } from "@/services/sportLeagueWeeks";
 import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/WeekSwitcher";
 import { DateDisplay } from "@/components/date-display";
-import {
-  getActiveDBPicksLeagueSeason,
-  getNextDBPicksLeagueSeason,
-  getPreviousDBPicksLeagueSeason,
-} from "@/db/picksLeagueSeasons";
+import { DBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
+import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
 
 export interface PicksLeagueMyPicksTabProps {
-  picksLeagueId: string;
-  sportsLeagueId: string;
-  picksPerWeek: number;
+  dbPicksLeague: DBPicksLeagueWithUserRole;
+  dbPicksLeagueSeason: DBPicksLeagueSeason;
+  seasonType: "current" | "next" | "previous";
+  selectedWeekId: string | null;
   userId: string;
-  pickType: PicksLeaguePickTypes;
-  weekId: string | null;
 }
 
 export async function PicksLeagueMyPicksTab({
-  picksLeagueId,
-  sportsLeagueId,
-  picksPerWeek,
+  dbPicksLeague,
+  dbPicksLeagueSeason,
+  seasonType,
+  selectedWeekId,
   userId,
-  pickType,
-  weekId,
 }: PicksLeagueMyPicksTabProps) {
-  let currentOrNextSeason = "current";
-  let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(picksLeagueId);
-  if (!dbPicksLeagueSeason) {
-    currentOrNextSeason = "next";
-    dbPicksLeagueSeason = await getPreviousDBPicksLeagueSeason(picksLeagueId);
-  }
-
-  if (!dbPicksLeagueSeason) {
-    dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(picksLeagueId);
-    let dbSportLeagueStartWeek: DBSportLeagueWeek | null = null;
-    if (dbPicksLeagueSeason) {
-      dbSportLeagueStartWeek = await getDBSportLeagueWeekById(
-        dbPicksLeagueSeason.startSportLeagueWeekId,
-      );
-    }
+  if (seasonType === "next") {
+    const dbSportLeagueStartWeek = await getDBSportLeagueWeekById(
+      dbPicksLeagueSeason.startSportLeagueWeekId,
+    );
 
     return (
       <Card className="mx-auto w-full max-w-4xl">
@@ -74,18 +58,18 @@ export async function PicksLeagueMyPicksTab({
               Wait until the season starts at{" "}
               <DateDisplay
                 timestampMS={dbSportLeagueStartWeek.startTime.getTime()}
-              />
+              />{" "}
+              to make picks.
             </>
-          )}{" "}
-          to make picks.
+          )}
         </CardContent>
       </Card>
     );
   }
 
   let selectedDBWeek: DBSportLeagueWeek | null;
-  if (weekId) {
-    selectedDBWeek = await getDBSportLeagueWeekById(weekId);
+  if (selectedWeekId) {
+    selectedDBWeek = await getDBSportLeagueWeekById(selectedWeekId);
     if (
       !selectedDBWeek ||
       selectedDBWeek.seasonId !== dbPicksLeagueSeason?.sportLeagueSeasonId
@@ -102,8 +86,10 @@ export async function PicksLeagueMyPicksTab({
         </Card>
       );
     }
-  } else if (currentOrNextSeason === "current") {
-    selectedDBWeek = await getCurrentDBSportLeagueWeek(sportsLeagueId);
+  } else if (seasonType === "current") {
+    selectedDBWeek = await getCurrentDBSportLeagueWeek(
+      dbPicksLeague.sportLeagueId,
+    );
   } else {
     // get last week from previous season
     selectedDBWeek = await getDBSportLeagueWeekById(
@@ -125,7 +111,7 @@ export async function PicksLeagueMyPicksTab({
   }
 
   const picksData = await getUserDBWeeklyPickData(
-    picksLeagueId,
+    dbPicksLeague.id,
     selectedDBWeek.id,
     userId,
   );
@@ -139,7 +125,7 @@ export async function PicksLeagueMyPicksTab({
   }
 
   const requiredAmountOfPicks = Math.min(
-    picksPerWeek,
+    dbPicksLeague.picksPerWeek,
     picksData?.games.length ?? 0,
   );
 
@@ -176,7 +162,7 @@ export async function PicksLeagueMyPicksTab({
     <div className={"flex flex-col items-center gap-2"}>
       <WeekSwitcher
         previousWeek={previousWeek}
-        picksLeagueId={picksLeagueId}
+        picksLeagueId={dbPicksLeague.id}
         selectedDBWeek={selectedDBWeek}
         nextWeek={nextWeek}
         tab={PicksLeagueTabIds.MY_PICKS}
@@ -230,10 +216,10 @@ export async function PicksLeagueMyPicksTab({
 
         {!picksMade && picksData.games.length > 0 && (
           <PicksLeagueMyPicksForm
-            picksLeagueId={picksLeagueId}
+            picksLeagueId={dbPicksLeague.id}
             requiredAmountOfPicks={requiredAmountOfPicks}
             games={picksData.games}
-            pickType={pickType}
+            pickType={dbPicksLeague.pickType}
           />
         )}
 
@@ -248,7 +234,7 @@ export async function PicksLeagueMyPicksTab({
             gamesComplete={gamesComplete}
             gamesInProgress={gamesInProgress}
             gamesYetToPlay={gamesYetToPlay}
-            pickType={pickType}
+            pickType={dbPicksLeague.pickType}
           />
         )}
       </Card>

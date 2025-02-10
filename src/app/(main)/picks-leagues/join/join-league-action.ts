@@ -90,16 +90,6 @@ export async function joinLeagueAction(
   const nextDBPicksLeagueSeason = await getNextDBPicksLeagueSeason(
     parsed.data.leagueId,
   );
-  if (!nextDBPicksLeagueSeason) {
-    console.error(
-      `unable to find next season for pick league ${parsed.data.leagueId}`,
-    );
-    return {
-      errors: {
-        form: "An unexpected error occurred. Please try again later.",
-      },
-    };
-  }
 
   const existingLeagueMember = await getDBPicksLeagueMember(
     dbPicksLeague.id,
@@ -126,20 +116,22 @@ export async function joinLeagueAction(
         );
       }
 
-      await upsertDBPicksLeagueStandings(
-        [
-          {
-            userId: dbUser.id,
-            seasonId: nextDBPicksLeagueSeason.id,
-            wins: 0,
-            losses: 0,
-            pushes: 0,
-            points: 0,
-            rank: 1, // users can't join mid-season so can assume a tie for first
-          },
-        ],
-        tx,
-      );
+      if (nextDBPicksLeagueSeason) {
+        await upsertDBPicksLeagueStandings(
+          [
+            {
+              userId: dbUser.id,
+              seasonId: nextDBPicksLeagueSeason.id,
+              wins: 0,
+              losses: 0,
+              pushes: 0,
+              points: 0,
+              rank: 1, // users can't join mid-season so can assume a tie for first
+            },
+          ],
+          tx,
+        );
+      }
     });
   } catch (e) {
     return {

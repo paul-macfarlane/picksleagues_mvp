@@ -9,6 +9,7 @@ import {
 } from "@/db/picksLeagueInvite";
 import {
   DirectInviteFormSchema,
+  PICKS_LEAGUE_INVITE_EXPIRATION,
   PicksLeagueInviteFormSchema,
 } from "@/models/picksLeagueInvites";
 import { AUTH_URL } from "@/models/auth";
@@ -127,30 +128,21 @@ export async function picksLeagueInviteAction(
       };
     }
 
+    let expiresAt = new Date(Date.now() + PICKS_LEAGUE_INVITE_EXPIRATION);
     const nextSeason = await getNextDBPicksLeagueSeason(leagueId);
-    if (!nextSeason) {
-      return {
-        errors: {
-          form: "There is no next season for this league",
-        },
-      };
-    }
-
-    const startWeek = await getDBSportLeagueWeekById(
-      nextSeason.startSportLeagueWeekId,
-    );
-    if (!startWeek) {
-      return {
-        errors: {
-          form: "Unable to find start week for next season",
-        },
-      };
+    if (nextSeason) {
+      const startWeek = await getDBSportLeagueWeekById(
+        nextSeason.startSportLeagueWeekId,
+      );
+      if (startWeek) {
+        expiresAt = startWeek.startTime;
+      }
     }
 
     const createInviteData = {
       leagueId,
       userId,
-      expiresAt: startWeek.startTime,
+      expiresAt,
       role,
     };
 
@@ -230,29 +222,20 @@ export async function picksLeagueInviteAction(
     };
   }
 
+  let expiresAt = new Date(Date.now() + PICKS_LEAGUE_INVITE_EXPIRATION);
   const nextSeason = await getNextDBPicksLeagueSeason(leagueId);
-  if (!nextSeason) {
-    return {
-      errors: {
-        form: "There is no next season for this league",
-      },
-    };
-  }
-
-  const startWeek = await getDBSportLeagueWeekById(
-    nextSeason.startSportLeagueWeekId,
-  );
-  if (!startWeek) {
-    return {
-      errors: {
-        form: "Unable to find start week for next season",
-      },
-    };
+  if (nextSeason) {
+    const startWeek = await getDBSportLeagueWeekById(
+      nextSeason.startSportLeagueWeekId,
+    );
+    if (startWeek) {
+      expiresAt = startWeek.startTime;
+    }
   }
 
   const createInviteData = {
     leagueId,
-    expiresAt: startWeek.startTime,
+    expiresAt,
     role,
   };
   const dbInvite = await createDBPicksLeagueInvite(createInviteData);

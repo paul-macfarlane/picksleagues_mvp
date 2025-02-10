@@ -13,7 +13,6 @@ import {
   acceptDBPicksLeagueInvite,
   getDBPicksLeagueDetailsForInvite,
 } from "@/db/picksLeagueInvite";
-import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { AUTH_URL } from "@/models/auth";
 import { getNextDBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { upsertDBPicksLeagueStandings } from "@/db/picksLeagueStandings";
