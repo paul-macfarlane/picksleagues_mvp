@@ -117,25 +117,24 @@ async function main() {
       );
 
       console.log("Creating picks and standings...");
-      for (const league of [...nflPicksLeagues, ...ncaaPicksLeagues]) {
-        // Get the league's season and weeks
-        const isNFLLeague = league.sportLeagueId === nflLeague.id;
+      for (const picksLeague of [...nflPicksLeagues, ...ncaaPicksLeagues]) {
+        const isNFLLeague = picksLeague.sportLeagueId === nflLeague.id;
         const seasons = isNFLLeague ? nflSeasons : ncaaSeasons;
 
         for (const { season, weeks } of seasons) {
           for (const week of weeks) {
             if (week.endTime < new Date()) {
               await seedPicksLeaguePicks({
-                leagueId: league.id,
+                leagueId: picksLeague.id,
                 weekId: week.id,
-                pickType: league.pickType,
+                pickType: picksLeague.pickType,
                 tx,
               });
             }
           }
 
           await updatePicksLeagueStandings({
-            leagueId: league.id,
+            leagueId: picksLeague.id,
             seasonId: season.id,
             tx,
           });
