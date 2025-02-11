@@ -46,48 +46,97 @@ export function MobileNavbar({
             </SheetTitle>
           </SheetHeader>
 
-          <div className="py-4">
-            <ul className="space-y-1">
+          <div className="flex flex-1 flex-col gap-4 py-4">
+            <ul className="space-y-2">
               <li>
                 <a
-                  href={"/dashboard"}
-                  className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/dashboard" ? "bg-accent" : ""}`}
+                  href="/dashboard"
+                  className={`block rounded-md p-3 hover:bg-accent ${
+                    pathname === "/dashboard"
+                      ? "border border-primary bg-muted"
+                      : ""
+                  }`}
                 >
-                  Dashboard
+                  <span className="font-medium">Dashboard</span>
                 </a>
               </li>
+
               <li>
                 <a
-                  href={"/picks-leagues/create"}
-                  className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/picks-leagues/create" ? "bg-accent" : ""}`}
+                  href="/picks-leagues/create"
+                  className={`block rounded-md p-3 hover:bg-accent ${
+                    pathname === "/picks-leagues/create"
+                      ? "border border-primary bg-muted"
+                      : ""
+                  }`}
                 >
-                  Create a League
+                  <span className="font-medium">Create League</span>
                 </a>
               </li>
+
               <li>
                 <a
                   href="/picks-leagues/join"
-                  className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname === "/picks-leagues/join" ? "bg-accent" : ""}`}
+                  className={`block rounded-md p-3 hover:bg-accent ${
+                    pathname === "/picks-leagues/join"
+                      ? "border border-primary bg-muted"
+                      : ""
+                  }`}
                 >
-                  Join a League
+                  <span className="font-medium">Join League</span>
                 </a>
               </li>
 
-              <Separator />
+              {dbPicksLeagueDetails.length > 0 && (
+                <li className="pt-2">
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Your Leagues
+                  </div>
+                </li>
+              )}
+            </ul>
 
-              {dbPicksLeagueDetails
-                .slice(0, maxLeaguesToDisplay)
-                .map((league) => (
-                  <li key={league.id}>
+            <div className="max-h-[60vh] flex-1 overflow-y-auto">
+              <ul className="space-y-2 pr-2">
+                {dbPicksLeagueDetails
+                  .slice(0, maxLeaguesToDisplay)
+                  .map((league, index) => (
+                    <li key={league.id}>
+                      <a
+                        href={getPicksLeagueHomeUrl(league.id)}
+                        className={`block rounded-md p-3 hover:bg-accent ${
+                          pathname.includes(league.id)
+                            ? "border border-primary bg-muted"
+                            : index % 2 === 0
+                              ? "bg-card"
+                              : "bg-muted/30"
+                        }`}
+                      >
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">{league.name}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {league.sportLeagueAbbreviation} • {league.pickType}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {league.sportLeagueSeasonName}
+                          </span>
+                        </div>
+                      </a>
+                    </li>
+                  ))}
+
+                {dbPicksLeagueDetails.length > maxLeaguesToDisplay && (
+                  <li>
                     <a
-                      href={getPicksLeagueHomeUrl(league.id)}
-                      className={`block p-2 text-sm focus:rounded focus:bg-accent ${pathname.startsWith(`/picks-leagues/${league.id}`) ? "bg-accent" : ""}`}
+                      href="/dashboard"
+                      className="block rounded-md p-3 text-center text-sm text-muted-foreground hover:bg-accent"
                     >
-                      {league.name}
+                      View all leagues
                     </a>
                   </li>
-                ))}
-            </ul>
+                )}
+              </ul>
+            </div>
           </div>
         </SheetContent>
       </Sheet>

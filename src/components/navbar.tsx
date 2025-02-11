@@ -12,7 +12,6 @@ import {
 } from "./ui/navigation-menu";
 import React from "react";
 import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
-import { Separator } from "./ui/separator";
 import { DBUser } from "@/db/users";
 import { UserDBPicksLeagueDetails } from "@/db/picksLeagues";
 import { MobileNavbar } from "@/components/mobile-navbar";
@@ -46,82 +45,113 @@ export default function Navbar({
                   </NavigationMenuTrigger>
 
                   <NavigationMenuContent>
-                    <ul className="flex flex-col gap-2 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                    <ul className="flex flex-col gap-2 p-4 md:w-[400px] lg:w-[500px]">
                       <li>
-                        <NavigationMenuLink asChild>
-                          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                          <a
-                            className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname === "/dashboard" ? "bg-accent text-accent-foreground" : ""}`}
-                            href="/dashboard"
-                          >
-                            <div className="text-sm font-medium leading-none">
-                              Dashboard
-                            </div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              Go to Dashboard
-                            </p>
+                        <NavigationMenuLink
+                          asChild
+                          className={`block rounded-md p-3 hover:bg-accent ${
+                            pathname === "/dashboard"
+                              ? "border border-primary bg-muted"
+                              : ""
+                          }`}
+                        >
+                          <a href="/dashboard" className="font-medium">
+                            Dashboard
                           </a>
                         </NavigationMenuLink>
                       </li>
 
                       <li>
-                        <NavigationMenuLink asChild>
-                          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+                        <NavigationMenuLink
+                          asChild
+                          className={`block rounded-md p-3 hover:bg-accent ${
+                            pathname === "/picks-leagues/create"
+                              ? "border border-primary bg-muted"
+                              : ""
+                          }`}
+                        >
                           <a
-                            className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname === "/picks-leagues/create" ? "bg-accent text-accent-foreground" : ""}`}
                             href="/picks-leagues/create"
+                            className="font-medium"
                           >
-                            <div className="text-sm font-medium leading-none">
-                              Create a Picks League
-                            </div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              Start a new league and invite friends
-                            </p>
+                            Create League
                           </a>
                         </NavigationMenuLink>
                       </li>
 
                       <li>
-                        <NavigationMenuLink asChild>
-                          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                          <a
-                            className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname === "/picks-leagues/join" ? "bg-accent text-accent-foreground" : ""}`}
-                            href="/picks-leagues/join"
-                          >
-                            <div className="text-sm font-medium leading-none">
-                              Join a Picks League
-                            </div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              Join an existing league
-                            </p>
+                        <NavigationMenuLink
+                          asChild
+                          className={`block rounded-md p-3 hover:bg-accent ${
+                            pathname === "/picks-leagues/join"
+                              ? "border border-primary bg-muted"
+                              : ""
+                          }`}
+                        >
+                          <a href="/picks-leagues/join" className="font-medium">
+                            Join League
                           </a>
                         </NavigationMenuLink>
                       </li>
 
-                      {dbPicksLeagueDetails.length > 0 && <Separator />}
+                      {dbPicksLeagueDetails.length > 0 && (
+                        <li className="pt-2">
+                          <div className="text-sm font-medium text-muted-foreground">
+                            Your Leagues
+                          </div>
+                        </li>
+                      )}
 
-                      {dbPicksLeagueDetails
-                        .slice(0, maxLeaguesToDisplay)
-                        .map((league) => (
-                          <li key={league.id}>
-                            <NavigationMenuLink asChild>
-                              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                              <a
-                                className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${pathname.startsWith(`/picks-leagues/${league.id}`) ? "bg-accent text-accent-foreground" : ""}`}
-                                href={getPicksLeagueHomeUrl(league.id)}
+                      <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-2">
+                        {dbPicksLeagueDetails
+                          .slice(0, maxLeaguesToDisplay)
+                          .map((league, index) => (
+                            <li key={league.id}>
+                              <NavigationMenuLink
+                                asChild
+                                className={`block rounded-md p-3 hover:bg-accent ${
+                                  pathname.includes(league.id)
+                                    ? "border border-primary bg-muted"
+                                    : index % 2 === 0
+                                      ? "bg-card"
+                                      : "bg-muted/30"
+                                }`}
                               >
-                                <div className="text-sm font-medium leading-none">
-                                  {league.name}
-                                </div>
-                                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                  {league.sportLeagueAbbreviation} •{" "}
-                                  {league.pickType} •{" "}
-                                  {league.sportLeagueSeasonName}
-                                </p>
+                                <a
+                                  href={getPicksLeagueHomeUrl(league.id)}
+                                  className="flex flex-col gap-1"
+                                >
+                                  <span className="font-medium">
+                                    {league.name}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {league.sportLeagueAbbreviation} •{" "}
+                                    {league.pickType}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {league.sportLeagueSeasonName}
+                                  </span>
+                                </a>
+                              </NavigationMenuLink>
+                            </li>
+                          ))}
+
+                        {dbPicksLeagueDetails.length > maxLeaguesToDisplay && (
+                          <li>
+                            <NavigationMenuLink
+                              asChild
+                              className="block rounded-md p-3 text-center hover:bg-accent"
+                            >
+                              <a
+                                href="/dashboard"
+                                className="text-sm text-muted-foreground"
+                              >
+                                View all leagues
                               </a>
                             </NavigationMenuLink>
                           </li>
-                        ))}
+                        )}
+                      </div>
                     </ul>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
