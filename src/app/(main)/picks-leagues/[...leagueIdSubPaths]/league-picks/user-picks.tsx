@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  PicksLeaguePickStatuses,
-  getGamePickStatus,
-} from "@/shared/picksLeaguePicks";
-import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
+import { getPointsEarnedAndAvailableFromUserPickData } from "@/shared/picksLeaguePicks";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Collapsible,
@@ -25,17 +21,8 @@ export interface UserPicksProps {
 export function UserPicks({ data, pickType }: UserPicksProps) {
   const [picksOpen, setPicksOpen] = useState(false);
 
-  const gamesCorrect = data.games.filter(
-    (game) =>
-      getGamePickStatus(game, game.userPick) === PicksLeaguePickStatuses.WIN,
-  ).length;
-  const gamesInProgress = data.games.filter(
-    (game) => game.status !== SportLeagueGameStatuses.FINAL && game.period > 0,
-  ).length;
-  const gamesCompleted = data.games.filter(
-    (game) => game.status === SportLeagueGameStatuses.FINAL,
-  ).length;
-  const gamesYetToPlay = data.games.filter((game) => game.period === 0).length;
+  const { pointsEarned, pointsAvailable } =
+    getPointsEarnedAndAvailableFromUserPickData(data);
 
   return (
     <div key={data.id} className="flex flex-col space-y-2 rounded border">
@@ -55,21 +42,14 @@ export function UserPicks({ data, pickType }: UserPicksProps) {
         </div>
 
         <ul className="list-inside list-disc md:hidden">
-          <li>
-            {gamesCorrect}/{gamesCompleted} Correct
-          </li>
-          <li>{gamesInProgress} In Progress</li>
-          <li>{gamesYetToPlay} Yet to Play</li>
+          <li>{pointsEarned} points earned</li>
+          <li>{pointsAvailable} points available</li>
         </ul>
 
         <div className="hidden md:block">
-          <span>
-            {gamesCorrect}/{gamesCompleted} Correct
-          </span>
+          <span>{pointsEarned} points earned</span>
           {" • "}
-          <span>{gamesInProgress} In Progress</span>
-          {" • "}
-          <span>{gamesYetToPlay} Yet to Play</span>
+          <span>{pointsAvailable} points available</span>
         </div>
       </div>
 

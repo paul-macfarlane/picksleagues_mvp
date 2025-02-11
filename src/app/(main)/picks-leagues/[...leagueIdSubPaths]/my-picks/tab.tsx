@@ -6,10 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  PicksLeaguePickStatuses,
-  getGamePickStatus,
-} from "@/shared/picksLeaguePicks";
+import { getPointsEarnedAndAvailableFromUserPickData } from "@/shared/picksLeaguePicks";
 import {
   DBSportLeagueWeek,
   DBWeeklyPickDataByUserGame,
@@ -129,22 +126,12 @@ export async function PicksLeagueMyPicksTab({
     picksData?.games.length ?? 0,
   );
 
-  const correctPickCount =
-    picksData?.games.filter(
-      (game) =>
-        getGamePickStatus(game, game.userPick) === PicksLeaguePickStatuses.WIN,
-    ).length ?? 0;
-  const gamesComplete =
-    picksData?.games.filter(
-      (game) => game.status === SportLeagueGameStatuses.FINAL,
-    ).length ?? 0;
-  const gamesYetToPlay =
-    picksData?.games.filter((game) => game.period === 0).length ?? 0;
-  const gamesInProgress =
-    picksData?.games.filter(
-      (game) =>
-        game.status !== SportLeagueGameStatuses.FINAL && game.period > 0,
-    ).length ?? 0;
+  let pointsEarned = 0,
+    pointsAvailable = 0;
+  if (picksData) {
+    ({ pointsEarned, pointsAvailable } =
+      getPointsEarnedAndAvailableFromUserPickData(picksData));
+  }
 
   let { previousWeek, nextWeek } =
     await getPrevAndNextDBWeekForPicksLeagueSeason(
@@ -230,10 +217,8 @@ export async function PicksLeagueMyPicksTab({
               userPick: game.userPick!,
               oddsProvider: game.odds[0].provider!,
             }))}
-            correctPickCount={correctPickCount}
-            gamesComplete={gamesComplete}
-            gamesInProgress={gamesInProgress}
-            gamesYetToPlay={gamesYetToPlay}
+            pointsEarned={pointsEarned}
+            availablePoints={pointsAvailable}
             pickType={dbPicksLeague.pickType}
           />
         )}
@@ -244,29 +229,22 @@ export async function PicksLeagueMyPicksTab({
 
 interface PicksListProps {
   games: DBWeeklyPickDataByUserGame[];
-  correctPickCount: number;
-  gamesComplete: number;
-  gamesInProgress: number;
-  gamesYetToPlay: number;
+  pointsEarned: number;
+  availablePoints: number;
   pickType: PicksLeaguePickTypes;
 }
 
 function PicksList({
   games,
-  correctPickCount,
-  gamesComplete,
-  gamesInProgress,
-  gamesYetToPlay,
+  pointsEarned,
+  availablePoints,
   pickType,
 }: PicksListProps) {
   return (
     <CardContent className={"space-y-4"}>
       <ul className="list-inside list-disc">
-        <li>
-          {correctPickCount}/{gamesComplete} Picks Correct
-        </li>
-        <li>{gamesInProgress} In Progress</li>
-        <li>{gamesYetToPlay} Yet to Play</li>
+        <li>{pointsEarned} points earned</li>
+        <li>{availablePoints} points available</li>
       </ul>
 
       {games.map((game) => (
