@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 import { AUTH_URL } from "@/models/auth";
 import { getDBPicksLeaguePendingInvitesForUser } from "@/db/picksLeagueInvite";
 import { InviteActions } from "./invite-actions";
-import { LeaguesTable } from "./leagues-table";
+import { LeaguesGrid } from "./leagues-grid";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -107,17 +107,24 @@ export default async function Dashboard() {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Trophy className="h-5 w-5 text-primary" />
-            Your Picks Leagues
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {dbPicksLeagueDetails.length > 0 ? (
-            <LeaguesTable leagues={dbPicksLeagueDetails} />
-          ) : (
+      {dbPicksLeagueDetails.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Leagues</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LeaguesGrid leagues={dbPicksLeagueDetails} />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Trophy className="h-5 w-5 text-primary" />
+              Your Picks Leagues
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Trophy className="mb-4 h-12 w-12 text-muted-foreground/50" />
               <p className="text-lg font-medium">No Active Leagues</p>
@@ -125,9 +132,9 @@ export default async function Dashboard() {
                 Create a new league or join an existing one to get started
               </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
