@@ -247,12 +247,12 @@ function PicksList({
             Points Earned
           </span>
           <span
-            className={`text-3xl font-bold ${pointsEarned > 0 && pointsRemaining === 0 ? "text-primary" : "text-muted-foreground"}`}
+            className={`text-3xl font-bold ${pointsEarned > 0 && pointsRemaining === 0 ? "text-success" : "text-muted-foreground"}`}
           >
             {pointsEarned}
           </span>
           <span
-            className={`text-sm ${pointsRemaining > 0 ? "text-primary" : "text-muted-foreground"}`}
+            className={`text-sm ${pointsRemaining > 0 ? "text-success" : "text-muted-foreground"}`}
           >
             {pointsRemaining} points remaining
           </span>
