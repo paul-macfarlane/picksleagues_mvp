@@ -72,3 +72,43 @@ export function getGamePickSpreadDisplay(
 
   return `${sign}${game.odds[0].spread}`;
 }
+
+export interface PointsEarnedAndAvailable {
+  pointsEarned: number;
+  pointsRemaining: number;
+}
+
+interface PickGame extends DBSportLeagueGame {
+  userPick: DBPicksLeaguePick | null;
+}
+
+interface PickData {
+  games: PickGame[];
+}
+
+export function getPointsEarnedAndRemainingFromUserPickData(
+  picksData: PickData,
+): PointsEarnedAndAvailable {
+  let pointsEarned = 0;
+  picksData?.games.forEach((game) => {
+    const gamePickStatus = getGamePickStatus(game, game.userPick);
+    switch (gamePickStatus) {
+      case PicksLeaguePickStatuses.WIN:
+        pointsEarned++;
+        break;
+      case PicksLeaguePickStatuses.PUSH:
+        pointsEarned += 0.5;
+        break;
+      default:
+    }
+  });
+  const availablePoints =
+    picksData?.games.filter(
+      (game) => game.status !== SportLeagueGameStatuses.FINAL,
+    ).length ?? 0;
+
+  return {
+    pointsEarned,
+    pointsRemaining: availablePoints,
+  };
+}

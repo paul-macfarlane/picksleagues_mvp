@@ -6,17 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  PicksLeaguePickStatuses,
-  getGamePickStatus,
-} from "@/shared/picksLeaguePicks";
+import { getPointsEarnedAndRemainingFromUserPickData } from "@/shared/picksLeaguePicks";
 import {
   DBSportLeagueWeek,
   DBWeeklyPickDataByUserGame,
   getCurrentDBSportLeagueWeek,
   getUserDBWeeklyPickData,
 } from "@/db/sportLeagueWeeks";
-import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { PicksLeagueGameBox } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GameBox";
 import { PicksLeaguePickTypes, PicksLeagueTabIds } from "@/models/picksLeagues";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
@@ -129,22 +125,12 @@ export async function PicksLeagueMyPicksTab({
     picksData?.games.length ?? 0,
   );
 
-  const correctPickCount =
-    picksData?.games.filter(
-      (game) =>
-        getGamePickStatus(game, game.userPick) === PicksLeaguePickStatuses.WIN,
-    ).length ?? 0;
-  const gamesComplete =
-    picksData?.games.filter(
-      (game) => game.status === SportLeagueGameStatuses.FINAL,
-    ).length ?? 0;
-  const gamesYetToPlay =
-    picksData?.games.filter((game) => game.period === 0).length ?? 0;
-  const gamesInProgress =
-    picksData?.games.filter(
-      (game) =>
-        game.status !== SportLeagueGameStatuses.FINAL && game.period > 0,
-    ).length ?? 0;
+  let pointsEarned = 0,
+    pointsRemaining = 0;
+  if (picksData) {
+    ({ pointsEarned, pointsRemaining } =
+      getPointsEarnedAndRemainingFromUserPickData(picksData));
+  }
 
   let { previousWeek, nextWeek } =
     await getPrevAndNextDBWeekForPicksLeagueSeason(
@@ -230,10 +216,8 @@ export async function PicksLeagueMyPicksTab({
               userPick: game.userPick!,
               oddsProvider: game.odds[0].provider!,
             }))}
-            correctPickCount={correctPickCount}
-            gamesComplete={gamesComplete}
-            gamesInProgress={gamesInProgress}
-            gamesYetToPlay={gamesYetToPlay}
+            pointsEarned={pointsEarned}
+            pointsRemaining={pointsRemaining}
             pickType={dbPicksLeague.pickType}
           />
         )}
@@ -244,34 +228,47 @@ export async function PicksLeagueMyPicksTab({
 
 interface PicksListProps {
   games: DBWeeklyPickDataByUserGame[];
-  correctPickCount: number;
-  gamesComplete: number;
-  gamesInProgress: number;
-  gamesYetToPlay: number;
+  pointsEarned: number;
+  pointsRemaining: number;
   pickType: PicksLeaguePickTypes;
 }
 
 function PicksList({
   games,
-  correctPickCount,
-  gamesComplete,
-  gamesInProgress,
-  gamesYetToPlay,
+  pointsEarned,
+  pointsRemaining,
   pickType,
 }: PicksListProps) {
   return (
-    <CardContent className={"space-y-4"}>
-      <ul className="list-inside list-disc">
-        <li>
-          {correctPickCount}/{gamesComplete} Picks Correct
-        </li>
-        <li>{gamesInProgress} In Progress</li>
-        <li>{gamesYetToPlay} Yet to Play</li>
-      </ul>
+    <CardContent className="space-y-6">
+      <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-around">
+        <div className="flex flex-col items-center gap-1 text-center">
+          <span className="text-sm font-medium text-muted-foreground">
+            Points Earned
+          </span>
+          <span
+            className={`text-3xl font-bold ${pointsEarned > 0 && pointsRemaining === 0 ? "text-success" : "text-muted-foreground"}`}
+          >
+            {pointsEarned}
+          </span>
+          <span
+            className={`text-sm ${pointsRemaining > 0 ? "text-success" : "text-muted-foreground"}`}
+          >
+            {pointsRemaining} points remaining
+          </span>
+        </div>
+      </div>
 
-      {games.map((game) => (
-        <PicksLeagueGameBox key={game.id} game={game} pickType={pickType} />
-      ))}
+      <div className="max-h-[60vh] space-y-4 overflow-y-auto">
+        {games.map((game, index) => (
+          <PicksLeagueGameBox
+            key={game.id}
+            game={game}
+            pickType={pickType}
+            oddEven={index % 2 === 0 ? "even" : "odd"}
+          />
+        ))}
+      </div>
     </CardContent>
   );
 }
