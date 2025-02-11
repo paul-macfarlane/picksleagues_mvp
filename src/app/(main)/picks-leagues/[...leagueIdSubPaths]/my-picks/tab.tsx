@@ -164,10 +164,6 @@ export async function PicksLeagueMyPicksTab({
             </span>
           )}
 
-          {picksMade && picksData && (
-            <span>View your picks for {selectedDBWeek.name}.</span>
-          )}
-
           {!picksMade && picksData.games.length > 0 && (
             <div className="flex flex-col gap-2">
               <span>Make your picks for this week&#39;s games.</span>

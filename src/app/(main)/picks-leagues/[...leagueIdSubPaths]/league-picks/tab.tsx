@@ -19,6 +19,8 @@ import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/W
 import { DateDisplay } from "@/components/date-display";
 import { DBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
+import { getPointsEarnedAndRemainingFromUserPickData } from "@/shared/picksLeaguePicks";
+import { getDBPicksLeagueSeasonStandingsWithMembers } from "@/db/picksLeagueStandings";
 
 export interface LeaguePicksTabProps {
   dbPicksLeague: DBPicksLeagueWithUserRole;
@@ -105,16 +107,56 @@ export async function LeaguePicksTab({
 
   const now = new Date();
   const picksLocked = now < selectedDBWeek.pickLockTime;
-  let pickData: DBWeeklyPickDataByUser[] = [];
+  let pickData: (DBWeeklyPickDataByUser & {
+    weekRank: number;
+    seasonRank: number;
+    seasonPoints: number;
+  })[] = [];
   if (!picksLocked) {
-    pickData = await getLeagueDBWeeklyPickDataByUser(
+    let rawPickData = await getLeagueDBWeeklyPickDataByUser(
       dbPicksLeague.id,
       selectedDBWeek.id,
     );
 
-    // move the current user's pick to the front
+    // Get season standings
+    const seasonStandings = await getDBPicksLeagueSeasonStandingsWithMembers(
+      dbPicksLeagueSeason.id,
+    );
+
+    // Calculate points and sort by points descending
+    const pickDataWithPoints = rawPickData.map((data) => {
+      const { pointsEarned } =
+        getPointsEarnedAndRemainingFromUserPickData(data);
+      const seasonStanding = seasonStandings.find((s) => s.user.id === data.id);
+      return {
+        ...data,
+        weekPoints: pointsEarned,
+        seasonRank: seasonStanding?.standings.rank ?? 0,
+        seasonPoints: seasonStanding?.standings.points ?? 0,
+      };
+    });
+
+    // Sort by week points descending
+    pickDataWithPoints.sort((a, b) => b.weekPoints - a.weekPoints);
+
+    // Calculate week ranks (handle ties by giving same rank)
+    let currentRank = 1;
+    let currentPoints = pickDataWithPoints[0]?.weekPoints ?? 0;
+    pickData = pickDataWithPoints.map((data, index) => {
+      if (data.weekPoints < currentPoints) {
+        currentRank = index + 1;
+        currentPoints = data.weekPoints;
+      }
+      return {
+        ...data,
+        weekRank: currentRank,
+        points: data.weekPoints, // keep the points field for compatibility
+      };
+    });
+
+    // Move the current user's pick to the front if they're not already first
     const indexOfUser = pickData.findIndex((data) => data.id === userId);
-    if (indexOfUser > -1) {
+    if (indexOfUser > 0) {
       const userPickData = pickData[indexOfUser];
       pickData.splice(indexOfUser, 1);
       pickData.unshift(userPickData);
@@ -145,7 +187,6 @@ export async function LeaguePicksTab({
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
           <CardTitle>League Picks</CardTitle>
-          <span>View picks across the league for {selectedDBWeek.name}.</span>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4">
