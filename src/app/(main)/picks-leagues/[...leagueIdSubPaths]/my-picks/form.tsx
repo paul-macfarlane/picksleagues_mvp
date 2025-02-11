@@ -102,7 +102,7 @@ export function PicksLeagueMyPicksForm({
   return (
     <>
       <CardContent className="flex flex-col gap-4">
-        <div>
+        <div className="space-y-4">
           <Progress
             value={(selectedPickDetails.length / requiredAmountOfPicks) * 100}
             className="w-full"
@@ -124,11 +124,23 @@ export function PicksLeagueMyPicksForm({
           </div>
         </div>
 
-        <div>
-          {games.map((game) => (
+        <Button
+          onClick={onSubmitPicks}
+          className="w-full"
+          disabled={
+            selectedPickDetails.length < requiredAmountOfPicks || submitting
+          }
+        >
+          {submitting ? "Submitting..." : "Submit Picks"}
+        </Button>
+
+        <div className="max-h-[60vh] overflow-y-auto">
+          {games.map((game, index) => (
             <div
               key={game.id}
-              className={`mb-6 flex flex-col justify-center gap-2 rounded border p-2 last:mb-0 md:gap-4 md:p-4`}
+              className={`mb-6 flex flex-col justify-center gap-2 rounded border p-4 shadow-md md:gap-4 ${
+                index % 2 === 0 ? "bg-muted/30" : "bg-card"
+              }`}
             >
               <div className="flex items-center justify-between">
                 <span className="font-semibold">
@@ -215,17 +227,7 @@ export function PicksLeagueMyPicksForm({
         </div>
       </CardContent>
 
-      <CardFooter>
-        <Button
-          onClick={onSubmitPicks}
-          className="w-full"
-          disabled={
-            selectedPickDetails.length < requiredAmountOfPicks || submitting
-          }
-        >
-          {submitting ? "Submitting..." : "Submit Picks"}
-        </Button>
-      </CardFooter>
+      <CardFooter></CardFooter>
     </>
   );
 }

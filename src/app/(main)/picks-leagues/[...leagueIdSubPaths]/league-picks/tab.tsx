@@ -163,11 +163,12 @@ export async function LeaguePicksTab({
           )}
 
           {!picksLocked &&
-            pickData.map((data) => (
+            pickData.map((data, index) => (
               <UserPicks
                 key={data.id}
                 data={data}
                 pickType={dbPicksLeague.pickType}
+                oddEven={index % 2 === 0 ? "even" : "odd"}
               />
             ))}
         </CardContent>

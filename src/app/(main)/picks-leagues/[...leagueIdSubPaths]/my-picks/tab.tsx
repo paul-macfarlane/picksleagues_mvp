@@ -6,14 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getPointsEarnedAndAvailableFromUserPickData } from "@/shared/picksLeaguePicks";
+import { getPointsEarnedAndRemainingFromUserPickData } from "@/shared/picksLeaguePicks";
 import {
   DBSportLeagueWeek,
   DBWeeklyPickDataByUserGame,
   getCurrentDBSportLeagueWeek,
   getUserDBWeeklyPickData,
 } from "@/db/sportLeagueWeeks";
-import { SportLeagueGameStatuses } from "@/models/sportLeagueGames";
 import { PicksLeagueGameBox } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GameBox";
 import { PicksLeaguePickTypes, PicksLeagueTabIds } from "@/models/picksLeagues";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
@@ -127,10 +126,10 @@ export async function PicksLeagueMyPicksTab({
   );
 
   let pointsEarned = 0,
-    pointsAvailable = 0;
+    pointsRemaining = 0;
   if (picksData) {
-    ({ pointsEarned, pointsAvailable } =
-      getPointsEarnedAndAvailableFromUserPickData(picksData));
+    ({ pointsEarned, pointsRemaining } =
+      getPointsEarnedAndRemainingFromUserPickData(picksData));
   }
 
   let { previousWeek, nextWeek } =
@@ -218,7 +217,7 @@ export async function PicksLeagueMyPicksTab({
               oddsProvider: game.odds[0].provider!,
             }))}
             pointsEarned={pointsEarned}
-            availablePoints={pointsAvailable}
+            pointsRemaining={pointsRemaining}
             pickType={dbPicksLeague.pickType}
           />
         )}
@@ -230,26 +229,46 @@ export async function PicksLeagueMyPicksTab({
 interface PicksListProps {
   games: DBWeeklyPickDataByUserGame[];
   pointsEarned: number;
-  availablePoints: number;
+  pointsRemaining: number;
   pickType: PicksLeaguePickTypes;
 }
 
 function PicksList({
   games,
   pointsEarned,
-  availablePoints,
+  pointsRemaining,
   pickType,
 }: PicksListProps) {
   return (
-    <CardContent className={"space-y-4"}>
-      <ul className="list-inside list-disc">
-        <li>{pointsEarned} points earned</li>
-        <li>{availablePoints} points available</li>
-      </ul>
+    <CardContent className="space-y-6">
+      <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-around">
+        <div className="flex flex-col items-center gap-1 text-center">
+          <span className="text-sm font-medium text-muted-foreground">
+            Points Earned
+          </span>
+          <span
+            className={`text-3xl font-bold ${pointsEarned > 0 && pointsRemaining === 0 ? "text-primary" : "text-muted-foreground"}`}
+          >
+            {pointsEarned}
+          </span>
+          <span
+            className={`text-sm ${pointsRemaining > 0 ? "text-primary" : "text-muted-foreground"}`}
+          >
+            {pointsRemaining} points remaining
+          </span>
+        </div>
+      </div>
 
-      {games.map((game) => (
-        <PicksLeagueGameBox key={game.id} game={game} pickType={pickType} />
-      ))}
+      <div className="max-h-[60vh] space-y-4 overflow-y-auto">
+        {games.map((game, index) => (
+          <PicksLeagueGameBox
+            key={game.id}
+            game={game}
+            pickType={pickType}
+            oddEven={index % 2 === 0 ? "even" : "odd"}
+          />
+        ))}
+      </div>
     </CardContent>
   );
 }

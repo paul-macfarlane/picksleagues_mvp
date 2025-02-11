@@ -11,11 +11,13 @@ import { GamePickTimeDisplay } from "@/app/(main)/picks-leagues/[...leagueIdSubP
 export interface PicksLeagueGameBoxProps {
   game: DBWeeklyPickDataByUserGame;
   pickType: PicksLeaguePickTypes;
+  oddEven: "odd" | "even";
 }
 
 export function PicksLeagueGameBox({
   game,
   pickType,
+  oddEven,
 }: PicksLeagueGameBoxProps) {
   const gamePickStatus = getGamePickStatus(game, game.userPick);
   let gameBorder = "";
@@ -56,7 +58,9 @@ export function PicksLeagueGameBox({
 
   return (
     <>
-      <div className={"hidden rounded border p-2 md:flex md:flex-col"}>
+      <div
+        className={`hidden rounded border p-2 shadow-md md:flex md:flex-col ${oddEven === "odd" ? "bg-muted/30" : "bg-card"}`}
+      >
         <div className="relative flex items-center justify-between p-2">
           <div className="flex-shrink-0">
             <Badge variant={indicatorVariant}>{indicatorText}</Badge>
@@ -129,7 +133,9 @@ export function PicksLeagueGameBox({
         )}
       </div>
 
-      <div className="flex flex-col gap-2 rounded border p-2 md:hidden">
+      <div
+        className={`flex flex-col gap-2 rounded border p-2 shadow-md md:hidden ${oddEven === "odd" ? "bg-muted/30" : "bg-card"}`}
+      >
         <div className={"flex items-center justify-between p-2 text-sm"}>
           <Badge variant={indicatorVariant}>{indicatorText}</Badge>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { getPointsEarnedAndAvailableFromUserPickData } from "@/shared/picksLeaguePicks";
+import { getPointsEarnedAndRemainingFromUserPickData } from "@/shared/picksLeaguePicks";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Collapsible,
@@ -16,16 +16,20 @@ import { useState } from "react";
 export interface UserPicksProps {
   data: DBWeeklyPickDataByUser;
   pickType: PicksLeaguePickTypes;
+  oddEven: "odd" | "even";
 }
 
-export function UserPicks({ data, pickType }: UserPicksProps) {
+export function UserPicks({ data, pickType, oddEven }: UserPicksProps) {
   const [picksOpen, setPicksOpen] = useState(false);
 
-  const { pointsEarned, pointsAvailable } =
-    getPointsEarnedAndAvailableFromUserPickData(data);
+  const { pointsEarned, pointsRemaining: pointsAvailable } =
+    getPointsEarnedAndRemainingFromUserPickData(data);
 
   return (
-    <div key={data.id} className="flex flex-col space-y-2 rounded border">
+    <div
+      key={data.id}
+      className={`flex flex-col space-y-2 rounded border ${oddEven === "odd" ? "bg-muted/30" : "bg-card"}`}
+    >
       <div
         className={
           "flex flex-col gap-2 p-4 md:flex-row md:items-center md:justify-between"
@@ -65,12 +69,13 @@ export function UserPicks({ data, pickType }: UserPicksProps) {
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="flex flex-col gap-2">
-            {data.games.map((game) => (
+          <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto">
+            {data.games.map((game, index) => (
               <PicksLeagueGameBox
                 key={game.id}
                 game={game}
                 pickType={pickType}
+                oddEven={index % 2 === 0 ? "even" : "odd"}
               />
             ))}
           </div>

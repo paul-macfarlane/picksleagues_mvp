@@ -75,7 +75,7 @@ export function getGamePickSpreadDisplay(
 
 export interface PointsEarnedAndAvailable {
   pointsEarned: number;
-  pointsAvailable: number;
+  pointsRemaining: number;
 }
 
 interface PickGame extends DBSportLeagueGame {
@@ -86,7 +86,7 @@ interface PickData {
   games: PickGame[];
 }
 
-export function getPointsEarnedAndAvailableFromUserPickData(
+export function getPointsEarnedAndRemainingFromUserPickData(
   picksData: PickData,
 ): PointsEarnedAndAvailable {
   let pointsEarned = 0;
@@ -109,6 +109,6 @@ export function getPointsEarnedAndAvailableFromUserPickData(
 
   return {
     pointsEarned,
-    pointsAvailable: availablePoints,
+    pointsRemaining: availablePoints,
   };
 }
