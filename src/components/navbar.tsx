@@ -17,6 +17,9 @@ import { UserDBPicksLeagueDetails } from "@/db/picksLeagues";
 import { MobileNavbar } from "@/components/mobile-navbar";
 import { AUTH_URL } from "@/models/auth";
 
+// lint rules ignored below because in order for the pathname to update a full refresh is needed
+/* eslint-disable @next/next/no-html-link-for-pages */
+
 export interface NavbarProps {
   dbUser: DBUser | null;
   pathname: string;
@@ -30,7 +33,6 @@ export default function Navbar({
   maxLeaguesToDisplay,
   dbPicksLeagueDetails,
 }: NavbarProps) {
-  // lint rules ignored below because in order for the pathname to update a full refresh is needed
   return (
     <header className="sticky top-0 z-10 mx-auto w-full border-b border-primary bg-primary-foreground bg-gradient-to-b from-primary/20 to-background p-4">
       <nav className="flex items-center justify-between">
