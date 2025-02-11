@@ -2,14 +2,14 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { DBPicksLeagueDetails } from "@/db/picksLeagues";
+import { UserDBPicksLeagueDetails } from "@/db/picksLeagues";
 import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 
-const columns: ColumnDef<DBPicksLeagueDetails>[] = [
+const columns: ColumnDef<UserDBPicksLeagueDetails>[] = [
   {
     accessorKey: "name",
     header: "Leagues",
@@ -26,7 +26,8 @@ const columns: ColumnDef<DBPicksLeagueDetails>[] = [
           <div className="flex flex-col">
             <p className="font-medium">{league.name}</p>
             <p className="text-sm text-muted-foreground">
-              {league.sportLeagueAbbreviation} • {league.pickType}
+              {league.sportLeagueAbbreviation} • {league.pickType} •{" "}
+              {league.sportLeagueSeasonName}
             </p>
           </div>
         </div>
@@ -51,6 +52,10 @@ const columns: ColumnDef<DBPicksLeagueDetails>[] = [
   },
 ];
 
-export function LeaguesTable({ leagues }: { leagues: DBPicksLeagueDetails[] }) {
+export function LeaguesTable({
+  leagues,
+}: {
+  leagues: UserDBPicksLeagueDetails[];
+}) {
   return <DataTable columns={columns} data={leagues} />;
 }
