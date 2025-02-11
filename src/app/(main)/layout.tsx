@@ -3,8 +3,8 @@ import React from "react";
 import { auth } from "@/auth";
 import { DBUser, getDBUserById } from "@/db/users";
 import {
-  DBPicksLeagueDetails,
   getDBPicksLeagueDetailsForUser,
+  UserDBPicksLeagueDetails,
 } from "@/db/picksLeagues";
 import { headers } from "next/headers";
 
@@ -19,7 +19,7 @@ export default async function AppLayout({
   const session = await auth();
 
   let dbUser: DBUser | null = null;
-  let dbPicksLeagueDetails: DBPicksLeagueDetails[] = [];
+  let dbPicksLeagueDetails: UserDBPicksLeagueDetails[] = [];
   if (session?.user?.id) {
     dbUser = await getDBUserById(session.user.id);
     if (dbUser) {

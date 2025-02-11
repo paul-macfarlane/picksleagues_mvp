@@ -14,7 +14,7 @@ import React from "react";
 import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
 import { Separator } from "./ui/separator";
 import { DBUser } from "@/db/users";
-import { DBPicksLeagueDetails } from "@/db/picksLeagues";
+import { UserDBPicksLeagueDetails } from "@/db/picksLeagues";
 import { MobileNavbar } from "@/components/mobile-navbar";
 import { AUTH_URL } from "@/models/auth";
 
@@ -22,7 +22,7 @@ export interface NavbarProps {
   dbUser: DBUser | null;
   pathname: string;
   maxLeaguesToDisplay: number;
-  dbPicksLeagueDetails: DBPicksLeagueDetails[];
+  dbPicksLeagueDetails: UserDBPicksLeagueDetails[];
 }
 
 export default function Navbar({
@@ -115,7 +115,8 @@ export default function Navbar({
                                 </div>
                                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                                   {league.sportLeagueAbbreviation} •{" "}
-                                  {league.pickType}
+                                  {league.pickType} •{" "}
+                                  {league.sportLeagueSeasonName}
                                 </p>
                               </a>
                             </NavigationMenuLink>

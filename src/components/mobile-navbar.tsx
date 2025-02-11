@@ -15,11 +15,11 @@ import { Menu, Trophy } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { getPicksLeagueHomeUrl } from "@/models/picksLeagues";
 import React from "react";
-import { DBPicksLeagueDetails } from "@/db/picksLeagues";
+import { UserDBPicksLeagueDetails } from "@/db/picksLeagues";
 
 interface MobileNavbarProps {
   pathname: string;
-  dbPicksLeagueDetails: DBPicksLeagueDetails[];
+  dbPicksLeagueDetails: UserDBPicksLeagueDetails[];
   maxLeaguesToDisplay: number;
 }
 

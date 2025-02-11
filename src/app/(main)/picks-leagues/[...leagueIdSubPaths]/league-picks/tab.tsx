@@ -66,7 +66,7 @@ export async function LeaguePicksTab({
     selectedDBWeek = await getDBSportLeagueWeekById(selectedWeekId);
     if (
       !selectedDBWeek ||
-      selectedDBWeek.seasonId !== dbPicksLeagueSeason?.sportLeagueSeasonId
+      selectedDBWeek.seasonId !== dbPicksLeagueSeason.sportLeagueSeasonId
     ) {
       return (
         <Card className="mx-auto w-full max-w-4xl">

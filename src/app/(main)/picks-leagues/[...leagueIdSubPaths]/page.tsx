@@ -19,13 +19,13 @@ import { getDBUserById } from "@/db/users";
 import { PicksLeagueStandingsTab } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/standings/tab";
 import { AUTH_URL } from "@/models/auth";
 import { getDBPicksLeagueMemberDetails } from "@/db/picksLeagueMembers";
-import { picksLeagueIsInSeason } from "@/services/picksLeagues";
 import { getOutstandingDBPicksLeagueInvitesWithUser } from "@/db/picksLeagueInvite";
 import {
   getActiveDBPicksLeagueSeason,
   getNextDBPicksLeagueSeason,
   getPreviousDBPicksLeagueSeason,
 } from "@/db/picksLeagueSeasons";
+import { getDBSportLeagueSeasonById } from "@/db/sportLeagueSeason";
 
 function ErrorComponent({ message }: { message: string }) {
   return (
@@ -102,7 +102,14 @@ export default async function PicksLeaguePage(props: {
     seasonType = "previous";
   }
   if (!dbPicksLeagueSeason) {
-    // this should never happen, there should always be one of these
+    return (
+      <ErrorComponent message="League season not found. Please return to your dashboard." />
+    );
+  }
+  const dbSportLeagueSeason = await getDBSportLeagueSeasonById(
+    dbPicksLeagueSeason.sportLeagueSeasonId,
+  );
+  if (!dbSportLeagueSeason) {
     return (
       <ErrorComponent message="League season not found. Please return to your dashboard." />
     );
@@ -133,9 +140,7 @@ export default async function PicksLeaguePage(props: {
     const dbLeagueMemberDetails = await getDBPicksLeagueMemberDetails(
       dbPicksLeagueWithUserRole.id,
     );
-    const leagueIsInSeason = await picksLeagueIsInSeason(
-      dbPicksLeagueWithUserRole.id,
-    );
+    const leagueIsInSeason = seasonType === "current";
     const invites = await getOutstandingDBPicksLeagueInvitesWithUser(
       dbPicksLeagueWithUserRole.id,
     );
@@ -226,7 +231,7 @@ export default async function PicksLeaguePage(props: {
           </h1>
           <p className="text-muted-foreground">
             {dbPicksLeagueWithUserRole.sportLeagueAbbreviation} •{" "}
-            {dbPicksLeagueWithUserRole.pickType}
+            {dbPicksLeagueWithUserRole.pickType} • {dbSportLeagueSeason.name}
           </p>
         </div>
       </header>

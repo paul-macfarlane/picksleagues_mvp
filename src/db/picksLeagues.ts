@@ -24,6 +24,12 @@ import {
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 import { DBPicksLeagueMember } from "@/db/picksLeagueMembers";
+import {
+  getActiveDBPicksLeagueSeason,
+  getNextDBPicksLeagueSeason,
+  getPreviousDBPicksLeagueSeason,
+} from "./picksLeagueSeasons";
+import { getDBSportLeagueSeasonById } from "./sportLeagueSeason";
 
 export interface DBPicksLeague {
   id: string;
@@ -66,22 +72,55 @@ export interface DBPicksLeagueDetails extends DBPicksLeague {
   sportLeagueAbbreviation: string;
 }
 
+export interface UserDBPicksLeagueDetails extends DBPicksLeagueDetails {
+  sportLeagueSeasonName: string;
+}
+
 export async function getDBPicksLeagueDetailsForUser(
   userId: string,
   limit?: number,
-): Promise<DBPicksLeagueDetails[]> {
+): Promise<UserDBPicksLeagueDetails[]> {
   const queryRows = await db
     .select()
     .from(picksLeagueMembers)
     .innerJoin(picksLeagues, eq(picksLeagueMembers.leagueId, picksLeagues.id))
     .innerJoin(sportLeagues, eq(picksLeagues.sportLeagueId, sportLeagues.id))
-    .where(eq(picksLeagueMembers.userId, userId))
-    .limit(limit ?? 10); // todo maybe should enforce that a user can only be in so many picks-sport-leagues
+    .where(eq(picksLeagueMembers.userId, userId));
 
-  return queryRows.map((row) => ({
-    ...row.picks_leagues,
-    sportLeagueAbbreviation: row.sports_leagues.abbreviation,
-  }));
+  const picksLeagueDetails: UserDBPicksLeagueDetails[] = [];
+  for (const row of queryRows) {
+    let dbPicksLeagueSeason = await getActiveDBPicksLeagueSeason(
+      row.picks_leagues.id,
+    );
+    if (!dbPicksLeagueSeason) {
+      dbPicksLeagueSeason = await getNextDBPicksLeagueSeason(
+        row.picks_leagues.id,
+      );
+    }
+    if (!dbPicksLeagueSeason) {
+      dbPicksLeagueSeason = await getPreviousDBPicksLeagueSeason(
+        row.picks_leagues.id,
+      );
+    }
+    if (!dbPicksLeagueSeason) {
+      continue;
+    }
+
+    const sportLeagueSeason = await getDBSportLeagueSeasonById(
+      dbPicksLeagueSeason.sportLeagueSeasonId,
+    );
+    if (!sportLeagueSeason) {
+      continue;
+    }
+
+    picksLeagueDetails.push({
+      ...row.picks_leagues,
+      sportLeagueAbbreviation: row.sports_leagues.abbreviation,
+      sportLeagueSeasonName: sportLeagueSeason.name,
+    });
+  }
+
+  return picksLeagueDetails.slice(0, limit);
 }
 
 export interface filterDBPicksLeaguesParams {
