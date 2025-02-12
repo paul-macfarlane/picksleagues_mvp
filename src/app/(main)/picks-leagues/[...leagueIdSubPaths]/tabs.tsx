@@ -1,7 +1,4 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
 import { PicksLeagueTab, PicksLeagueTabIds } from "@/models/picksLeagues";
 import { ReactNode } from "react";
 
@@ -21,24 +18,25 @@ export default function PicksLeagueTabs({
   tabs: PicksLeagueTab[];
   selectedTab: SelectedTabWithContent;
 }) {
-  const router = useRouter();
-
-  // todo bug with this where scrolling down then back up tabs on click is not registered
+  // using divs with a link instead of tabs component because tabs component has some weird bug where scrolling down then up and then clicking did not fire an on click event, preventing user navigation
   return (
-    <Tabs defaultValue={defaultValue} className={"space-y-4"}>
-      <TabsList className={"grid h-auto grid-cols-1 md:grid-cols-5"}>
+    <div className="space-y-4">
+      <div className="grid h-auto grid-cols-1 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground md:grid-cols-5">
         {tabs.map((tab) => (
-          <TabsTrigger
+          <Link
             key={tab.id}
-            value={tab.id}
-            onClick={() => router.push(`/picks-leagues/${leagueId}/${tab.id}`)}
+            href={`/picks-leagues/${leagueId}/${tab.id}`}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
+              defaultValue === tab.id
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-muted-foreground"
+            }`}
           >
             {tab.name}
-          </TabsTrigger>
+          </Link>
         ))}
-      </TabsList>
-
-      <TabsContent value={selectedTab.id}>{selectedTab.content}</TabsContent>
-    </Tabs>
+      </div>
+      <div>{defaultValue === selectedTab.id && selectedTab.content}</div>
+    </div>
   );
 }
