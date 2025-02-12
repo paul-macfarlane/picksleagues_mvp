@@ -25,6 +25,7 @@ export function InviteActions({
       );
 
       router.push(`/picks-leagues/${invite.leagueId}/members`);
+      router.refresh(); // to update navbar so it includes the new league
     } catch (error) {
       setIsLoading(false);
 

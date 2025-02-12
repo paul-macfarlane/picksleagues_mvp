@@ -23,6 +23,7 @@ export default function PicksLeagueTabs({
 }) {
   const router = useRouter();
 
+  // todo bug with this where scrolling down then back up tabs on click is not registered
   return (
     <Tabs defaultValue={defaultValue} className={"space-y-4"}>
       <TabsList className={"grid h-auto grid-cols-1 md:grid-cols-5"}>

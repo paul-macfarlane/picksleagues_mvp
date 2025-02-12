@@ -127,6 +127,7 @@ export function PicksLeagueSettingsForm({
         description: "Picks League Deleted Successfully.",
       });
       router.push("/dashboard");
+      router.refresh(); // refresh the dashboard to update the navbar so it no longer shows the league
     } catch (e) {
       let description = "An unexpected error occurred, please try again later.";
       if (e instanceof AxiosError && e.response?.data.error) {
