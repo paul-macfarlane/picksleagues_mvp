@@ -12,14 +12,14 @@ import { DBTransaction } from "@/db/transactions";
 interface CreateGamesConfig {
   weekId: string;
   leagueId: string;
-  weekStart: DateTime;
+  weekLock: DateTime;
   tx: DBTransaction;
 }
 
 export async function seedSportGames({
   weekId,
   leagueId,
-  weekStart,
+  weekLock,
   tx,
 }: CreateGamesConfig) {
   const teams = await tx
@@ -60,31 +60,19 @@ export async function seedSportGames({
     const awayTeam = remainingTeams[awayTeamIndex];
     usedTeams.add(awayTeam.id);
 
-    const gameStart = weekStart.plus({ hours: 13 + (i % 3) * 3 });
+    const gameStart = weekLock.plus({ hours: 13 + (i % 3) * 3 }); // 13:00, 16:00, 19:00 on week lock date
 
     let status = SportLeagueGameStatuses.SCHEDULED;
     let homeScore = 0;
     let awayScore = 0;
     let clock = "0:00";
-    let period = 1;
-
+    let period = 0;
     if (gameStart < now) {
-      if (gameStart.plus({ hours: 3 }) < now) {
-        status = SportLeagueGameStatuses.FINAL;
-        homeScore = Math.floor(Math.random() * 35);
-        awayScore = Math.floor(Math.random() * 35);
-        clock = "0:00";
-        period = 4;
-      } else {
-        status = SportLeagueGameStatuses.IN_PROGRESS;
-        homeScore = Math.floor(Math.random() * 21);
-        awayScore = Math.floor(Math.random() * 21);
-        const minutesPlayed = Math.floor(Math.random() * 60);
-        clock = `${Math.floor(minutesPlayed / 15)}:${(minutesPlayed % 15)
-          .toString()
-          .padStart(2, "0")}`;
-        period = Math.floor(minutesPlayed / 15) + 1;
-      }
+      status = SportLeagueGameStatuses.FINAL;
+      homeScore = Math.floor(Math.random() * 35);
+      awayScore = Math.floor(Math.random() * 35);
+      clock = "0:00";
+      period = 4;
     }
 
     const game = await tx

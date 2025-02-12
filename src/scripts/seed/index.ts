@@ -42,7 +42,7 @@ async function main() {
           await seedSportGames({
             weekId: week.id,
             leagueId: season.leagueId,
-            weekStart: DateTime.fromMillis(week.startTime.getTime()),
+            weekLock: DateTime.fromMillis(week.pickLockTime.getTime()),
             tx,
           });
         }

@@ -49,8 +49,8 @@ export async function seedSportSeasons({
 
     for (let i = 0; i < config.weekCount; i++) {
       const weekStart = weekStartDate.plus({ weeks: i });
-      const weekEnd = weekStart.plus({ days: 6 }); // Each week is 7 days
-      const pickLockTime = weekStart.set({ hour: 13 }); // Lock picks at 1 PM ET on game day
+      const weekEnd = weekStart.plus({ days: 6 });
+      const pickLockTime = weekStart.plus({ days: 4 });
 
       const week = await tx
         .insert(sportLeagueWeeks)
