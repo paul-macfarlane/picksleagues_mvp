@@ -118,12 +118,10 @@ export async function LeaguePicksTab({
       selectedDBWeek.id,
     );
 
-    // Get season standings
     const seasonStandings = await getDBPicksLeagueSeasonStandingsWithMembers(
       dbPicksLeagueSeason.id,
     );
 
-    // Calculate points and sort by points descending
     const pickDataWithPoints = rawPickData.map((data) => {
       const { pointsEarned } =
         getPointsEarnedAndRemainingFromUserPickData(data);
@@ -136,7 +134,6 @@ export async function LeaguePicksTab({
       };
     });
 
-    // Sort by week points descending
     pickDataWithPoints.sort((a, b) => b.weekPoints - a.weekPoints);
 
     // Calculate week ranks (handle ties by giving same rank)
@@ -150,7 +147,7 @@ export async function LeaguePicksTab({
       return {
         ...data,
         weekRank: currentRank,
-        points: data.weekPoints, // keep the points field for compatibility
+        points: data.weekPoints,
       };
     });
 

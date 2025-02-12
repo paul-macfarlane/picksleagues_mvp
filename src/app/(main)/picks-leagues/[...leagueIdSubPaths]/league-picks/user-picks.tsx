@@ -44,7 +44,7 @@ export function UserPicks({ data, pickType, oddEven }: UserPicksProps) {
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <p className="text-wrap font-semibold">{data.username}</p>
+            <p className="font-semibold">{data.username}</p>
             <span className="text-sm text-muted-foreground">{`${data.firstName} ${data.lastName}`}</span>
           </div>
         </div>
