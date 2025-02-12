@@ -43,22 +43,25 @@ export async function seedSportGames({
 
   const games = [];
   const now = DateTime.now();
+  const usedTeams = new Set();
 
-  for (let i = 0; i < 16; i++) {
-    // Randomly select home and away teams
-    const availableTeams = [...teams];
+  for (let i = 0; i < Math.min(8, Math.floor(teams.length / 2)); i++) {
+    const availableTeams = teams.filter((team) => !usedTeams.has(team.id));
+    if (availableTeams.length < 2) break;
+
     const homeTeamIndex = Math.floor(Math.random() * availableTeams.length);
     const homeTeam = availableTeams[homeTeamIndex];
-    availableTeams.splice(homeTeamIndex, 1);
+    usedTeams.add(homeTeam.id);
 
-    const awayTeamIndex = Math.floor(Math.random() * availableTeams.length);
-    const awayTeam = availableTeams[awayTeamIndex];
-    availableTeams.splice(awayTeamIndex, 1);
+    const remainingTeams = availableTeams.filter(
+      (team) => team.id !== homeTeam.id,
+    );
+    const awayTeamIndex = Math.floor(Math.random() * remainingTeams.length);
+    const awayTeam = remainingTeams[awayTeamIndex];
+    usedTeams.add(awayTeam.id);
 
-    // Set game time (spread throughout Sunday)
-    const gameStart = weekStart.plus({ hours: 13 + (i % 3) * 3 }); // Games at 1 PM, 4 PM, and 7 PM ET
+    const gameStart = weekStart.plus({ hours: 13 + (i % 3) * 3 });
 
-    // Determine game status and scores based on start time
     let status = SportLeagueGameStatuses.SCHEDULED;
     let homeScore = 0;
     let awayScore = 0;
