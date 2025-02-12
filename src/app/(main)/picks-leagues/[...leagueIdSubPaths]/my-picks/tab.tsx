@@ -21,6 +21,7 @@ import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/W
 import { DateDisplay } from "@/components/date-display";
 import { DBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
+import { getDBPicksLeagueStandingsForUserAndSeason } from "@/db/picksLeagueStandings";
 
 export interface PicksLeagueMyPicksTabProps {
   dbPicksLeague: DBPicksLeagueWithUserRole;
@@ -87,7 +88,6 @@ export async function PicksLeagueMyPicksTab({
       dbPicksLeague.sportLeagueId,
     );
   } else {
-    // get last week from previous season
     selectedDBWeek = await getDBSportLeagueWeekById(
       dbPicksLeagueSeason.endSportLeagueWeekId,
     );
@@ -105,6 +105,11 @@ export async function PicksLeagueMyPicksTab({
       </Card>
     );
   }
+
+  const standingsRecord = await getDBPicksLeagueStandingsForUserAndSeason(
+    userId,
+    dbPicksLeagueSeason.id,
+  );
 
   const picksData = await getUserDBWeeklyPickData(
     dbPicksLeague.id,
@@ -155,17 +160,37 @@ export async function PicksLeagueMyPicksTab({
       />
 
       <Card className="mx-auto w-full max-w-4xl">
-        <CardHeader>
+        <CardHeader className="space-y-4">
           <CardTitle>My Picks</CardTitle>
+
+          <div
+            className={`mt-4 grid ${picksMade ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2"} gap-4`}
+          >
+            {picksMade && (
+              <>
+                <StatsBox label="Week Points" value={pointsEarned} />
+                <StatsBox
+                  label="Points Remaining"
+                  value={pointsRemaining}
+                  highlight={pointsRemaining > 0}
+                />
+              </>
+            )}
+
+            <StatsBox
+              label="Season Rank"
+              value={standingsRecord ? `#${standingsRecord.rank}` : "-"}
+            />
+            <StatsBox
+              label="Season Points"
+              value={standingsRecord ? standingsRecord.points : "-"}
+            />
+          </div>
 
           {!picksData && (
             <span>
               There are no games available to pick for {selectedDBWeek.name}.
             </span>
-          )}
-
-          {picksMade && picksData && (
-            <span>View your picks for {selectedDBWeek.name}.</span>
           )}
 
           {!picksMade && picksData.games.length > 0 && (
@@ -216,8 +241,6 @@ export async function PicksLeagueMyPicksTab({
               userPick: game.userPick!,
               oddsProvider: game.odds[0].provider!,
             }))}
-            pointsEarned={pointsEarned}
-            pointsRemaining={pointsRemaining}
             pickType={dbPicksLeague.pickType}
           />
         )}
@@ -228,37 +251,12 @@ export async function PicksLeagueMyPicksTab({
 
 interface PicksListProps {
   games: DBWeeklyPickDataByUserGame[];
-  pointsEarned: number;
-  pointsRemaining: number;
   pickType: PicksLeaguePickTypes;
 }
 
-function PicksList({
-  games,
-  pointsEarned,
-  pointsRemaining,
-  pickType,
-}: PicksListProps) {
+function PicksList({ games, pickType }: PicksListProps) {
   return (
     <CardContent className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-around">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <span className="text-sm font-medium text-muted-foreground">
-            Points Earned
-          </span>
-          <span
-            className={`text-3xl font-bold ${pointsEarned > 0 && pointsRemaining === 0 ? "text-success" : "text-muted-foreground"}`}
-          >
-            {pointsEarned}
-          </span>
-          <span
-            className={`text-sm ${pointsRemaining > 0 ? "text-success" : "text-muted-foreground"}`}
-          >
-            {pointsRemaining} points remaining
-          </span>
-        </div>
-      </div>
-
       <div className="max-h-[60vh] space-y-4 overflow-y-auto">
         {games.map((game, index) => (
           <PicksLeagueGameBox
@@ -270,5 +268,26 @@ function PicksList({
         ))}
       </div>
     </CardContent>
+  );
+}
+
+interface StatsBoxProps {
+  label: string;
+  value: string | number;
+  highlight?: boolean;
+}
+
+function StatsBox({ label, value, highlight = false }: StatsBoxProps) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-lg border bg-muted/30 p-2 text-center">
+      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      <span
+        className={`text-2xl font-bold ${
+          highlight ? "text-success" : "text-primary"
+        }`}
+      >
+        {value}
+      </span>
+    </div>
   );
 }

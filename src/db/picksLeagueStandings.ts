@@ -184,3 +184,19 @@ export async function deleteDBPicksLeagueStandingsByIds(
       .where(inArray(picksLeagueStandings.id, ids));
   }
 }
+
+export async function getDBPicksLeagueStandingsForUserAndSeason(
+  userId: string,
+  seasonId: string,
+): Promise<DBPicksLeagueStandings | null> {
+  const queryRows = await db
+    .select()
+    .from(picksLeagueStandings)
+    .where(
+      and(
+        eq(picksLeagueStandings.userId, userId),
+        eq(picksLeagueStandings.seasonId, seasonId),
+      ),
+    );
+  return queryRows[0] || null;
+}
