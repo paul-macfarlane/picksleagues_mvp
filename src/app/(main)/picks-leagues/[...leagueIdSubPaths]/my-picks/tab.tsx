@@ -21,6 +21,7 @@ import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/W
 import { DateDisplay } from "@/components/date-display";
 import { DBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
+import { getDBPicksLeagueStandingsForUserAndSeason } from "@/db/picksLeagueStandings";
 
 export interface PicksLeagueMyPicksTabProps {
   dbPicksLeague: DBPicksLeagueWithUserRole;
@@ -87,7 +88,6 @@ export async function PicksLeagueMyPicksTab({
       dbPicksLeague.sportLeagueId,
     );
   } else {
-    // get last week from previous season
     selectedDBWeek = await getDBSportLeagueWeekById(
       dbPicksLeagueSeason.endSportLeagueWeekId,
     );
@@ -105,6 +105,11 @@ export async function PicksLeagueMyPicksTab({
       </Card>
     );
   }
+
+  const standingsRecord = await getDBPicksLeagueStandingsForUserAndSeason(
+    userId,
+    dbPicksLeagueSeason.id,
+  );
 
   const picksData = await getUserDBWeeklyPickData(
     dbPicksLeague.id,
@@ -157,6 +162,27 @@ export async function PicksLeagueMyPicksTab({
       <Card className="mx-auto w-full max-w-4xl">
         <CardHeader>
           <CardTitle>My Picks</CardTitle>
+
+          {standingsRecord && (
+            <div className="mt-2 space-x-2">
+              <div className="flex gap-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Current Rank</span>
+                  <span className="text-2xl font-bold text-primary">
+                    #{standingsRecord.rank}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">
+                    Points this season
+                  </span>
+                  <span className="text-2xl font-bold text-primary">
+                    {standingsRecord.points}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {!picksData && (
             <span>
@@ -240,7 +266,7 @@ function PicksList({
       <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-around">
         <div className="flex flex-col items-center gap-1 text-center">
           <span className="text-sm font-medium text-muted-foreground">
-            Points Earned
+            Points this week
           </span>
           <span
             className={`text-3xl font-bold ${pointsEarned > 0 && pointsRemaining === 0 ? "text-success" : "text-muted-foreground"}`}
