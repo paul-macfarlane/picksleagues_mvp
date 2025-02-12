@@ -25,8 +25,6 @@ export interface UserPicksProps {
 }
 
 export function UserPicks({ data, pickType, oddEven }: UserPicksProps) {
-  // todo appearance is good, make some changes so that there is gold silver and bronze
-
   const [picksOpen, setPicksOpen] = useState(false);
 
   const { pointsEarned, pointsRemaining } =
@@ -73,13 +71,12 @@ export function UserPicks({ data, pickType, oddEven }: UserPicksProps) {
             </div>
           </div>
 
-          {/* Points */}
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-2">
               <span
                 className={`text-lg font-bold ${pointsEarned > 0 && pointsRemaining === 0 ? "text-success" : "text-muted-foreground"}`}
               >
-                {pointsEarned} points
+                {pointsEarned} points this week
               </span>
               {pointsRemaining > 0 && (
                 <span className="text-sm text-success">
@@ -88,7 +85,7 @@ export function UserPicks({ data, pickType, oddEven }: UserPicksProps) {
               )}
             </div>
             <span className="text-sm text-muted-foreground">
-              {data.seasonPoints} season total
+              {data.seasonPoints} points this season
             </span>
           </div>
         </div>
