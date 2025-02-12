@@ -73,9 +73,7 @@ export function UserPicks({ data, pickType, oddEven }: UserPicksProps) {
 
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-2">
-              <span
-                className={`text-lg font-bold ${pointsEarned > 0 && pointsRemaining === 0 ? "text-success" : "text-muted-foreground"}`}
-              >
+              <span className={`text-lg font-bold text-primary`}>
                 {pointsEarned} points this week
               </span>
               {pointsRemaining > 0 && (
