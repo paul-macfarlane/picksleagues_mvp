@@ -52,6 +52,80 @@ export async function getDBSportLeagueWithSeasonDetails(
     : null;
 }
 
+export interface DBSportLeagueWithSeasonsDetail extends DBSportLeague {
+  seasons: DBSportLeagueSeasonDetail[];
+}
+
+export async function getActiveAndNextDBSportLeagueSeasonDetailsWithActiveWeeks(): Promise<
+  DBSportLeagueWithSeasonsDetail[]
+> {
+  const now = new Date();
+  const queryRows = await db
+    .select()
+    .from(sportLeagues)
+    .innerJoin(
+      sportLeagueSeasons,
+      eq(sportLeagues.id, sportLeagueSeasons.leagueId),
+    )
+    .innerJoin(
+      sportLeagueWeeks,
+      eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
+    )
+    .where(
+      and(
+        gte(sportLeagueSeasons.endTime, now),
+        gte(sportLeagueWeeks.startTime, new Date()),
+      ),
+    )
+    .orderBy(sportLeagueWeeks.startTime);
+
+  const dbSportLeagueWithActiveSeasonsDetails: DBSportLeagueWithSeasonsDetail[] =
+    [];
+  queryRows.forEach((row) => {
+    const existingSportDetailIndex =
+      dbSportLeagueWithActiveSeasonsDetails.findIndex(
+        (detail) => detail.id === row.sports_leagues.id,
+      );
+    if (existingSportDetailIndex === -1) {
+      dbSportLeagueWithActiveSeasonsDetails.push({
+        ...row.sports_leagues,
+        seasons: [
+          {
+            ...row.sport_league_seasons,
+            weeks: row.sport_league_weeks ? [row.sport_league_weeks] : [],
+          },
+        ],
+      });
+
+      return;
+    }
+
+    const existingSportLeagueSeasonIndex =
+      dbSportLeagueWithActiveSeasonsDetails[
+        existingSportDetailIndex
+      ].seasons.findIndex(
+        (season) => season.id === row.sport_league_seasons.id,
+      );
+    if (existingSportLeagueSeasonIndex === -1) {
+      dbSportLeagueWithActiveSeasonsDetails[
+        existingSportDetailIndex
+      ].seasons.push({
+        ...row.sport_league_seasons,
+        weeks: row.sport_league_weeks ? [row.sport_league_weeks] : [],
+      });
+      return;
+    }
+
+    if (row.sport_league_weeks) {
+      dbSportLeagueWithActiveSeasonsDetails[existingSportDetailIndex].seasons[
+        existingSportLeagueSeasonIndex
+      ].weeks.push(row.sport_league_weeks);
+    }
+  });
+
+  return dbSportLeagueWithActiveSeasonsDetails;
+}
+
 export async function getActiveDBSportLeagueSeasonDetailsWithActiveWeeks(): Promise<
   DBSportLeagueWithSeasonDetail[]
 > {

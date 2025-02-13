@@ -73,6 +73,7 @@ export function JoinLeagueForm({
             });
 
             router.push("/");
+            router.refresh(); // refresh navbar now that the league is joined
           })(e);
         }}
       >

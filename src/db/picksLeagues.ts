@@ -124,7 +124,7 @@ export async function getDBPicksLeagueDetailsForUser(
 }
 
 export interface filterDBPicksLeaguesParams {
-  sportLeagueSeasonIds: string[];
+  sportLeagueSeasonId?: string;
   sportLeagueId?: string;
   pickType?: PicksLeaguePickTypes;
   picksPerWeek?: number;
@@ -190,11 +190,26 @@ export async function filterDBPicksLeagues(
   const whereClauses = [
     eq(picksLeagues.visibility, PicksLeagueVisibilities.PUBLIC),
     isNull(picksLeagueMembers.leagueId),
-    inArray(
-      picksLeagueSeasons.sportLeagueSeasonId,
-      params.sportLeagueSeasonIds,
-    ),
   ];
+  if (params.sportLeagueSeasonId) {
+    whereClauses.push(
+      inArray(
+        picksLeagues.id,
+        db
+          .select({ leagueId: picksLeagueSeasons.leagueId })
+          .from(picksLeagueSeasons)
+          .where(
+            eq(
+              picksLeagueSeasons.sportLeagueSeasonId,
+              params.sportLeagueSeasonId,
+            ),
+          ),
+      ),
+    );
+  }
+  if (params.sportLeagueId) {
+    whereClauses.push(eq(picksLeagues.sportLeagueId, params.sportLeagueId));
+  }
   if (params.pickType) {
     whereClauses.push(eq(picksLeagues.pickType, params.pickType));
   }

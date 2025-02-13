@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DBSportLeagueWithSeasonDetail } from "@/db/sportLeagues";
+import { DBSportLeagueWithSeasonsDetail } from "@/db/sportLeagues";
 import { PICKS_LEAGUE_PICK_TYPE_VALUES } from "@/models/picksLeagues";
 import {
   Form,
@@ -27,6 +27,7 @@ import { DBSportLeagueWeek } from "@/db/sportLeagueWeeks";
 
 interface FilterFormData {
   sportLeagueId: string;
+  sportLeagueSeasonId: string;
   pickType: string;
   picksPerWeek?: number;
   startSportLeagueWeekId: string;
@@ -37,7 +38,7 @@ interface FilterFormData {
 export default function FilterLeaguesForm({
   sportLeagues,
 }: {
-  sportLeagues: DBSportLeagueWithSeasonDetail[];
+  sportLeagues: DBSportLeagueWithSeasonsDetail[];
 }) {
   const router = useRouter();
 
@@ -87,13 +88,10 @@ export default function FilterLeaguesForm({
                   <Select
                     onValueChange={(val) => {
                       field.onChange(val);
-
-                      const sportLeague = sportLeagues.find(
-                        (sportLeague) => sportLeague.id === val,
-                      )!;
-                      setSportLeagueWeeks(sportLeague.season.weeks);
+                      form.setValue("sportLeagueSeasonId", "");
                       setStartSportLeagueWeekId("");
                       setEndSportLeagueWeekId("");
+                      setSportLeagueWeeks([]);
                     }}
                     value={field.value}
                     name="sportLeagueId"
@@ -104,9 +102,9 @@ export default function FilterLeaguesForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {sportLeagues.map((sportLeague) => (
-                        <SelectItem key={sportLeague.id} value={sportLeague.id}>
-                          {sportLeague.abbreviation}
+                      {sportLeagues.map((league) => (
+                        <SelectItem key={league.id} value={league.id}>
+                          {league.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -118,26 +116,45 @@ export default function FilterLeaguesForm({
 
             <FormField
               control={form.control}
-              name="pickType"
+              name="sportLeagueSeasonId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>Pick Type</FormLabel>
+                  <FormLabel>Season</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(val) => {
+                      field.onChange(val);
+                      const sportLeague = sportLeagues.find(
+                        (league) => league.id === selectedSportLeagueId,
+                      )!;
+                      const season = sportLeague.seasons.find(
+                        (season) => season.id === val,
+                      )!;
+                      setSportLeagueWeeks(season.weeks);
+                      setStartSportLeagueWeekId("");
+                      setEndSportLeagueWeekId("");
+                    }}
                     value={field.value}
-                    name="pickType"
+                    name="sportLeagueSeasonId"
+                    disabled={!selectedSportLeagueId}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select pick type" />
-                    </SelectTrigger>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a season" />
+                      </SelectTrigger>
+                    </FormControl>
                     <SelectContent>
-                      {PICKS_LEAGUE_PICK_TYPE_VALUES.map((pickType) => (
-                        <SelectItem key={pickType} value={pickType}>
-                          {pickType}
-                        </SelectItem>
-                      ))}
+                      {selectedSportLeagueDetails?.seasons
+                        .filter(
+                          (season) => new Date(season.endTime) > new Date(),
+                        )
+                        .map((season) => (
+                          <SelectItem key={season.id} value={season.id}>
+                            {season.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -149,12 +166,7 @@ export default function FilterLeaguesForm({
               name="startSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>
-                    Start Week{" "}
-                    {selectedSportLeagueDetails
-                      ? `(${selectedSportLeagueDetails.season.name} season)`
-                      : ""}
-                  </FormLabel>
+                  <FormLabel>Start Week </FormLabel>
                   <Select
                     onValueChange={(val) => {
                       if (val) {
@@ -192,12 +204,7 @@ export default function FilterLeaguesForm({
               name="endSportLeagueWeekId"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>
-                    End Week{" "}
-                    {selectedSportLeagueDetails
-                      ? `(${selectedSportLeagueDetails.season.name} season)`
-                      : ""}
-                  </FormLabel>
+                  <FormLabel>End Week</FormLabel>
                   <Select
                     onValueChange={(val) => {
                       if (val) {
@@ -234,6 +241,32 @@ export default function FilterLeaguesForm({
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
+              name="pickType"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Pick Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    name="pickType"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select pick type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PICKS_LEAGUE_PICK_TYPE_VALUES.map((pickType) => (
+                        <SelectItem key={pickType} value={pickType}>
+                          {pickType}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="picksPerWeek"
               render={({ field }) => (
                 <FormItem className="space-y-2">
@@ -258,7 +291,9 @@ export default function FilterLeaguesForm({
                 </FormItem>
               )}
             />
+          </div>
 
+          <div className="grid grid-cols-1 gap-6">
             <FormField
               control={form.control}
               name="size"
@@ -297,6 +332,7 @@ export default function FilterLeaguesForm({
             onClick={() => {
               // annoying, but in order to clear form values all the following below was needed
               form.setValue("sportLeagueId", "");
+              form.setValue("sportLeagueSeasonId", "");
               form.setValue("pickType", "");
 
               setStartSportLeagueWeekId("");
