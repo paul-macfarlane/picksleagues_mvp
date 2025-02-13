@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DBSportLeagueWithSeasonDetail } from "@/db/sportLeagues";
+import { DBSportLeagueWithSeasonsDetail } from "@/db/sportLeagues";
 import { useFormStatus } from "react-dom";
 import {
   CreatePicksLeagueSchema,
@@ -49,26 +49,32 @@ import {
 type FormSchema = z.infer<typeof CreatePicksLeagueSchema>;
 
 function getDefaultSportStartWeekId(
-  sportLeague: DBSportLeagueWithSeasonDetail,
+  sportLeague: DBSportLeagueWithSeasonsDetail,
 ): string {
-  return sportLeague.season.weeks.length ? sportLeague.season.weeks[0].id : "";
+  return sportLeague.seasons[0].weeks.length
+    ? sportLeague.seasons[0].weeks[0].id
+    : "";
 }
 
 function getDefaultSportEndWeekId(
-  sportLeague: DBSportLeagueWithSeasonDetail,
+  sportLeague: DBSportLeagueWithSeasonsDetail,
 ): string {
-  return sportLeague.season.weeks.length
-    ? sportLeague.season.weeks[sportLeague.season.weeks.length - 1].id
+  return sportLeague.seasons[0].weeks.length
+    ? sportLeague.seasons[0].weeks[sportLeague.seasons[0].weeks.length - 1].id
     : "";
 }
 
 export function CreatePicksLeagueForm({
   sportLeagues,
 }: {
-  sportLeagues: DBSportLeagueWithSeasonDetail[];
+  sportLeagues: DBSportLeagueWithSeasonsDetail[];
 }) {
   const router = useRouter();
 
+  const defaultSportLeagueSeasonId =
+    sportLeagues.length && sportLeagues[0].seasons.length
+      ? sportLeagues[0].seasons[0].id
+      : "";
   const defaultStartSportLeagueWeekId = sportLeagues.length
     ? getDefaultSportStartWeekId(sportLeagues[0])
     : "";
@@ -83,6 +89,7 @@ export function CreatePicksLeagueForm({
       name: "",
       logoUrl: "",
       sportLeagueId: sportLeagues.length ? sportLeagues[0].id : "",
+      sportLeagueSeasonId: defaultSportLeagueSeasonId,
       visibility: PicksLeagueVisibilities.PRIVATE,
       pickType: PicksLeaguePickTypes.AGAINST_THE_SPREAD,
       picksPerWeek: PICKS_LEAGUE_DEFAULT_PICKS_PICKS_PER_WEEK,
@@ -98,7 +105,7 @@ export function CreatePicksLeagueForm({
   const logoUrl = form.watch("logoUrl");
 
   const defaultSportLeagueWeeks =
-    sportLeagues.length > 0 ? sportLeagues[0].season.weeks : [];
+    sportLeagues.length > 0 ? sportLeagues[0].seasons[0].weeks : [];
   const [sportLeagueWeeks, setSportLeagueWeeks] = useState(
     defaultSportLeagueWeeks,
   );
@@ -265,7 +272,10 @@ export function CreatePicksLeagueForm({
                       const sportLeague = sportLeagues.find(
                         (sportLeague) => sportLeague.id === val,
                       )!;
-                      setSportLeagueWeeks(sportLeague.season.weeks);
+
+                      form.setValue("sportLeagueSeasonId", "");
+
+                      setSportLeagueWeeks(sportLeague.seasons[0].weeks);
 
                       const startId = getDefaultSportStartWeekId(sportLeague);
                       form.setValue("startSportLeagueWeekId", startId);
@@ -287,6 +297,127 @@ export function CreatePicksLeagueForm({
                       {sportLeagues.map((sportLeague) => (
                         <SelectItem key={sportLeague.id} value={sportLeague.id}>
                           {sportLeague.abbreviation}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sportLeagueSeasonId"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Season</FormLabel>
+                  <Select
+                    onValueChange={(val) => {
+                      field.onChange(val);
+                      if (!val) {
+                        return;
+                      }
+
+                      const sportLeague = sportLeagues.find(
+                        (league) =>
+                          !!league.seasons.find((season) => season.id === val),
+                      )!;
+                      const season = sportLeague.seasons.find(
+                        (season) => season.id === val,
+                      )!;
+                      setSportLeagueWeeks(season.weeks);
+                      setStartSportLeagueWeekId("");
+                      setEndSportLeagueWeekId("");
+                    }}
+                    value={field.value}
+                    name="sportLeagueSeasonId"
+                    disabled={!selectedSportLeagueId}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a season" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {selectedSportLeagueDetails?.seasons
+                        .filter(
+                          (season) => new Date(season.endTime) > new Date(),
+                        )
+                        .map((season) => (
+                          <SelectItem key={season.id} value={season.id}>
+                            {season.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="startSportLeagueWeekId"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Start Week</FormLabel>
+                  <Select
+                    onValueChange={(val) => {
+                      if (val) {
+                        field.onChange(val);
+                        setStartSportLeagueWeekId(val);
+                      }
+                    }}
+                    value={startSportLeagueWeekId}
+                    name="startSportLeagueWeekId"
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select start week" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {sportLeagueWeeks.map((week) => (
+                        <SelectItem
+                          key={`startWeek-${week.id}`}
+                          value={week.id}
+                        >
+                          {week.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="endSportLeagueWeekId"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>End Week</FormLabel>
+                  <Select
+                    onValueChange={(val) => {
+                      if (val) {
+                        field.onChange(val);
+                        setEndSportLeagueWeekId(val);
+                      }
+                    }}
+                    value={endSportLeagueWeekId}
+                    name="endSportLeagueWeekId"
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select end week" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {sportLeagueWeeks.map((week) => (
+                        <SelectItem key={`endWeek-${week.id}`} value={week.id}>
+                          {week.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -406,103 +537,28 @@ export function CreatePicksLeagueForm({
 
             <FormField
               control={form.control}
-              name="startSportLeagueWeekId"
+              name="size"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>
-                    Start Week ({selectedSportLeagueDetails.season.name} season)
-                  </FormLabel>
-                  <Select
-                    onValueChange={(val) => {
-                      if (val) {
-                        field.onChange(val);
-                        setStartSportLeagueWeekId(val);
-                      }
-                    }}
-                    value={startSportLeagueWeekId}
-                    name="startSportLeagueWeekId"
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select start week" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {sportLeagueWeeks.map((week) => (
-                        <SelectItem
-                          key={`startWeek-${week.id}`}
-                          value={week.id}
-                        >
-                          {week.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="endSportLeagueWeekId"
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel>
-                    End Week ({selectedSportLeagueDetails.season.name} season)
-                  </FormLabel>
-                  <Select
-                    onValueChange={(val) => {
-                      if (val) {
-                        field.onChange(val);
-                        setEndSportLeagueWeekId(val);
-                      }
-                    }}
-                    value={endSportLeagueWeekId}
-                    name="endSportLeagueWeekId"
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select end week" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {sportLeagueWeeks.map((week) => (
-                        <SelectItem key={`endWeek-${week.id}`} value={week.id}>
-                          {week.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Size</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(value) => {
+                        if (isNaN(value.target.valueAsNumber)) {
+                          field.onChange("");
+                        } else {
+                          field.onChange(value.target.valueAsNumber);
+                        }
+                      }}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-
-          <FormField
-            control={form.control}
-            name="size"
-            render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Size</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(value) => {
-                      if (isNaN(value.target.valueAsNumber)) {
-                        field.onChange("");
-                      } else {
-                        field.onChange(value.target.valueAsNumber);
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4">

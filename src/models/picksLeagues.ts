@@ -108,6 +108,7 @@ export const CreatePicksLeagueSchema = z.object({
   name: picksLeagueNameSchema,
   logoUrl: picksLeagueLogoUrlSchema,
   sportLeagueId: z.string().trim().uuid(),
+  sportLeagueSeasonId: z.string().trim().uuid("Required"),
   visibility: picksLeagueVisibilitySchema,
   pickType: picksLeaguePickTypeSchema,
   picksPerWeek: picksLeaguePicksPerWeekSchema,
