@@ -87,51 +87,6 @@ export async function getActiveDBSportLeagueSeason(
   return queryRows.length > 0 ? queryRows[0] : null;
 }
 
-export async function getActiveDBSportLeagueSeasonHavingActiveWeeks(
-  sportLeagueId: string,
-  tx?: DBTransaction,
-): Promise<DBSportLeagueSeason | null> {
-  const now = new Date();
-
-  const queryRows = tx
-    ? await tx
-        .select({
-          season: getTableColumns(sportLeagueSeasons),
-        })
-        .from(sportLeagueSeasons)
-        .innerJoin(
-          sportLeagueWeeks,
-          eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
-        )
-        .where(
-          and(
-            eq(sportLeagueSeasons.leagueId, sportLeagueId),
-            lte(sportLeagueSeasons.startTime, now),
-            gte(sportLeagueSeasons.endTime, now),
-            gte(sportLeagueWeeks.startTime, now),
-          ),
-        )
-    : await db
-        .select({
-          season: getTableColumns(sportLeagueSeasons),
-        })
-        .from(sportLeagueSeasons)
-        .innerJoin(
-          sportLeagueWeeks,
-          eq(sportLeagueSeasons.id, sportLeagueWeeks.seasonId),
-        )
-        .where(
-          and(
-            eq(sportLeagueSeasons.leagueId, sportLeagueId),
-            lte(sportLeagueSeasons.startTime, now),
-            gte(sportLeagueSeasons.endTime, now),
-            gte(sportLeagueWeeks.startTime, now),
-          ),
-        );
-
-  return queryRows.length > 0 ? queryRows[0].season : null;
-}
-
 export async function getNextDBSportLeagueSeason(
   sportLeagueId: string,
   tx?: DBTransaction,

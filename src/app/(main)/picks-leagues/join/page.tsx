@@ -23,6 +23,7 @@ import {
 import { JoinLeagueForm } from "@/app/(main)/picks-leagues/join/join-league-form";
 import { AUTH_URL } from "@/models/auth";
 import { getActiveOrNextSportLeagueSeasonsDetails } from "@/services/sportLeagues";
+import { getActiveAndNextDBSportLeagueSeasonDetailsWithActiveWeeks } from "@/db/sportLeagues";
 
 const MAX_VISIBLE_PAGES = 5;
 const PAGE_SIZE = 6;
@@ -107,6 +108,17 @@ export default async function JoinLeagues(props: {
     }
   }
 
+  let sportLeagueSeasonId: string | undefined;
+  if (searchParams["sportLeagueSeasonId"]) {
+    const parseSportLeagueSeasonId = z
+      .string()
+      .uuid()
+      .safeParse(searchParams["sportLeagueSeasonId"]);
+    if (parseSportLeagueSeasonId.success) {
+      sportLeagueSeasonId = parseSportLeagueSeasonId.data;
+    }
+  }
+
   let pickType: PicksLeaguePickTypes | undefined;
   if (searchParams["pickType"]) {
     const parsePickType = z
@@ -166,12 +178,32 @@ export default async function JoinLeagues(props: {
     }
   }
 
-  const dbSportLeagues = await getActiveOrNextSportLeagueSeasonsDetails();
+  const dbSportLeagues =
+    await getActiveAndNextDBSportLeagueSeasonDetailsWithActiveWeeks();
+
+  // If no season is selected, find the closest ending season for the selected sport
+  if (sportLeagueId && !sportLeagueSeasonId) {
+    const selectedLeague = dbSportLeagues.find(
+      (league) => league.id === sportLeagueId,
+    );
+    if (selectedLeague) {
+      const now = new Date();
+      const activeSeason = selectedLeague.seasons
+        .filter((season) => new Date(season.endTime) > now)
+        .sort(
+          (a, b) =>
+            new Date(a.endTime).getTime() - new Date(b.endTime).getTime(),
+        )[0];
+      if (activeSeason) {
+        sportLeagueSeasonId = activeSeason.id;
+      }
+    }
+  }
 
   const { leagues, total } = await filterDBPicksLeagues(
     {
-      sportLeagueSeasonIds: dbSportLeagues.map((league) => league.season.id),
       sportLeagueId,
+      sportLeagueSeasonId,
       pickType,
       picksPerWeek,
       startSportLeagueWeekId,

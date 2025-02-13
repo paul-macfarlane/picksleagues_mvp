@@ -15,10 +15,7 @@ import { createDBPicksLeagueMember } from "@/db/picksLeagueMembers";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { AUTH_URL } from "@/models/auth";
 import { upsertDBPicksLeagueStandings } from "@/db/picksLeagueStandings";
-import {
-  getActiveDBSportLeagueSeasonHavingActiveWeeks,
-  getNextDBSportLeagueSeason,
-} from "@/db/sportLeagueSeason";
+import { getDBSportLeagueSeasonById } from "@/db/sportLeagueSeason";
 
 export interface CreatePicksLeagueFormState {
   errors?: {
@@ -26,6 +23,7 @@ export interface CreatePicksLeagueFormState {
     name?: string;
     logoUrl?: string;
     sportLeagueId?: string;
+    sportLeagueSeasonId?: string;
     picksPerWeek?: string;
     pickType?: string;
     startSportLeagueWeekId?: string;
@@ -76,6 +74,10 @@ export async function createPicksLeagueAction(
           .filter((error) => error.path.join(".") === "sportLeagueId")
           .map((error) => error.message)
           .join(", "),
+        sportLeagueSeasonId: parsed.error.issues
+          .filter((error) => error.path.join(".") === "sportLeagueSeasonId")
+          .map((error) => error.message)
+          .join(", "),
         visibility: parsed.error.issues
           .filter((error) => error.path.join(".") === "visibility")
           .map((error) => error.message)
@@ -113,27 +115,20 @@ export async function createPicksLeagueAction(
     };
   }
 
-  // first try to get the active season with 1 or more weeks, then if not available get the next season
-  let dbSportLeagueSeason = await getActiveDBSportLeagueSeasonHavingActiveWeeks(
-    dbSportLeague.id,
+  const dbSportLeagueSeason = await getDBSportLeagueSeasonById(
+    parsed.data.sportLeagueSeasonId,
   );
   if (!dbSportLeagueSeason) {
-    dbSportLeagueSeason = await getNextDBSportLeagueSeason(dbSportLeague.id);
-  }
-  if (!dbSportLeagueSeason) {
-    console.error(
-      `unable to find active or next sport league season for sport with id ${dbSportLeague.id}`,
-    );
     return {
       errors: {
-        form: "An unexpected error occurred, please try again later",
+        sportLeagueSeasonId: "Invalid Sport League Season",
       },
     };
   }
   if (dbSportLeagueSeason.leagueId !== dbSportLeague.id) {
     return {
       errors: {
-        form: "Sport League Season not in selected sport",
+        sportLeagueSeasonId: "Sport League Season not in selected sport",
       },
     };
   }
