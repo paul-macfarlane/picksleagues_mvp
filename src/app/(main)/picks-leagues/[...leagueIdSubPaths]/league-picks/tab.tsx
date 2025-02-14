@@ -207,6 +207,7 @@ export async function LeaguePicksTab({
                 data={data}
                 pickType={dbPicksLeague.pickType}
                 oddEven={index % 2 === 0 ? "even" : "odd"}
+                timezone={dbUser.timezone}
               />
             ))}
         </CardContent>

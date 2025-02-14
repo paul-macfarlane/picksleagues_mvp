@@ -22,9 +22,15 @@ export interface UserPicksProps {
   };
   pickType: PicksLeaguePickTypes;
   oddEven: "odd" | "even";
+  timezone: string;
 }
 
-export function UserPicks({ data, pickType, oddEven }: UserPicksProps) {
+export function UserPicks({
+  data,
+  pickType,
+  oddEven,
+  timezone,
+}: UserPicksProps) {
   const [picksOpen, setPicksOpen] = useState(false);
 
   const { pointsEarned, pointsRemaining } =
@@ -107,6 +113,7 @@ export function UserPicks({ data, pickType, oddEven }: UserPicksProps) {
                 game={game}
                 pickType={pickType}
                 oddEven={index % 2 === 0 ? "even" : "odd"}
+                timezone={timezone}
               />
             ))}
           </div>
