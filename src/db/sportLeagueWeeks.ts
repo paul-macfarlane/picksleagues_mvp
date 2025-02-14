@@ -189,7 +189,8 @@ export async function getUserDBWeeklyPickData(
       oddsProviders,
       eq(oddsProviders.id, sportLeagueGameOdds.providerId),
     )
-    .where(eq(sportLeagueWeeks.id, sportsLeagueWeekId));
+    .where(eq(sportLeagueWeeks.id, sportsLeagueWeekId))
+    .orderBy(sportLeagueGames.startTime);
   if (!queryRows.length) {
     return null;
   }

@@ -6,18 +6,20 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { PicksLeaguePickTypes } from "@/models/picksLeagues";
-import { GamePickTimeDisplay } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GamePickTimeDisplay";
+import { getGamePickTimeDisplay } from "@/shared/picksLeaguePicks";
 
 export interface PicksLeagueGameBoxProps {
   game: DBWeeklyPickDataByUserGame;
   pickType: PicksLeaguePickTypes;
   oddEven: "odd" | "even";
+  timezone: string;
 }
 
 export function PicksLeagueGameBox({
   game,
   pickType,
   oddEven,
+  timezone,
 }: PicksLeagueGameBoxProps) {
   const gamePickStatus = getGamePickStatus(game, game.userPick);
   let gameBorder = "";
@@ -71,7 +73,7 @@ export function PicksLeagueGameBox({
           </span>
 
           <div className="flex-shrink-0">
-            <GamePickTimeDisplay game={game} />
+            {getGamePickTimeDisplay(game, timezone)}
           </div>
         </div>
 
@@ -143,9 +145,7 @@ export function PicksLeagueGameBox({
             {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
           </span>
 
-          <span>
-            <GamePickTimeDisplay game={game} />
-          </span>
+          <span>{getGamePickTimeDisplay(game, timezone)}</span>
         </div>
 
         <div

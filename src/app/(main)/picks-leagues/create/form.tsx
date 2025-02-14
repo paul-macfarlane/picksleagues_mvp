@@ -459,6 +459,7 @@ export function CreatePicksLeagueForm({
                       </HoverCardContent>
                     </HoverCard>
                   </FormLabel>
+
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}

@@ -15,9 +15,10 @@ import { Column, ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DBPicksLeagueInviteWithUser } from "@/db/picksLeagueInvite";
-import { DateDisplay } from "@/components/date-display";
 import { OutstandingInviteRoleSwitcher } from "./outstanding-invite-role-switcher";
 import { RevokeInviteButton } from "./revoke-invite-button";
+import { formatDateTime } from "@/shared/utils";
+import { DBUser } from "@/db/users";
 
 function TableHeader<T>({
   column,
@@ -39,7 +40,7 @@ function TableHeader<T>({
 }
 
 export interface PicksLeagueMembersTabProps {
-  userId: string;
+  dbUser: DBUser;
   dbLeagueWithUserRole: DBPicksLeagueWithUserRole;
   dbLeagueMemberDetails: DBPicksLeagueMemberDetails[];
   leagueIsInSeason: boolean;
@@ -47,7 +48,7 @@ export interface PicksLeagueMembersTabProps {
 }
 
 export function PicksLeagueMembersTab({
-  userId,
+  dbUser,
   dbLeagueWithUserRole,
   dbLeagueMemberDetails,
   leagueIsInSeason,
@@ -65,7 +66,7 @@ export function PicksLeagueMembersTab({
   const canRemoveUser = (memberUserId: string) =>
     !leagueIsInSeason &&
     dbLeagueWithUserRole.role === PicksLeagueMemberRoles.COMMISSIONER &&
-    memberUserId !== userId;
+    memberUserId !== dbUser.id;
 
   let canLeaveLeague =
     dbLeagueWithUserRole.role !== PicksLeagueMemberRoles.COMMISSIONER;
@@ -73,7 +74,7 @@ export function PicksLeagueMembersTab({
   if (!canLeaveLeague) {
     const otherCommissioners = memberDetails.filter(
       (member) =>
-        member.id !== userId &&
+        member.id !== dbUser.id &&
         member.role === PicksLeagueMemberRoles.COMMISSIONER,
     );
     canLeaveLeague = otherCommissioners.length > 0;
@@ -121,7 +122,7 @@ export function PicksLeagueMembersTab({
         return dbLeagueWithUserRole.role ===
           PicksLeagueMemberRoles.COMMISSIONER ? (
           <MemberRoleSwitcher
-            currentUserId={userId}
+            currentUserId={dbUser.id}
             picksLeagueId={dbLeagueWithUserRole.id}
             member={member}
             commissionerCount={commissionerCount}
@@ -146,7 +147,7 @@ export function PicksLeagueMembersTab({
       header: "Actions",
       cell: ({ row }) => {
         const member = row.original;
-        const isCurrentUser = member.id === userId;
+        const isCurrentUser = member.id === dbUser.id;
 
         return (
           <div className="flex items-center gap-2">
@@ -213,7 +214,7 @@ export function PicksLeagueMembersTab({
       header: ({ column }) => TableHeader({ column, name: "Expires" }),
       cell: ({ row }) => (
         <span className="text-sm">
-          <DateDisplay timestampMS={row.original.expiresAt.getTime()} />
+          {formatDateTime(row.original.expiresAt, dbUser.timezone)}
         </span>
       ),
     },

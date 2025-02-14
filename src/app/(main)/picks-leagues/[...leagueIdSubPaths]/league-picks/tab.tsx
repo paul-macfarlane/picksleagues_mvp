@@ -16,17 +16,18 @@ import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 import { getPrevAndNextDBWeekForPicksLeagueSeason } from "@/services/sportLeagueWeeks";
 import { UserPicks } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/league-picks/user-picks";
 import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/WeekSwitcher";
-import { DateDisplay } from "@/components/date-display";
 import { DBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
 import { getPointsEarnedAndRemainingFromUserPickData } from "@/shared/picksLeaguePicks";
 import { getDBPicksLeagueSeasonStandingsWithMembers } from "@/db/picksLeagueStandings";
+import { DBUser } from "@/db/users";
+import { formatDateTime } from "@/shared/utils";
 
 export interface LeaguePicksTabProps {
   dbPicksLeague: DBPicksLeagueWithUserRole;
   dbPicksLeagueSeason: DBPicksLeagueSeason;
   seasonType: "current" | "next" | "previous";
-  userId: string;
+  dbUser: DBUser;
   selectedWeekId: string | null;
 }
 
@@ -34,7 +35,7 @@ export async function LeaguePicksTab({
   dbPicksLeague,
   dbPicksLeagueSeason,
   seasonType,
-  userId,
+  dbUser,
   selectedWeekId,
 }: LeaguePicksTabProps) {
   if (seasonType === "next") {
@@ -52,9 +53,10 @@ export async function LeaguePicksTab({
           {dbSportLeagueStartWeek && (
             <>
               Wait until the season starts at{" "}
-              <DateDisplay
-                timestampMS={dbSportLeagueStartWeek.startTime.getTime()}
-              />{" "}
+              {formatDateTime(
+                dbSportLeagueStartWeek.startTime,
+                dbUser.timezone,
+              )}{" "}
               to view picks.
             </>
           )}
@@ -152,7 +154,7 @@ export async function LeaguePicksTab({
     });
 
     // Move the current user's pick to the front if they're not already first
-    const indexOfUser = pickData.findIndex((data) => data.id === userId);
+    const indexOfUser = pickData.findIndex((data) => data.id === dbUser.id);
     if (indexOfUser > 0) {
       const userPickData = pickData[indexOfUser];
       pickData.splice(indexOfUser, 1);
@@ -190,9 +192,7 @@ export async function LeaguePicksTab({
           {picksLocked && (
             <span>
               League Picks cannot be viewed until after pick lock time{" "}
-              <DateDisplay
-                timestampMS={selectedDBWeek.pickLockTime.getTime()}
-              />
+              {formatDateTime(selectedDBWeek.pickLockTime, dbUser.timezone)}.
             </span>
           )}
 

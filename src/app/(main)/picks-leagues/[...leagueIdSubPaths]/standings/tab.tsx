@@ -2,16 +2,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDBPicksLeagueSeasonStandingsWithMembers } from "@/db/picksLeagueStandings";
 import { DBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { getDBSportLeagueSeasonById } from "@/db/sportLeagueSeason";
-import { DateDisplay } from "@/components/date-display";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 import { StandingsTable } from "./table";
+import { DBUser } from "@/db/users";
+import { formatDateTime } from "@/shared/utils";
 
 export interface PicksLeagueStandingsTabProps {
+  dbUser: DBUser;
   dbPicksLeagueSeason: DBPicksLeagueSeason;
   seasonType: "current" | "next" | "previous";
 }
 
 export async function PicksLeagueStandingsTab({
+  dbUser,
   dbPicksLeagueSeason,
   seasonType,
 }: PicksLeagueStandingsTabProps) {
@@ -30,9 +33,10 @@ export async function PicksLeagueStandingsTab({
           {dbSportLeagueStartWeek && (
             <>
               Wait until the season starts at{" "}
-              <DateDisplay
-                timestampMS={dbSportLeagueStartWeek.startTime.getTime()}
-              />{" "}
+              {formatDateTime(
+                dbSportLeagueStartWeek.startTime,
+                dbUser.timezone,
+              )}
               to view standings.
             </>
           )}

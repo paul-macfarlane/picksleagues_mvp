@@ -33,8 +33,20 @@ export const UpdateProfileFormSchema = z.object({
       MAX_LAST_NAME_LENGTH,
       `Cannot be more than ${MAX_LAST_NAME_LENGTH} characters.`,
     ),
+  timezone: z.string().min(1, "Required.").refine(isValidIANATimezone, {
+    message: "Invalid timezone.",
+  }),
   imageUrl: z.union([
     z.string().url("Must be a valid url.").max(IMG_URL_MAX_LENGTH),
     z.string().length(0), // annoying, but because you can't have a controlled input with the value undefined in react-hook-form, we have to allow this to be an empty string
   ]),
 });
+
+function isValidIANATimezone(timezone: string) {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: timezone });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

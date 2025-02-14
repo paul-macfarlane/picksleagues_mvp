@@ -19,6 +19,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -46,11 +53,13 @@ interface UpdateProfileFormProps {
     firstName: string;
     lastName: string;
     imageUrl?: string;
+    timezone: string;
   };
   postSubmitUrl?: string;
   showDelete: boolean;
   canDelete: boolean;
   cannotDeleteReason: string;
+  mode: "signup" | "update";
 }
 
 export default function UpdateProfileForm({
@@ -59,8 +68,11 @@ export default function UpdateProfileForm({
   showDelete,
   canDelete,
   cannotDeleteReason,
+  mode,
 }: UpdateProfileFormProps) {
   const router = useRouter();
+
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const [formState, formAction] = useActionState(updateProfileAction, {});
   const form = useForm<FormSchema>({
@@ -70,6 +82,7 @@ export default function UpdateProfileForm({
       firstName: defaultValues.firstName,
       lastName: defaultValues.lastName,
       imageUrl: defaultValues.imageUrl ?? "", // needed because controlled inputs cannot have null default values
+      timezone: mode === "signup" ? userTimezone : defaultValues.timezone,
     },
   });
   const formRef = useRef<HTMLFormElement>(null);
@@ -156,6 +169,12 @@ export default function UpdateProfileForm({
                 form.setError("imageUrl", {
                   type: "custom",
                   message: actionResponse.errors.imageUrl,
+                });
+              }
+              if (actionResponse?.errors?.timezone) {
+                form.setError("timezone", {
+                  type: "custom",
+                  message: actionResponse.errors.timezone,
                 });
               }
 
@@ -248,6 +267,39 @@ export default function UpdateProfileForm({
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="timezone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Timezone</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  name="timezone"
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your timezone" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {Intl.supportedValuesOf("timeZone").map((tz) => (
+                      <SelectItem key={tz} value={tz}>
+                        {tz}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Your timezone will be used to display times in your local
+                  timezone
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

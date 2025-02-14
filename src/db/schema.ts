@@ -56,6 +56,7 @@ export const users = sqliteTable("users", {
   // note this is not unique to allow deactivated accounts to share the same username
   // the business logic of the app will make sure that real users don't have the same username
   username: text("username", { length: MAX_USERNAME_LENGTH }),
+  timezone: text("timezone").notNull().default("America/New_York"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

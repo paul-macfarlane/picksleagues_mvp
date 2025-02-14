@@ -13,6 +13,7 @@ export interface UpdateProfileFormState {
     firstName?: string;
     lastName?: string;
     imageUrl?: string;
+    timezone?: string;
   };
 }
 
@@ -65,6 +66,10 @@ export async function updateProfileAction(
           .filter((error) => error.path.join(".") === "imageUrl")
           .map((error) => error.message)
           .join(", "),
+        timezone: parsed.error.issues
+          .filter((error) => error.path.join(".") === "timezone")
+          .map((error) => error.message)
+          .join(", "),
       },
     };
   }
@@ -75,7 +80,7 @@ export async function updateProfileAction(
   ) {
     return {
       errors: {
-        username: `Username "${parsed.data.username}" already taken.`,
+        username: "Username already taken.",
       },
     };
   }
@@ -85,6 +90,7 @@ export async function updateProfileAction(
     firstName: parsed.data.firstName,
     lastName: parsed.data.lastName,
     image: parsed.data.imageUrl.length > 0 ? parsed.data.imageUrl : null,
+    timezone: parsed.data.timezone,
   });
 
   return {};
