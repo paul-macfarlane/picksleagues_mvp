@@ -14,7 +14,7 @@ import { getGamePickSpreadDisplay } from "@/shared/picksLeaguePicks";
 import { DbWeeklyPickGameData } from "@/db/sportLeagueWeeks";
 import Image from "next/image";
 import { PicksLeaguePickTypes } from "@/models/picksLeagues";
-import { GamePickTimeDisplay } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/GamePickTimeDisplay";
+import { getGamePickTimeDisplay } from "@/shared/picksLeaguePicks";
 
 interface SelectedPickDetail {
   sportLeagueGameId: string;
@@ -26,6 +26,7 @@ interface MyPicksFormProps {
   requiredAmountOfPicks: number;
   games: DbWeeklyPickGameData[];
   pickType: PicksLeaguePickTypes;
+  timezone: string;
 }
 
 export function PicksLeagueMyPicksForm({
@@ -33,6 +34,7 @@ export function PicksLeagueMyPicksForm({
   requiredAmountOfPicks,
   games,
   pickType,
+  timezone,
 }: MyPicksFormProps) {
   const [selectedPickDetails, setSelectedPickDetails] = useState<
     SelectedPickDetail[]
@@ -147,7 +149,7 @@ export function PicksLeagueMyPicksForm({
                   {game.awayTeam.abbreviation} @ {game.homeTeam.abbreviation}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  <GamePickTimeDisplay game={game} />
+                  {getGamePickTimeDisplay(game, timezone)}
                 </span>
               </div>
 

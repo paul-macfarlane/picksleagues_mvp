@@ -18,17 +18,18 @@ import { PicksLeaguePickTypes, PicksLeagueTabIds } from "@/models/picksLeagues";
 import { getDBSportLeagueWeekById } from "@/db/sportLeagues";
 import { getPrevAndNextDBWeekForPicksLeagueSeason } from "@/services/sportLeagueWeeks";
 import { WeekSwitcher } from "@/app/(main)/picks-leagues/[...leagueIdSubPaths]/WeekSwitcher";
-import { DateDisplay } from "@/components/date-display";
 import { DBPicksLeagueSeason } from "@/db/picksLeagueSeasons";
 import { DBPicksLeagueWithUserRole } from "@/db/picksLeagues";
 import { getDBPicksLeagueStandingsForUserAndSeason } from "@/db/picksLeagueStandings";
+import { DBUser } from "@/db/users";
+import { formatDateTime } from "@/shared/utils";
 
 export interface PicksLeagueMyPicksTabProps {
   dbPicksLeague: DBPicksLeagueWithUserRole;
   dbPicksLeagueSeason: DBPicksLeagueSeason;
   seasonType: "current" | "next" | "previous";
   selectedWeekId: string | null;
-  userId: string;
+  dbUser: DBUser;
 }
 
 export async function PicksLeagueMyPicksTab({
@@ -36,7 +37,7 @@ export async function PicksLeagueMyPicksTab({
   dbPicksLeagueSeason,
   seasonType,
   selectedWeekId,
-  userId,
+  dbUser,
 }: PicksLeagueMyPicksTabProps) {
   if (seasonType === "next") {
     const dbSportLeagueStartWeek = await getDBSportLeagueWeekById(
@@ -53,9 +54,10 @@ export async function PicksLeagueMyPicksTab({
           {dbSportLeagueStartWeek && (
             <>
               Wait until the season starts at{" "}
-              <DateDisplay
-                timestampMS={dbSportLeagueStartWeek.startTime.getTime()}
-              />{" "}
+              {formatDateTime(
+                dbSportLeagueStartWeek.startTime,
+                dbUser.timezone,
+              )}{" "}
               to make picks.
             </>
           )}
@@ -107,14 +109,14 @@ export async function PicksLeagueMyPicksTab({
   }
 
   const standingsRecord = await getDBPicksLeagueStandingsForUserAndSeason(
-    userId,
+    dbUser.id,
     dbPicksLeagueSeason.id,
   );
 
   const picksData = await getUserDBWeeklyPickData(
     dbPicksLeague.id,
     selectedDBWeek.id,
-    userId,
+    dbUser.id,
   );
   const picksMade =
     picksData?.games.findIndex((game) => !!game.userPick) !== -1;
@@ -200,10 +202,9 @@ export async function PicksLeagueMyPicksTab({
               <ul className={"list-inside list-disc space-y-1 text-sm"}>
                 <li>
                   You can make picks for games that have not started yet up
-                  until the pick lock time of{" "}
-                  <DateDisplay
-                    timestampMS={selectedDBWeek.pickLockTime.getTime()}
-                  />
+                  until the pick lock time of
+                  {formatDateTime(selectedDBWeek.pickLockTime, dbUser.timezone)}
+                  .
                 </li>
                 <li>
                   You can only make picks for games that have not started yet.
@@ -231,6 +232,7 @@ export async function PicksLeagueMyPicksTab({
             requiredAmountOfPicks={requiredAmountOfPicks}
             games={picksData.games}
             pickType={dbPicksLeague.pickType}
+            timezone={dbUser.timezone}
           />
         )}
 
@@ -242,6 +244,7 @@ export async function PicksLeagueMyPicksTab({
               oddsProvider: game.odds[0].provider!,
             }))}
             pickType={dbPicksLeague.pickType}
+            timezone={dbUser.timezone}
           />
         )}
       </Card>
@@ -252,9 +255,10 @@ export async function PicksLeagueMyPicksTab({
 interface PicksListProps {
   games: DBWeeklyPickDataByUserGame[];
   pickType: PicksLeaguePickTypes;
+  timezone: string;
 }
 
-function PicksList({ games, pickType }: PicksListProps) {
+function PicksList({ games, pickType, timezone }: PicksListProps) {
   return (
     <CardContent className="space-y-6">
       <div className="max-h-[60vh] space-y-4 overflow-y-auto">
@@ -264,6 +268,7 @@ function PicksList({ games, pickType }: PicksListProps) {
             game={game}
             pickType={pickType}
             oddEven={index % 2 === 0 ? "even" : "odd"}
+            timezone={timezone}
           />
         ))}
       </div>

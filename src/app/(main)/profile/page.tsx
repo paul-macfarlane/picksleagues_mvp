@@ -71,15 +71,17 @@ export default async function Profile(props: {
 
       <UpdateProfileForm
         defaultValues={{
-          username: dbUser.username!,
-          firstName: dbUser.firstName!,
-          lastName: dbUser.lastName!,
-          imageUrl: dbUser.image ?? undefined,
+          username: dbUser.username ?? "",
+          firstName: dbUser.firstName ?? "",
+          lastName: dbUser.lastName ?? "",
+          imageUrl: dbUser.image ?? "",
+          timezone: dbUser.timezone,
         }}
         postSubmitUrl={updateMode === "signup" ? postSubmitUrl : undefined}
         showDelete={updateMode === "update"}
         canDelete={canDelete}
         cannotDeleteReason={cannotDeleteReason}
+        mode={updateMode}
       />
     </Card>
   );

@@ -147,7 +147,7 @@ export default async function PicksLeaguePage(props: {
 
     selectedTabContent = (
       <PicksLeagueMembersTab
-        userId={dbUser.id}
+        dbUser={dbUser}
         dbLeagueWithUserRole={dbPicksLeagueWithUserRole}
         dbLeagueMemberDetails={dbLeagueMemberDetails}
         leagueIsInSeason={leagueIsInSeason}
@@ -166,7 +166,7 @@ export default async function PicksLeaguePage(props: {
         dbPicksLeagueSeason={dbPicksLeagueSeason}
         seasonType={seasonType}
         selectedWeekId={selectedWeekId}
-        userId={dbUser.id}
+        dbUser={dbUser}
       />
     );
   } else if (
@@ -181,7 +181,7 @@ export default async function PicksLeaguePage(props: {
         dbPicksLeagueSeason={dbPicksLeagueSeason}
         seasonType={seasonType}
         selectedWeekId={selectedWeekId}
-        userId={dbUser.id}
+        dbUser={dbUser}
       />
     );
   } else if (
@@ -207,6 +207,7 @@ export default async function PicksLeaguePage(props: {
     selectedTabId = PicksLeagueTabIds.STANDINGS;
     selectedTabContent = (
       <PicksLeagueStandingsTab
+        dbUser={dbUser}
         dbPicksLeagueSeason={dbPicksLeagueSeason}
         seasonType={seasonType}
       />

@@ -11,6 +11,7 @@ export interface DBUser {
   emailVerified: Date | null;
   image: string | null;
   username: string | null;
+  timezone: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,7 @@ interface UpdateDBUser {
   image?: string | null;
   username?: string | null;
   name?: string | null;
+  timezone?: string;
 }
 
 export async function updateDBUser(
