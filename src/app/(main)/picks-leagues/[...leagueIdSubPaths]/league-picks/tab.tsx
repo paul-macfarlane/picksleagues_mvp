@@ -56,8 +56,8 @@ export async function LeaguePicksTab({
               {formatDateTime(
                 dbSportLeagueStartWeek.startTime,
                 dbUser.timezone,
-              )}
-              . to view picks.
+              )}{" "}
+              to view picks.
             </>
           )}
         </CardContent>
