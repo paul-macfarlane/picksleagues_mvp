@@ -136,11 +136,11 @@ export function PicksLeagueMyPicksForm({
           {submitting ? "Submitting..." : "Submit Picks"}
         </Button>
 
-        <div className="max-h-[60vh] overflow-y-auto">
+        <div className="sm:max-h-[60vh] sm:overflow-y-auto">
           {games.map((game, index) => (
             <div
               key={game.id}
-              className={`mb-6 flex flex-col justify-center gap-2 rounded border p-4 shadow-md md:gap-4 ${
+              className={`mb-6 flex flex-col justify-center gap-2 rounded border p-4 shadow-md sm:gap-4 ${
                 index % 2 === 0 ? "bg-muted/30" : "bg-card"
               }`}
             >
@@ -163,7 +163,7 @@ export function PicksLeagueMyPicksForm({
                   }
                   return undefined;
                 })()}
-                className="flex flex-col justify-between gap-2 md:flex-row md:gap-4"
+                className="flex flex-col justify-between gap-2 sm:flex-row sm:gap-4"
               >
                 <GameTeamLabel
                   itemId={`${game.id}:${game.awayTeamId}`}
@@ -256,7 +256,7 @@ function GameTeamLabel({
   return (
     <Label
       htmlFor={itemId}
-      className={`flex flex-1 items-center justify-between gap-2 rounded-md border px-2 py-2 focus-within:bg-accent hover:cursor-pointer hover:bg-accent md:px-4 ${
+      className={`flex flex-1 items-center justify-between gap-2 rounded-md border px-2 py-2 focus-within:bg-accent hover:cursor-pointer hover:bg-accent sm:px-4 ${
         checked ? `border-neutral-blue bg-accent` : ""
       } `}
     >

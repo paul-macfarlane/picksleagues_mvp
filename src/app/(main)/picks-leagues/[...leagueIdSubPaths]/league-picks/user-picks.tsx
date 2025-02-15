@@ -106,7 +106,7 @@ export function UserPicks({
           <ChevronsUpDown className="h-4 w-4" />
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto p-4">
+          <div className="flex flex-col gap-4 p-4 sm:max-h-[60vh] sm:overflow-y-auto">
             {data.games.map((game, index) => (
               <PicksLeagueGameBox
                 key={game.id}

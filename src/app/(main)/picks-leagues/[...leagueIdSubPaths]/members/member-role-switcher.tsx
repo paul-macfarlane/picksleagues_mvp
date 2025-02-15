@@ -123,7 +123,7 @@ export function MemberRoleSwitcher({
     <>
       <Select onValueChange={handleRoleChange} defaultValue={member.role}>
         <SelectTrigger
-          className="w-[150px] md:w-[180px]"
+          className="w-[150px] sm:w-[180px]"
           disabled={submitting || (isCurrentUser && isOnlyCommissioner)}
         >
           <SelectValue placeholder="Select a role" />

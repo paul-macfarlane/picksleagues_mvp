@@ -37,7 +37,7 @@ export default function Navbar({
     <header className="sticky top-0 z-10 mx-auto w-full border-b border-primary bg-primary-foreground bg-gradient-to-b from-primary/20 to-background p-4">
       <nav className="flex items-center justify-between">
         {dbUser ? (
-          <div className="hidden items-center gap-4 md:flex">
+          <div className="hidden items-center gap-4 sm:flex">
             <NavigationMenu className="h-full">
               <NavigationMenuList>
                 <NavigationMenuItem>
@@ -104,7 +104,7 @@ export default function Navbar({
                         </li>
                       )}
 
-                      <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-2">
+                      <div className="space-y-2 pr-2 sm:max-h-[60vh] sm:overflow-y-auto">
                         {dbPicksLeagueDetails
                           .slice(0, maxLeaguesToDisplay)
                           .map((league, index) => (
@@ -180,7 +180,7 @@ export default function Navbar({
         )}
 
         {dbUser ? (
-          <div className="ml-[-1.5rem] flex items-center gap-2 md:hidden">
+          <div className="ml-[-1.5rem] flex items-center gap-2 sm:hidden">
             <Trophy className="ml-2 h-6 w-6 text-primary" />
             <span className="text-2xl font-bold">Picks Leagues</span>
           </div>

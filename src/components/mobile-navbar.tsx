@@ -96,7 +96,7 @@ export function MobileNavbar({
               )}
             </ul>
 
-            <div className="max-h-[60vh] flex-1 overflow-y-auto">
+            <div className="flex-1 sm:max-h-[60vh] sm:overflow-y-auto">
               <ul className="space-y-2 pr-2">
                 {dbPicksLeagueDetails
                   .slice(0, maxLeaguesToDisplay)
