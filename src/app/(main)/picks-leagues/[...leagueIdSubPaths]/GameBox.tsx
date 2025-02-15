@@ -61,7 +61,7 @@ export function PicksLeagueGameBox({
   return (
     <>
       <div
-        className={`hidden rounded border p-2 shadow-md md:flex md:flex-col ${oddEven === "odd" ? "bg-muted/30" : "bg-card"}`}
+        className={`hidden rounded border p-2 shadow-md sm:flex sm:flex-col ${oddEven === "odd" ? "bg-muted/30" : "bg-card"}`}
       >
         <div className="relative flex items-center justify-between p-2">
           <div className="flex-shrink-0">
@@ -136,7 +136,7 @@ export function PicksLeagueGameBox({
       </div>
 
       <div
-        className={`flex flex-col gap-2 rounded border p-2 shadow-md md:hidden ${oddEven === "odd" ? "bg-muted/30" : "bg-card"}`}
+        className={`flex flex-col gap-2 rounded border p-2 shadow-md sm:hidden ${oddEven === "odd" ? "bg-muted/30" : "bg-card"}`}
       >
         <div className={"flex items-center justify-between p-2 text-sm"}>
           <Badge variant={indicatorVariant}>{indicatorText}</Badge>

@@ -29,11 +29,11 @@ export function WeekSwitcher({
         {previousWeek && (
           <PaginationItem>
             <PaginationLink
-              className={"w-full p-2 md:p-4"}
+              className={"w-full p-2 sm:p-4"}
               href={`/picks-leagues/${picksLeagueId}/${tab}?weekId=${previousWeek.id}`}
             >
               <ChevronLeft />{" "}
-              <span className="hidden md:flex">{previousWeek.name}</span>
+              <span className="hidden sm:flex">{previousWeek.name}</span>
             </PaginationLink>
           </PaginationItem>
         )}
@@ -41,7 +41,7 @@ export function WeekSwitcher({
         <PaginationItem>
           <PaginationLink
             isActive
-            className={"w-full p-2 md:p-4"}
+            className={"w-full p-2 sm:p-4"}
             href={`/picks-leagues/${picksLeagueId}/${tab}?weekId=${selectedDBWeek.id}`}
           >
             {selectedDBWeek.name}
@@ -51,10 +51,10 @@ export function WeekSwitcher({
         {nextWeek && (
           <PaginationItem>
             <PaginationLink
-              className={"w-full p-2 md:p-4"}
+              className={"w-full p-2 sm:p-4"}
               href={`/picks-leagues/${picksLeagueId}/${tab}?weekId=${nextWeek.id}`}
             >
-              <span className="hidden md:flex">{nextWeek.name}</span>{" "}
+              <span className="hidden sm:flex">{nextWeek.name}</span>{" "}
               <ChevronRight />
             </PaginationLink>
           </PaginationItem>
