@@ -136,7 +136,7 @@ export function PicksLeagueMyPicksForm({
           {submitting ? "Submitting..." : "Submit Picks"}
         </Button>
 
-        <div className="max-h-[60vh] overflow-y-auto">
+        <div className="sm:max-h-[60vh] sm:overflow-y-auto">
           {games.map((game, index) => (
             <div
               key={game.id}

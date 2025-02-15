@@ -104,7 +104,7 @@ export default function Navbar({
                         </li>
                       )}
 
-                      <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-2">
+                      <div className="space-y-2 pr-2 sm:max-h-[60vh] sm:overflow-y-auto">
                         {dbPicksLeagueDetails
                           .slice(0, maxLeaguesToDisplay)
                           .map((league, index) => (

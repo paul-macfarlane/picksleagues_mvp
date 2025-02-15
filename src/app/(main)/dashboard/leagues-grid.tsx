@@ -11,13 +11,15 @@ export function LeaguesGrid({
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {leagues.map((league) => (
+      {leagues.map((league, index) => (
         <Link
           key={league.id}
           href={getPicksLeagueHomeUrl(league.id)}
           className="block transition-colors hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <Card className="h-full transition-colors hover:border-primary hover:bg-muted/50">
+          <Card
+            className={`${index % 2 === 1 ? "bg-muted/50" : ""} h-full transition-colors hover:border-primary hover:bg-muted/50`}
+          >
             <CardHeader className="flex-row items-center gap-4 space-y-0">
               <Avatar className="h-12 w-12">
                 <AvatarImage

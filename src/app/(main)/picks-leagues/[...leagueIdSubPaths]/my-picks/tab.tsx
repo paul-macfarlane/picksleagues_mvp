@@ -261,7 +261,7 @@ interface PicksListProps {
 function PicksList({ games, pickType, timezone }: PicksListProps) {
   return (
     <CardContent className="space-y-6">
-      <div className="max-h-[60vh] space-y-4 overflow-y-auto">
+      <div className="space-y-4 sm:max-h-[60vh] sm:overflow-y-auto">
         {games.map((game, index) => (
           <PicksLeagueGameBox
             key={game.id}
