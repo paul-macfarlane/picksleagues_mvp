@@ -153,8 +153,6 @@ export async function PicksLeagueMyPicksTab({
 
   const surpassedPickLockTime = now > selectedDBWeek.pickLockTime;
 
-  // todo bug here is that users can view picks to make after the pick lock time
-
   return (
     <div className={"flex flex-col items-center gap-2"}>
       <WeekSwitcher
