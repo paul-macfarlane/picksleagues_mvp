@@ -151,6 +151,10 @@ export async function PicksLeagueMyPicksTab({
     nextWeek = null;
   }
 
+  const surpassedPickLockTime = now > selectedDBWeek.pickLockTime;
+
+  // todo bug here is that users can view picks to make after the pick lock time
+
   return (
     <div className={"flex flex-col items-center gap-2"}>
       <WeekSwitcher
@@ -195,26 +199,31 @@ export async function PicksLeagueMyPicksTab({
             </span>
           )}
 
-          {!picksMade && picksData.games.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <span>Make your picks for this week&#39;s games.</span>
+          {!picksMade &&
+            picksData.games.length > 0 &&
+            !surpassedPickLockTime && (
+              <div className="flex flex-col gap-2">
+                <span>Make your picks for this week&#39;s games.</span>
 
-              <ul className={"list-inside list-disc space-y-1 text-sm"}>
-                <li>
-                  You can make picks for games that have not started yet up
-                  until the pick lock time of
-                  {formatDateTime(selectedDBWeek.pickLockTime, dbUser.timezone)}
-                  .
-                </li>
-                <li>
-                  You can only make picks for games that have not started yet.
-                </li>
-                <li>You must pick all games at once.</li>
-                <li>You cannot change your picks once they are made.</li>
-                <li>Good luck!</li>
-              </ul>
-            </div>
-          )}
+                <ul className={"list-inside list-disc space-y-1 text-sm"}>
+                  <li>
+                    You can make picks for games that have not started yet up
+                    until the pick lock time of{" "}
+                    {formatDateTime(
+                      selectedDBWeek.pickLockTime,
+                      dbUser.timezone,
+                    )}
+                    .
+                  </li>
+                  <li>
+                    You can only make picks for games that have not started yet.
+                  </li>
+                  <li>You must pick all games at once.</li>
+                  <li>You cannot change your picks once they are made.</li>
+                  <li>Good luck!</li>
+                </ul>
+              </div>
+            )}
         </CardHeader>
 
         {!picksMade && picksData.games.length === 0 && (
@@ -226,7 +235,7 @@ export async function PicksLeagueMyPicksTab({
           </CardContent>
         )}
 
-        {!picksMade && picksData.games.length > 0 && (
+        {!picksMade && picksData.games.length > 0 && !surpassedPickLockTime && (
           <PicksLeagueMyPicksForm
             picksLeagueId={dbPicksLeague.id}
             requiredAmountOfPicks={requiredAmountOfPicks}
@@ -234,6 +243,17 @@ export async function PicksLeagueMyPicksTab({
             pickType={dbPicksLeague.pickType}
             timezone={dbUser.timezone}
           />
+        )}
+
+        {!picksMade && surpassedPickLockTime && (
+          <CardContent>
+            <span>
+              You can no longer make picks for {selectedDBWeek.name}. Pick lock
+              time of{" "}
+              {formatDateTime(selectedDBWeek.pickLockTime, dbUser.timezone)} has
+              passed.
+            </span>
+          </CardContent>
         )}
 
         {picksMade && picksData && (
