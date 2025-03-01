@@ -20,6 +20,8 @@
     --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
+    --warning: 39 70% 50%;
+    --warning-foreground: 39 90% 90%;
     --neutral-blue: 210 50% 60%;
     --neutral-blue-foreground: 210 80% 20%;
     --success: 142.1 76.2% 36.3%;
