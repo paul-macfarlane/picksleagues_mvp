@@ -253,7 +253,10 @@ async function handleDiscordAuth(request: NextRequest) {
     const redirectUrl = new URL(process.env.MOBILE_URL_BASE!);
     redirectUrl.searchParams.append("accessToken", jwtTokens.accessToken);
     redirectUrl.searchParams.append("refreshToken", jwtTokens.refreshToken);
-    redirectUrl.searchParams.append("userId", dbUser.id);
+    redirectUrl.searchParams.append(
+      "userData",
+      encodeURIComponent(JSON.stringify(dbUser)),
+    );
     redirectUrl.searchParams.append("isNewUser", isNewUser.toString());
 
     console.log("redirectUrl", redirectUrl);
