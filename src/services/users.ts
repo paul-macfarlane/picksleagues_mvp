@@ -3,7 +3,7 @@ import {
   deleteDBPicksLeagues,
   getUserDBPicksLeaguesWithMembers,
 } from "@/db/picksLeagues";
-import { getDBUserById, updateDBUser } from "@/db/users";
+import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
 import { NotAllowedError } from "@/models/errors";
 import { withDBTransaction } from "@/db/transactions";
@@ -14,6 +14,8 @@ import {
   deleteDBPicksLeagueStandingsByIds,
   getUserDBPicksLeagueStandingsForFutureSeasons,
 } from "@/db/picksLeagueStandings";
+import { generateFromEmail, generateUsername } from "unique-username-generator";
+import { MAX_USERNAME_LENGTH } from "@/models/users";
 
 export function cannotDeleteSoloCommissionerErrorMessage(
   leagues: DBPicksLeagueWithMembers[],
@@ -106,4 +108,21 @@ export async function deleteAccount(userId: string): Promise<void> {
       );
     }
   });
+}
+
+export async function generateUserName(email?: string): Promise<string | null> {
+  let attempts = 0;
+  let username: string | null = null;
+  while (!username && attempts < 5) {
+    attempts++;
+    const usernameCandidate =
+      email && attempts === 1
+        ? generateFromEmail(email).slice(0, MAX_USERNAME_LENGTH)
+        : generateUsername("", 3, MAX_USERNAME_LENGTH);
+    if (await dbUsernameAvailable(usernameCandidate)) {
+      username = usernameCandidate;
+    }
+  }
+
+  return username;
 }

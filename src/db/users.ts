@@ -22,6 +22,12 @@ export async function getDBUserById(id: string): Promise<DBUser | null> {
   return queryRes.length ? queryRes[0] : null;
 }
 
+export async function getDBUserByEmail(email: string): Promise<DBUser | null> {
+  const queryRes = await db.select().from(users).where(eq(users.email, email));
+
+  return queryRes.length ? queryRes[0] : null;
+}
+
 interface UpdateDBUser {
   firstName?: string | null;
   lastName?: string | null;
@@ -82,4 +88,25 @@ export async function searchUsersNotInLeague(
       ),
     )
     .limit(limit);
+}
+
+export interface CreateDBUser {
+  name: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  emailVerified: Date | null;
+  image: string | null;
+  username: string | null;
+  timezone?: string;
+}
+
+export async function createDBUser(
+  params: CreateDBUser,
+  tx?: DBTransaction,
+): Promise<DBUser> {
+  const insertRows = tx
+    ? await tx.insert(users).values(params).returning()
+    : await db.insert(users).values(params).returning();
+  return insertRows[0];
 }
