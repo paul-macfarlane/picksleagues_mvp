@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { getDBUserById } from "@/db/users";
-import { ApplicationError, NotFoundError } from "@/models/errors";
+import {
+  ApplicationError,
+  NotFoundError,
+  BadInputError,
+} from "@/models/errors";
 import { updateUserProfile } from "@/services/users";
 
 export async function GET(request: NextRequest) {
@@ -85,20 +89,28 @@ export async function PUT(request: NextRequest) {
 
     if (error instanceof jwt.JsonWebTokenError) {
       return NextResponse.json(
-        { error: "Invalid or expired token" },
+        { error: "Invalid authentication token" },
         { status: 401 },
       );
     }
 
     if (error instanceof ApplicationError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.statusCode },
-      );
+      const response: {
+        error: string;
+        errors?: Record<string, string | undefined>;
+      } = {
+        error: error.message,
+      };
+
+      if (error instanceof BadInputError && error.errors) {
+        response.errors = error.errors;
+      }
+
+      return NextResponse.json(response, { status: error.statusCode });
     }
 
     return NextResponse.json(
-      { error: "Failed to update user profile" },
+      { error: "An unexpected error occurred" },
       { status: 500 },
     );
   }
