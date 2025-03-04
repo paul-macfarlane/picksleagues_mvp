@@ -137,23 +137,22 @@ export async function updateUserProfile(userId: string, data: unknown) {
   const parsedData = UpdateProfileFormSchema.safeParse(data);
   if (!parsedData.success) {
     const fieldErrors: Record<string, string> = {};
-    
+
     parsedData.error.errors.forEach((error) => {
-      const path = error.path.join('.');
+      const path = error.path.join(".");
       fieldErrors[path] = error.message;
     });
-    
-    throw new BadInputError(
-      `Invalid profile data`,
-      fieldErrors
-    );
+
+    throw new BadInputError(`Invalid profile data`, fieldErrors);
   }
 
   if (
     parsedData.data.username !== dbUser.username &&
     !(await dbUsernameAvailable(parsedData.data.username))
   ) {
-    throw new BadInputError("Username is already taken", { username: "This username is already taken" });
+    throw new BadInputError("Username is already taken", {
+      username: "This username is already taken",
+    });
   }
 
   const updateData = {
