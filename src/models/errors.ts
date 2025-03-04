@@ -8,13 +8,25 @@ export class ApplicationError extends Error {
   }
 }
 
-export class BadInputError<T extends Record<string, string | undefined> = Record<string, string | undefined>> extends ApplicationError {
+export class BadInputError<
+  T extends Record<string, string | undefined> = Record<
+    string,
+    string | undefined
+  >,
+> extends ApplicationError {
   errors?: T;
 
   constructor(message: string, errors?: T) {
     super(message, 400);
     this.errors = errors;
     Object.setPrototypeOf(this, BadInputError.prototype);
+  }
+}
+
+export class AuthenticationError extends ApplicationError {
+  constructor(message: string) {
+    super(message, 401);
+    Object.setPrototypeOf(this, AuthenticationError.prototype);
   }
 }
 
