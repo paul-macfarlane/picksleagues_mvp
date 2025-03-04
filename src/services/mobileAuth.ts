@@ -43,13 +43,6 @@ export function authenticateMobileRequest(request: NextRequest): string {
   }
 }
 
-/**
- * Error handler for mobile API routes
- * Formats errors into a consistent response format
- *
- * @param error The error that occurred
- * @returns A formatted Next.js response
- */
 export function handleMobileApiError(error: unknown): NextResponse {
   console.error("Mobile API error:", error);
 
