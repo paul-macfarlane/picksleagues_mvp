@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@/auth";
-import { getDBUserById, dbUsernameAvailable, updateDBUser } from "@/db/users";
-import { UpdateProfileFormSchema } from "@/models/users";
+import { updateUserProfile } from "@/services/users";
+import { BadInputError } from "@/models/errors";
 import { redirect } from "next/navigation";
 import { AUTH_URL } from "@/models/auth";
 
@@ -28,16 +28,24 @@ export async function updateProfileAction(
 
   const formDataObject = Object.fromEntries(formData);
 
-  const fields: Record<string, string> = {};
-  for (const key of Object.keys(formDataObject)) {
-    fields[key] = formData.get(key)?.toString() ?? "";
-  }
+  try {
+    await updateUserProfile(session.user.id, formDataObject);
+    return {};
+  } catch (error) {
+    console.error("Error updating profile:", error);
 
-  const dbUser = await getDBUserById(session.user.id);
-  if (!dbUser) {
-    console.error(
-      `User with id ${session.user.id} from session not found in db while updating profile`,
-    );
+    if (error instanceof BadInputError && error.errors) {
+      return {
+        errors: {
+          form: error.message,
+          username: error.errors["username"],
+          firstName: error.errors["firstName"],
+          lastName: error.errors["lastName"],
+          imageUrl: error.errors["imageUrl"],
+          timezone: error.errors["timezone"],
+        },
+      };
+    }
 
     return {
       errors: {
@@ -45,53 +53,4 @@ export async function updateProfileAction(
       },
     };
   }
-
-  const parsed = UpdateProfileFormSchema.safeParse(formDataObject);
-  if (!parsed.success) {
-    return {
-      errors: {
-        username: parsed.error.issues
-          .filter((error) => error.path.join(".") === "username")
-          .map((error) => error.message)
-          .join(", "),
-        firstName: parsed.error.issues
-          .filter((error) => error.path.join(".") === "firstName")
-          .map((error) => error.message)
-          .join(", "),
-        lastName: parsed.error.issues
-          .filter((error) => error.path.join(".") === "lastName")
-          .map((error) => error.message)
-          .join(", "),
-        imageUrl: parsed.error.issues
-          .filter((error) => error.path.join(".") === "imageUrl")
-          .map((error) => error.message)
-          .join(", "),
-        timezone: parsed.error.issues
-          .filter((error) => error.path.join(".") === "timezone")
-          .map((error) => error.message)
-          .join(", "),
-      },
-    };
-  }
-
-  if (
-    dbUser.username !== parsed.data.username &&
-    !(await dbUsernameAvailable(parsed.data.username))
-  ) {
-    return {
-      errors: {
-        username: "Username already taken.",
-      },
-    };
-  }
-
-  await updateDBUser(dbUser.id, {
-    username: parsed.data.username,
-    firstName: parsed.data.firstName,
-    lastName: parsed.data.lastName,
-    image: parsed.data.imageUrl.length > 0 ? parsed.data.imageUrl : null,
-    timezone: parsed.data.timezone,
-  });
-
-  return {};
 }
