@@ -5,7 +5,7 @@ import {
 } from "@/db/picksLeagues";
 import { dbUsernameAvailable, getDBUserById, updateDBUser } from "@/db/users";
 import { PicksLeagueMemberRoles } from "@/models/picksLeagueMembers";
-import { NotAllowedError } from "@/models/errors";
+import { BadInputError, NotAllowedError, NotFoundError } from "@/models/errors";
 import { withDBTransaction } from "@/db/transactions";
 import { deleteUserDBAccount } from "@/db/accounts";
 import { deleteUserDBSessions } from "@/db/sessions";
@@ -15,7 +15,8 @@ import {
   getUserDBPicksLeagueStandingsForFutureSeasons,
 } from "@/db/picksLeagueStandings";
 import { generateFromEmail, generateUsername } from "unique-username-generator";
-import { MAX_USERNAME_LENGTH } from "@/models/users";
+import { MAX_USERNAME_LENGTH, UpdateProfileFormSchema } from "@/models/users";
+import { z } from "zod";
 
 export function cannotDeleteSoloCommissionerErrorMessage(
   leagues: DBPicksLeagueWithMembers[],
@@ -125,4 +126,40 @@ export async function generateUserName(email?: string): Promise<string | null> {
   }
 
   return username;
+}
+
+export async function updateUserProfile(userId: string, data: unknown) {
+  const dbUser = await getDBUserById(userId);
+  if (!dbUser) {
+    throw new NotFoundError(`User with ID ${userId} not found`);
+  }
+
+  const parsedData = UpdateProfileFormSchema.safeParse(data);
+  if (!parsedData.success) {
+    throw new BadInputError(
+      `Invalid profile data: ${parsedData.error.errors.map((e) => `${e.path}: ${e.message}`).join(", ")}`,
+    );
+  }
+
+  if (
+    parsedData.data.username !== dbUser.username &&
+    !(await dbUsernameAvailable(parsedData.data.username))
+  ) {
+    throw new BadInputError("Username is already taken");
+  }
+
+  const updateData = {
+    username: parsedData.data.username,
+    firstName: parsedData.data.firstName,
+    lastName: parsedData.data.lastName,
+    image: parsedData.data.imageUrl?.length ? parsedData.data.imageUrl : null,
+    timezone: parsedData.data.timezone,
+  };
+
+  const updatedUser = await updateDBUser(userId, updateData);
+  if (!updatedUser) {
+    throw new Error("Failed to update user profile");
+  }
+
+  return updatedUser;
 }
