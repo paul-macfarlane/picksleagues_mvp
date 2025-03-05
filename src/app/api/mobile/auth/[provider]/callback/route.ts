@@ -11,6 +11,7 @@ import {
 import { generateUserName } from "@/services/users";
 import { z } from "zod";
 import { BadInputError } from "@/models/errors";
+import { createDBAccount } from "@/db/accounts";
 
 const googleClient = new OAuth2Client({
   clientId: process.env.MOBILE_GOOGLE_ID,
@@ -68,23 +69,16 @@ async function handleGoogleAuth(request: NextRequest) {
       redirect_uri: `${process.env.NEXT_PUBLIC_HOST}/api/mobile/auth/google/callback`,
     });
 
-    console.log("googleTokens", googleTokens);
-
     const ticket = await googleClient.verifyIdToken({
       idToken: googleTokens.id_token!,
       audience: process.env.MOBILE_GOOGLE_ID,
     });
-
-    console.log("ticket", ticket);
 
     const payload = ticket.getPayload();
     if (!payload || !payload.email) {
       throw new BadInputError("Invalid credentials");
     }
 
-    console.log("payload", payload);
-
-    // Get or create the user
     let isNewUser = false;
     let dbUser = await getDBUserByEmail(payload.email);
     if (!dbUser) {
@@ -104,20 +98,28 @@ async function handleGoogleAuth(request: NextRequest) {
       });
       isNewUser = true;
 
-      console.log("dbUser", dbUser);
+      await createDBAccount({
+        userId: dbUser.id,
+        type: "oidc",
+        provider: "google",
+        providerAccountId: payload.sub!,
+        refresh_token: null,
+        access_token: googleTokens.access_token ?? null,
+        expires_at: googleTokens.expiry_date ?? null,
+        token_type: googleTokens.token_type ?? null,
+        scope: googleTokens.scope ?? null,
+        id_token: googleTokens.id_token ?? null,
+        session_state: parsedParams.data.state ?? null,
+      });
     }
 
     const tokens = generateTokens(dbUser.id);
-
-    console.log("tokens", tokens);
 
     await createDBRefreshToken({
       userId: dbUser.id,
       token: tokens.refreshToken,
       expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRES_AT),
     });
-
-    console.log("created refresh token");
 
     const redirectUrl = new URL(process.env.MOBILE_URL_BASE!);
     redirectUrl.searchParams.append("accessToken", tokens.accessToken);
@@ -128,11 +130,8 @@ async function handleGoogleAuth(request: NextRequest) {
     );
     redirectUrl.searchParams.append("isNewUser", isNewUser.toString());
 
-    console.log("redirectUrl", redirectUrl);
-
     if (parsedParams.data.state) {
       redirectUrl.searchParams.append("state", parsedParams.data.state);
-      console.log("added state", parsedParams.data.state);
     }
 
     return NextResponse.redirect(redirectUrl.toString());
@@ -149,10 +148,38 @@ async function handleGoogleAuth(request: NextRequest) {
   }
 }
 
+interface DiscordTokens {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token: string;
+  scope: string;
+}
+
+interface DiscordUser {
+  id: string;
+  username: string;
+  discriminator: string;
+  global_name?: string;
+  avatar?: string;
+  bot?: boolean;
+  system?: boolean;
+  mfa_enabled?: boolean;
+  banner?: string;
+  accent_color?: number;
+  locale?: string;
+  verified?: boolean;
+  email?: string;
+  flags?: number;
+  premium_type?: number;
+  public_flags?: number;
+  avatar_decoration_data?: {
+    sku_id: string;
+    asset: string;
+  };
+}
 async function handleDiscordAuth(request: NextRequest) {
   try {
-    console.log("handleDiscordAuth");
-
     const { searchParams } = new URL(request.url);
 
     const queryParams = {
@@ -163,18 +190,14 @@ async function handleDiscordAuth(request: NextRequest) {
 
     const parsedParams = CallbackQuerySchema.safeParse(queryParams);
     if (!parsedParams.success) {
-      console.log("failed to parse params", parsedParams.error);
       throw new BadInputError(parsedParams.error.message);
     }
 
     if (parsedParams.data.error) {
-      console.log("authentication failed", parsedParams.data.error);
       throw new BadInputError(
         `Authentication failed: ${parsedParams.data.error}`,
       );
     }
-
-    console.log("data", parsedParams.data);
 
     const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
@@ -196,9 +219,7 @@ async function handleDiscordAuth(request: NextRequest) {
       );
     }
 
-    console.log("tokenResponse", tokenResponse);
-
-    const tokens = await tokenResponse.json();
+    const tokens: DiscordTokens = await tokenResponse.json();
     const userResponse = await fetch("https://discord.com/api/users/@me", {
       headers: {
         Authorization: `Bearer ${tokens.access_token}`,
@@ -208,21 +229,16 @@ async function handleDiscordAuth(request: NextRequest) {
       throw new BadInputError("Failed to fetch Discord user info");
     }
 
-    console.log("userResponse", userResponse);
-
-    const discordUser = await userResponse.json();
+    const discordUser: DiscordUser = await userResponse.json();
     if (!discordUser.email) {
       throw new BadInputError("Email not provided by Discord");
     }
-
-    console.log("discordUser", discordUser);
 
     let isNewUser = false;
     let dbUser = await getDBUserByEmail(discordUser.email);
     if (!dbUser) {
       const username = await generateUserName(discordUser.email);
       if (!username) {
-        console.log("failed to generate username", discordUser);
         throw new Error("Failed to generate username");
       }
 
@@ -236,13 +252,23 @@ async function handleDiscordAuth(request: NextRequest) {
         username,
       });
       isNewUser = true;
+
+      await createDBAccount({
+        userId: dbUser.id,
+        type: "oidc",
+        provider: "discord",
+        providerAccountId: discordUser.id,
+        refresh_token: tokens.refresh_token,
+        access_token: tokens.access_token,
+        expires_at: Date.now() + tokens.expires_in,
+        token_type: tokens.token_type,
+        scope: tokens.scope,
+        id_token: null,
+        session_state: parsedParams.data.state || null,
+      });
     }
 
-    console.log("dbUser", dbUser);
-
     const jwtTokens = generateTokens(dbUser.id);
-
-    console.log("jwtTokens", jwtTokens);
 
     await createDBRefreshToken({
       userId: dbUser.id,
@@ -259,11 +285,8 @@ async function handleDiscordAuth(request: NextRequest) {
     );
     redirectUrl.searchParams.append("isNewUser", isNewUser.toString());
 
-    console.log("redirectUrl", redirectUrl);
-
     if (parsedParams.data.state) {
       redirectUrl.searchParams.append("state", parsedParams.data.state);
-      console.log("setting state", parsedParams.data.state);
     }
 
     return NextResponse.redirect(redirectUrl.toString());
