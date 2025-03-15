@@ -80,7 +80,7 @@ export default function PrivacyPolicy() {
           <h2 className="mb-3 text-2xl font-semibold">Your Rights</h2>
           <p className="text-muted-foreground">
             You may update, correct, or delete your account information at any
-            time by accessing your profile's settings.
+            time by accessing your profile&apos;s settings.
           </p>
         </section>
 
