@@ -176,25 +176,6 @@ export const authenticators = sqliteTable(
   ],
 );
 
-export const refreshTokens = sqliteTable("refresh_tokens", {
-  id: text("id", { length: UUID_LENGTH })
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id", { length: UUID_LENGTH })
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  token: text("token").notNull().unique(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`)
-    .$onUpdate(() => new Date()),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  revokedAt: integer("revoked_at", { mode: "timestamp" }),
-});
-
 export const sportLeagues = sqliteTable("sports_leagues", {
   id: text("id", { length: UUID_LENGTH })
     .primaryKey()
