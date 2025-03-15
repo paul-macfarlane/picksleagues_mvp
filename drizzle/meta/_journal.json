@@ -22,6 +22,13 @@
       "when": 1740941443817,
       "tag": "0002_boring_the_hand",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1742054412413,
+      "tag": "0003_condemned_ghost_rider",
+      "breakpoints": true
     }
   ]
 }

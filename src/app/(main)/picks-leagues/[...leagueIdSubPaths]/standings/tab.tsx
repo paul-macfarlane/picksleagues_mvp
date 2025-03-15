@@ -36,7 +36,7 @@ export async function PicksLeagueStandingsTab({
               {formatDateTime(
                 dbSportLeagueStartWeek.startTime,
                 dbUser.timezone,
-              )}
+              )}{" "}
               to view standings.
             </>
           )}
