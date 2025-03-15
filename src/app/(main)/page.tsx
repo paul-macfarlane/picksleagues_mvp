@@ -100,6 +100,16 @@ export default async function Home() {
           </ol>
         </div>
       </section>
+
+      <footer className="border-t py-6">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            <a href="/privacy-policy" className="text-primary hover:underline">
+              Privacy Policy
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -110,9 +110,9 @@ export async function seedPicksLeagues(
     const myUserRows = await tx
       .select()
       .from(users)
-      .where(eq(users.email, "pauljosephmacfarlane@gmail.com"));
+      .where(eq(users.email, "picksleagues@gmail.com"));
     if (!myUserRows.length) {
-      throw new Error("missing user with email pauljosephmacfarlane@gmail.com");
+      throw new Error("missing user with email picksleagues@gmail.com");
     }
 
     await tx
