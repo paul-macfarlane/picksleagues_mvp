@@ -100,6 +100,25 @@ export default async function Home() {
           </ol>
         </div>
       </section>
+
+      <footer className="border-t py-6">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            {new Date().getFullYear()} Picks Leagues. All rights reserved.
+            <span className="mx-2">|</span>
+            <a href="/privacy-policy" className="text-primary hover:underline">
+              Privacy Policy
+            </a>
+            <span className="mx-2">|</span>
+            <a
+              href="/terms-of-service"
+              className="text-primary hover:underline"
+            >
+              Terms of Service
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

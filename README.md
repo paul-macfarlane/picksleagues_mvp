@@ -33,4 +33,4 @@ This app is built using Next.js, and Turso. To run lcoally
 4. Install dependencies by running `npm install --force`
 5. Run `npm run db:generate && npm run db:migrate` to run database migrations
 6. Run `npm run dev` and go to http://localhost:3000/auth to sign in with your gmail or discord.
-7. Run `npm run db:seed` which will seed your local database with fake sport league data. Note that you will have to replace `pauljosephmacfarlane@gmail.com` with your email address for your user to become commisioner of the seeded picks leagues.
+7. Run `npm run db:seed` which will seed your local database with fake sport league data. Note that you will have to replace `picksleagues@gmail.com` with your email address for your user to become commisioner of the seeded picks leagues.
