@@ -111,23 +111,6 @@ export async function deleteAccount(userId: string): Promise<void> {
   });
 }
 
-export async function generateUserName(email?: string): Promise<string | null> {
-  let attempts = 0;
-  let username: string | null = null;
-  while (!username && attempts < 5) {
-    attempts++;
-    const usernameCandidate =
-      email && attempts === 1
-        ? generateFromEmail(email).slice(0, MAX_USERNAME_LENGTH)
-        : generateUsername("", 3, MAX_USERNAME_LENGTH);
-    if (await dbUsernameAvailable(usernameCandidate)) {
-      username = usernameCandidate;
-    }
-  }
-
-  return username;
-}
-
 export async function updateUserProfile(userId: string, data: unknown) {
   const dbUser = await getDBUserById(userId);
   if (!dbUser) {
