@@ -20,7 +20,7 @@ cost architecture is important.
     - Shad CN for component generation
     - React Hook Forms
     - Drizzle ORM
-    - Vercel Cron Functions for crons
+    - https://cron-job.org/en/ for cron jobs
 
 ## Local Setup
 
