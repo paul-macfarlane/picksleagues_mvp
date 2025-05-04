@@ -1,6 +1,0 @@
-{
-  "crons": [{
-    "path": "/api/cron/sport-leagues",
-    "schedule": "0 15 * * *"
-  }]
-}
