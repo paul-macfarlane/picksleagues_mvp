@@ -1,5 +1,11 @@
 # Picks Leagues
 
+## MVP Note
+
+This was a Next.js MVP of PicksLeagues, an application where friends compete to see who is the best football prognosticator. This was just an MVP, for the latest versions of Picks Leagues, see https://github.com/paul-macfarlane/picksleagues-web and https://github.com/paul-macfarlane/picksleagues-api.
+
+## Description
+
 Picks Leagues is an application where friends can compete to see who is the best sports prognosticator by joining
 leagues where they make picks for sporting events against the spread or straight up winners. The most accurate picker
 wins.
